@@ -59,7 +59,7 @@ let moyenChoisi = "especes";
 
 function preparerMoyen(mode) {
   const actifs = moyensMobilesActifs();
-  const concerne = ["vente", "credit", "paye", "depense", "maison", "fpaye"].indexOf(mode) !== -1;
+  const concerne = ["vente", "credit", "paye", "depense", "maison", "fpaye", "fdette"].indexOf(mode) !== -1;
   $("bloc-moyen").hidden = !concerne || !actifs.length;
   $("moyen-etiquette").textContent = mode === "vente" || mode === "credit" || mode === "paye" ? "Argent reçu en…" : "Payé avec…";
   $("choix-moyen").innerHTML = ["especes"].concat(actifs).map(function (k) {
@@ -77,7 +77,30 @@ function choisirMoyen(k) {
 function moyenPour(mouvement) {
   if ($("bloc-moyen").hidden) return;
   if (mouvement.type === "vente" && !encaisseDe(mouvement)) return;
+  if (mouvement.type === "fdette" && !mouvement.verse) return;
   if (moyenChoisi !== "especes") mouvement.moyen = moyenChoisi;
+}
+
+/* ---------- Moyen de paiement d'un achat (arrivage, achat d'intrant) ---------- */
+
+let moyenAchat = "especes";
+function preparerMoyenAchat() {
+  const actifs = moyensMobilesActifs();
+  const paye = arrivagePaye === "tout" || arrivagePaye === "partiel";
+  $("arrivage-moyen").hidden = !paye || !actifs.length;
+  if ($("choix-moyen-achat").dataset.pret !== "oui" || $("choix-moyen-achat").children.length !== actifs.length + 1) {
+    $("choix-moyen-achat").innerHTML = ["especes"].concat(actifs).map(function (k) {
+      return '<button type="button" class="suggestion" data-moyen-achat="' + k + '"><b>' + MOYENS[k] + '</b></button>';
+    }).join("");
+    $("choix-moyen-achat").dataset.pret = "oui";
+  }
+  choisirMoyenAchat(moyenAchat);
+}
+function choisirMoyenAchat(k) {
+  moyenAchat = k;
+  document.querySelectorAll("[data-moyen-achat]").forEach(function (b) {
+    b.setAttribute("aria-pressed", String(b.dataset.moyenAchat === k));
+  });
 }
 
 /* ---------- Réglages : numéros de réception ---------- */
@@ -119,6 +142,10 @@ function enregistrerPaiements(e) {
 /* ---------- Mise en route ---------- */
 
 function initPaiements() {
+  $("choix-moyen-achat").addEventListener("click", function (e) {
+    const b = e.target.closest("[data-moyen-achat]");
+    if (b) choisirMoyenAchat(b.dataset.moyenAchat);
+  });
   $("choix-moyen").addEventListener("click", function (e) {
     const b = e.target.closest("[data-moyen]");
     if (b) choisirMoyen(b.dataset.moyen);

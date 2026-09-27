@@ -1390,3 +1390,7 @@ input.qte {
 .compte-details { display: flex; flex-direction: column; gap: 8px; padding: 0 8px; }
 .compte-details[hidden] { display: none; }
 .par-moyen { opacity: 1 !important; font-weight: 600; }
+
+#arrivage-moyen { display: flex; flex-direction: column; gap: 8px; }
+#arrivage-moyen[hidden] { display: none; }
+#choix-moyen-achat .suggestion[aria-pressed="true"] { border-color: var(--entre); background: #EAF4EE; }

@@ -285,6 +285,8 @@ function ouvrirAchatIntrant(id) {
   $("arrivage-erreur").hidden = true;
   $("arrivage-donne").value = "";
   $("arrivage-fournisseur").value = "";
+  moyenAchat = "especes";
+  $("choix-moyen-achat").dataset.pret = "";
   choisirArrivagePaye("non");
   ouvrirFeuille("arrivage-form");
 }

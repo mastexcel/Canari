@@ -335,6 +335,7 @@ function choisirArrivagePaye(mode) {
   $("arrivage-credit").hidden = mode !== "partiel" && mode !== "credit";
   $("arrivage-donne-bloc").hidden = mode !== "partiel";
   if (mode === "partiel" || mode === "credit") afficherSuggestionsAchat();
+  preparerMoyenAchat();
   majArrivage();
 }
 
@@ -366,7 +367,9 @@ function verifierPaiementAchat(total) {
 function noterPaiementAchat(total, libelle) {
   const t = Date.now() + 1;
   if (arrivagePaye === "tout") {
-    donnees.mouvements.push({ id: nouvelId(), type: "depense", categorie: "marchandise", montant: total, note: libelle, client: "", t: t });
+    const depense = { id: nouvelId(), type: "depense", categorie: "marchandise", montant: total, note: libelle, client: "", t: t };
+    if (moyenAchat !== "especes" && !$("arrivage-moyen").hidden) depense.moyen = moyenAchat;
+    donnees.mouvements.push(depense);
     return "Payé : " + franc(total) + ".";
   }
   if (arrivagePaye === "partiel" || arrivagePaye === "credit") {
@@ -375,7 +378,9 @@ function noterPaiementAchat(total, libelle) {
     const fiche = donnees.fournisseurs[id] || { nom: nom, tel: "" };
     donnees.fournisseurs[id] = fiche;
     const verse = arrivagePaye === "partiel" ? lireMontant($("arrivage-donne").value) : 0;
-    donnees.mouvements.push({ id: nouvelId(), type: "fdette", montant: total, verse: verse, note: libelle, client: fiche.nom, fournisseurId: id, t: t });
+    const dette = { id: nouvelId(), type: "fdette", montant: total, verse: verse, note: libelle, client: fiche.nom, fournisseurId: id, t: t };
+    if (verse && moyenAchat !== "especes" && !$("arrivage-moyen").hidden) dette.moyen = moyenAchat;
+    donnees.mouvements.push(dette);
     const f = fournisseursQueJeDois().find(function (x) { return x.cle === id; });
     return (verse ? "Donné : " + franc(verse) + ". " : "") + "Tu dois maintenant " + franc(f ? f.du : total - verse) + " à " + fiche.nom + ".";
   }
@@ -420,6 +425,8 @@ function ouvrirArrivage(id) {
   $("arrivage-quantite").value = "1";
   $("arrivage-donne").value = "";
   $("arrivage-fournisseur").value = "";
+  moyenAchat = "especes";
+  $("choix-moyen-achat").dataset.pret = "";
   choisirArrivagePaye("non");
   $("arrivage-conso").innerHTML = "";
   if (fabrique) {

@@ -47,12 +47,16 @@ function parUnite(u) { return !u || u === "unite" ? "" : " / " + nomUnite(u, 1);
 // « stock » (départ, arrivage, correction) moins les quantités vendues.
 // Ainsi, retirer une vente remet automatiquement le produit en stock.
 function stockDe(idProduit) {
-  let n = 0;
-  donnees.mouvements.forEach(function (m) {
-    if (m.type === "stock" && m.produitId === idProduit) n += m.quantite;
-    else if (m.lignes) m.lignes.forEach(function (l) { if (l.produitId === idProduit) n -= l.qte; });
+  // Le stock de tous les produits est calculé en une fois, puis gardé en mémoire.
+  const stocks = memo("stocks", function () {
+    const n = {};
+    donnees.mouvements.forEach(function (m) {
+      if (m.type === "stock") n[m.produitId] = (n[m.produitId] || 0) + m.quantite;
+      else if (m.lignes) m.lignes.forEach(function (l) { n[l.produitId] = (n[l.produitId] || 0) - l.qte; });
+    });
+    return n;
   });
-  return Math.round(n * 1000) / 1000;
+  return Math.round((stocks[idProduit] || 0) * 1000) / 1000;
 }
 
 function listeProduits() {

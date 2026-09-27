@@ -30,12 +30,6 @@ const $ = function (id) { return document.getElementById(id); };
 //   (le numéro identifie le client : deux « Koffi » différents ne sont jamais mélangés).
 // meta : suivi des relances par client (promesse, relances), rangé par numéro aussi.
 let donnees = { mouvements: [], clients: {}, fournisseurs: {}, meta: {} };
-try {
-  const brut = JSON.parse(lire(CLE_DONNEES));
-  if (brut && Array.isArray(brut.mouvements)) donnees = brut;
-} catch (e) { /* données illisibles : on repart de zéro */ }
-if (!donnees.meta) donnees.meta = {};
-if (!donnees.clients) donnees.clients = {};
 completerDonnees();
 
 // Ajoute les rubriques qui manquent (anciennes données ou sauvegarde récupérée).
@@ -50,10 +44,102 @@ function completerDonnees() {
   if (!donnees.intrants) donnees.intrants = {}; // ingrédients et matières, voir intrants.js   // charges fixes et taxes, voir charges.js
 }
 
-function sauver() {
-  if (!ecrire(CLE_DONNEES, JSON.stringify(donnees))) {
-    message("Attention : impossible d'enregistrer sur ce téléphone.");
+/* Les données sont rangées dans la base du navigateur (IndexedDB) : beaucoup plus de
+   place que le petit espace « localStorage » (environ 5 Mo, soit 2 ans de ventes).
+   Si la base n'est pas disponible, on se replie sur localStorage. */
+const BASE = "canari", MAGASIN = "donnees";
+let modeStockage = "local"; // "base" (IndexedDB) ou "local" (localStorage)
+let baseOuverte = null;
+
+function ouvrirBase() {
+  if (!baseOuverte) {
+    baseOuverte = new Promise(function (ok, ko) {
+      if (!window.indexedDB) return ko(new Error("pas de base"));
+      const r = indexedDB.open(BASE, 1);
+      r.onupgradeneeded = function () { r.result.createObjectStore(MAGASIN); };
+      r.onsuccess = function () { ok(r.result); };
+      r.onerror = function () { ko(r.error); };
+    });
   }
+  return baseOuverte;
+}
+function lireBase(cle) {
+  return ouvrirBase().then(function (db) {
+    return new Promise(function (ok, ko) {
+      const q = db.transaction(MAGASIN).objectStore(MAGASIN).get(cle);
+      q.onsuccess = function () { ok(q.result); };
+      q.onerror = function () { ko(q.error); };
+    });
+  });
+}
+function ecrireBase(cle, valeur) {
+  return ouvrirBase().then(function (db) {
+    return new Promise(function (ok, ko) {
+      const tx = db.transaction(MAGASIN, "readwrite");
+      tx.objectStore(MAGASIN).put(valeur, cle);
+      tx.oncomplete = function () { ok(); };
+      tx.onerror = tx.onabort = function () { ko(tx.error); };
+    });
+  });
+}
+
+// Au démarrage : lit la base. Les données d'une ancienne version (localStorage)
+// y sont déplacées une fois, puis effacées de localStorage.
+function chargerDonnees() {
+  let ancien = null;
+  try { ancien = JSON.parse(lire(CLE_DONNEES)); } catch (e) { ancien = null; }
+  const ancienValide = ancien && Array.isArray(ancien.mouvements);
+  return lireBase("principal").then(function (d) {
+    modeStockage = "base";
+    if (ancienValide) {
+      return ecrireBase("principal", ancien).then(function () {
+        try { localStorage.removeItem(CLE_DONNEES); } catch (e) { /* rien */ }
+        return ancien;
+      });
+    }
+    return d && Array.isArray(d.mouvements) ? d : null;
+  }).catch(function () {
+    modeStockage = "local";
+    return ancienValide ? ancien : null;
+  });
+}
+
+function sauver() {
+  versionDonnees++;
+  const alerte = function () { message("Attention : impossible d'enregistrer sur ce téléphone. Fais une sauvegarde (Réglages ⚙)."); };
+  if (modeStockage === "base") {
+    ecrireBase("principal", donnees).catch(function () {
+      if (!ecrire(CLE_DONNEES, JSON.stringify(donnees))) alerte();
+    });
+  } else if (!ecrire(CLE_DONNEES, JSON.stringify(donnees))) {
+    alerte();
+  }
+}
+
+/* ---------- Mémoire des calculs ----------
+   Avec une année de ventes (plus de 10 000 lignes), relire tout l'historique à chaque
+   affichage rend l'appli lente sur un petit téléphone. Les résultats (ventes par jour,
+   stock, dettes…) sont gardés jusqu'au prochain changement des données. */
+let versionDonnees = 0;
+const memoire = {};
+function memo(nom, calcul) {
+  const cle = versionDonnees + ":" + donnees.mouvements.length;
+  const m = memoire[nom];
+  if (m && m.cle === cle) return m.valeur;
+  const valeur = calcul();
+  memoire[nom] = { cle: cle, valeur: valeur };
+  return valeur;
+}
+// Les lignes d'une journée (clé « AAAA-MM-JJ »).
+function mouvementsDuJour(jour) {
+  return memo("parJour", function () {
+    const parJour = {};
+    donnees.mouvements.forEach(function (m) {
+      const k = cleJour(m.t);
+      (parJour[k] || (parJour[k] = [])).push(m);
+    });
+    return parJour;
+  })[jour] || [];
 }
 
 /* ---------- Outils ---------- */
@@ -174,9 +260,13 @@ function horsBenefice(m) {
 }
 
 function totauxDuJour(jour) {
+  const deja = memo("totaux", function () { return {}; });
+  if (!deja[jour]) deja[jour] = calculTotauxDuJour(jour);
+  return deja[jour];
+}
+function calculTotauxDuJour(jour) {
   let encaisse = 0, sorti = 0, depenses = 0, maison = 0, vendu = 0, aCredit = 0, cout = 0;
-  donnees.mouvements.forEach(function (m) {
-    if (cleJour(m.t) !== jour) return;
+  mouvementsDuJour(jour).forEach(function (m) {
     if (m.type === "vente" || m.type === "credit") {
       vendu += m.montant;
       aCredit += creditDe(m);
@@ -206,6 +296,9 @@ function totauxDuJour(jour) {
 
 // Liste des clients qui doivent de l'argent, du plus gros au plus petit.
 function clientsQuiDoivent() {
+  return memo("clientsQuiDoivent", calcul_clientsQuiDoivent);
+}
+function calcul_clientsQuiDoivent() {
   const parCle = new Map();
   donnees.mouvements.slice().sort(function (a, b) { return a.t - b.t; }).forEach(function (m) {
     const cle = idClientDe(m);
@@ -233,6 +326,9 @@ function clientsQuiDoivent() {
 
 // Fournisseurs à qui je dois de l'argent, du plus gros au plus petit.
 function fournisseursQueJeDois() {
+  return memo("fournisseursQueJeDois", calcul_fournisseursQueJeDois);
+}
+function calcul_fournisseursQueJeDois() {
   const parCle = new Map();
   donnees.mouvements.slice().sort(function (a, b) { return a.t - b.t; }).forEach(function (m) {
     if (m.type !== "fdette" && m.type !== "fpaye") return;
@@ -259,6 +355,9 @@ function fournisseursQueJeDois() {
 }
 
 function listeFournisseurs() {
+  return memo("listeFournisseurs", calcul_listeFournisseurs);
+}
+function calcul_listeFournisseurs() {
   const vus = new Map();
   donnees.mouvements.slice().sort(function (a, b) { return b.t - a.t; }).forEach(function (m) {
     if (m.type !== "fdette" && m.type !== "fpaye") return;
@@ -270,6 +369,9 @@ function listeFournisseurs() {
 
 // Tous les clients connus, les plus récents d'abord : { id, nom, tel }.
 function listeClients() {
+  return memo("listeClients", calcul_listeClients);
+}
+function calcul_listeClients() {
   const vus = new Map();
   donnees.mouvements.slice().sort(function (a, b) { return b.t - a.t; }).forEach(function (m) {
     const id = idClientDe(m);
@@ -324,19 +426,30 @@ const NOMS = {
 let onglet = "jour";
 let coteCredits = "clients";
 
+// Dessine seulement l'onglet affiché (les autres le seront quand on les ouvrira).
 function afficher() {
   afficherRappelSauvegarde();
-  afficherJour();
-  afficherCredits();
-  afficherRelances();
-  afficherSemaine();
-  if (!$("vue-mois").hidden) afficherMois();
-  afficherStock();
+  majPastilles();
+  if (onglet === "jour") afficherJour();
+  else if (onglet === "credits") afficherCredits();
+  else if (onglet === "relances") afficherRelances();
+  else if (onglet === "semaine") { if ($("vue-mois").hidden) afficherSemaine(); else afficherMois(); }
+  else if (onglet === "stock") afficherStock();
   document.querySelectorAll(".vue").forEach(function (v) { v.hidden = v.id !== "vue-" + onglet; });
   document.querySelectorAll("[data-onglet]").forEach(function (b) {
     if (b.dataset.onglet === onglet) b.setAttribute("aria-current", "page");
     else b.removeAttribute("aria-current");
   });
+}
+
+// Les pastilles rouges des onglets Relances et Stock.
+function majPastilles() {
+  const urgents = clientsQuiDoivent().filter(function (c) { return statutRelance(c).urgent; }).length;
+  $("nb-relances").hidden = urgents === 0;
+  $("nb-relances").textContent = urgents;
+  const bas = produitsARacheter().length + intrantsARacheter().length;
+  $("nb-stock").hidden = bas === 0;
+  $("nb-stock").textContent = bas;
 }
 
 function afficherJour() {
@@ -363,8 +476,7 @@ function afficherJour() {
 
   afficherBilan(t);
 
-  const lignes = donnees.mouvements
-    .filter(function (m) { return cleJour(m.t) === aujourdhui; })
+  const lignes = mouvementsDuJour(aujourdhui).slice()
     .sort(function (a, b) { return b.t - a.t; });
   $("vide").hidden = lignes.length > 0;
   $("titre-liste").hidden = lignes.length === 0;
@@ -599,6 +711,25 @@ function afficherSemaine() {
     '<p class="aide legende-semaine"><span class="puce entre"></span>jour gagnant <span class="puce sort"></span>jour perdant</p>';
 }
 
+// Lignes de l'historique d'un client ou d'un fournisseur, des plus récentes aux plus anciennes.
+function historiqueHtml(c, client) {
+  const lignes = c.historique.slice().reverse();
+  const montrees = lignes.slice(0, 40);
+  return montrees.map(function (h) {
+    const paye = h.montant < 0;
+    return '<li><span>' + dateCourte(h.t) + ' · ' + echapper(h.texte) + '</span><span class="' + (paye ? (client ? 'm-entre' : 'm-sort') : 'm-credit') + '">' +
+      (paye ? '− ' : '+ ') + franc(Math.abs(h.montant)) + '</span></li>';
+  }).join("") + (lignes.length > montrees.length ? '<li class="aide">… et ' + (lignes.length - montrees.length) + ' opérations plus anciennes.</li>' : '');
+}
+// Remplit un historique au moment où on l'ouvre.
+document.addEventListener("toggle", function (e) {
+  const d = e.target;
+  if (!d.open || !d.dataset || !d.dataset.historique) return;
+  const client = d.dataset.sorte === "client";
+  const c = (client ? clientsQuiDoivent() : fournisseursQueJeDois()).find(function (x) { return x.cle === d.dataset.historique; });
+  if (c) d.querySelector("ul").innerHTML = historiqueHtml(c, client);
+}, true);
+
 function videHtml(image, texte) {
   return '<div class="vide"><img src="icones/' + image + '.webp" width="96" height="114" alt=""><p>' + texte + '</p></div>';
 }
@@ -627,12 +758,8 @@ function carteHtml(c, sorte, avecStatut) {
     (statut && (avecStatut || statut.urgent) ? '<p><span class="etat etat-' + statut.code + '">' + echapper(statut.texte) + '</span></p>' : '') +
     '<p class="client-info ligne-tel">' + (tel || '<span></span>') + modifier + '</p>' +
     '<p class="client-info">' + (client ? 'Doit depuis ' : 'Depuis ') + ilYA(c.depuis).replace("il y a ", "") + (derniers ? ' · ' + echapper(derniers) : '') + '</p>' +
-    '<details class="historique"><summary>Voir l\'historique</summary><ul>' +
-    c.historique.slice().reverse().map(function (h) {
-      const paye = h.montant < 0;
-      return '<li><span>' + dateCourte(h.t) + ' · ' + echapper(h.texte) + '</span><span class="' + (paye ? (client ? 'm-entre' : 'm-sort') : 'm-credit') + '">' +
-        (paye ? '− ' : '+ ') + franc(Math.abs(h.montant)) + '</span></li>';
-    }).join("") + '</ul></details>' +
+    // L'historique n'est dessiné que si on l'ouvre (voir historiqueHtml).
+    '<details class="historique" data-historique="' + echapper(c.cle) + '" data-sorte="' + sorte + '"><summary>Voir l\'historique</summary><ul></ul></details>' +
     '<div class="client-boutons' + (client ? '' : ' un-seul') + '">' +
     (client ? '<button type="button" class="bouton bouton-relancer" data-relancer="' + echapper(c.cle) + '">' +
       '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>Relancer</button>' : '') +
@@ -1304,7 +1431,7 @@ function afficherReglages() {
   $("derniere-sauvegarde").textContent = j === null ? "Aucune sauvegarde pour l'instant."
     : "Dernière sauvegarde : " + ilYA(Number(lire(CLE_DERNIERE_SAUVEGARDE))) + ".";
   $("derniere-sauvegarde").classList.toggle("a-faire", j === null || j >= 7);
-  $("annuler-restauration").hidden = !lire(CLE_AVANT_RESTAURATION);
+  $("annuler-restauration").hidden = lire(CLE_AVANT_RESTAURATION) !== "oui";
 }
 
 function fichierSauvegarde() {
@@ -1358,7 +1485,7 @@ function restaurer(fichier) {
     const ok = window.confirm("Récupérer la sauvegarde du " + quand + " (" + d.mouvements.length + " lignes) ?\n\n" +
       "Ce qui est noté sur ce téléphone sera remplacé.");
     if (!ok) return;
-    ecrire(CLE_AVANT_RESTAURATION, JSON.stringify(donnees));
+    garderAvantRestauration(donnees);
     donnees = d;
     completerDonnees();
     sauver();
@@ -1385,16 +1512,32 @@ $("sauvegarde-fichier").addEventListener("change", function (e) {
   if (f) restaurer(f);
   e.target.value = "";
 });
+// La copie d'avant récupération est gardée dans la base (elle peut être grosse).
+function garderAvantRestauration(d) {
+  const copie = JSON.parse(JSON.stringify(d));
+  const marquer = function () { ecrire(CLE_AVANT_RESTAURATION, "oui"); afficherReglages(); };
+  if (modeStockage === "base") ecrireBase("avantRestauration", copie).then(marquer).catch(function () {});
+  else if (ecrire(CLE_AVANT_RESTAURATION + ".copie", JSON.stringify(copie))) marquer();
+}
+function lireAvantRestauration() {
+  if (modeStockage === "base") return lireBase("avantRestauration");
+  try { return Promise.resolve(JSON.parse(lire(CLE_AVANT_RESTAURATION + ".copie"))); } catch (e) { return Promise.resolve(null); }
+}
 $("annuler-restauration").addEventListener("click", function () {
-  const avant = lire(CLE_AVANT_RESTAURATION);
-  if (!avant || !window.confirm("Revenir aux chiffres d'avant la récupération ?")) return;
-  try { donnees = JSON.parse(avant); } catch (e) { return; }
-  sauver();
-  try { localStorage.removeItem(CLE_AVANT_RESTAURATION); } catch (e) { /* rien */ }
-  afficher();
-  afficherReglages();
-  message("C'est revenu comme avant.");
+  if (!window.confirm("Revenir aux chiffres d'avant la récupération ?")) return;
+  lireAvantRestauration().then(function (avant) {
+    if (!avant || !Array.isArray(avant.mouvements)) { message("La copie d'avant n'est plus disponible."); return; }
+    donnees = avant;
+    completerDonnees();
+    sauver();
+    try { localStorage.removeItem(CLE_AVANT_RESTAURATION); localStorage.removeItem(CLE_AVANT_RESTAURATION + ".copie"); } catch (e) { /* rien */ }
+    if (modeStockage === "base") ecrireBase("avantRestauration", null).catch(function () {});
+    afficher();
+    afficherReglages();
+    message("C'est revenu comme avant.");
+  });
 });
+
 
 // Demande au téléphone de ne pas effacer les données de Canari pour faire de la place.
 if (navigator.storage && navigator.storage.persist) {
@@ -1406,11 +1549,6 @@ if (navigator.storage && navigator.storage.persist) {
 const dateTexte = new Date().toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" });
 $("date-du-jour").textContent = dateTexte.charAt(0).toUpperCase() + dateTexte.slice(1);
 
-initCharges();
-initFiches();
-initIntrants();
-initBoutique();
-initFacture();
 
 $("commencer").addEventListener("click", function () {
   ecrire(CLE_DEJA_VU, "oui");
@@ -1431,8 +1569,17 @@ document.addEventListener("visibilitychange", function () {
   if (!document.hidden) afficher();
 });
 
-afficher();
-montrer(lire(CLE_DEJA_VU) ? "principal" : "accueil");
+// Démarrage : on lit les données, puis on met tout en route.
+chargerDonnees().then(function (d) {
+  if (d) donnees = d;
+  completerDonnees();
+  initCharges();
+  initFiches();
+  initIntrants();
+  initBoutique();
+  initFacture();
+  montrer(lire(CLE_DEJA_VU) ? "principal" : "accueil");
+});
 
 // Fonctionnement sans internet
 if ("serviceWorker" in navigator && location.protocol !== "file:") {

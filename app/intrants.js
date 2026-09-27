@@ -22,14 +22,18 @@ function intrantParNom(nom) {
 }
 
 function stockIntrant(id) {
-  let n = 0;
-  const consommer = function (c) { if (c.intrantId === id) n -= c.qte; };
-  donnees.mouvements.forEach(function (m) {
-    if (m.type === "intrant" && m.intrantId === id) n += m.quantite;
-    if (m.consommation) m.consommation.forEach(consommer);
-    if (m.lignes) m.lignes.forEach(function (l) { if (l.consommation) l.consommation.forEach(consommer); });
+  // Le stock de tous les intrants est calculé en une fois, puis gardé en mémoire.
+  const stocks = memo("stocksIntrants", function () {
+    const n = {};
+    const consommer = function (c) { n[c.intrantId] = (n[c.intrantId] || 0) - c.qte; };
+    donnees.mouvements.forEach(function (m) {
+      if (m.type === "intrant") n[m.intrantId] = (n[m.intrantId] || 0) + m.quantite;
+      if (m.consommation) m.consommation.forEach(consommer);
+      if (m.lignes) m.lignes.forEach(function (l) { if (l.consommation) l.consommation.forEach(consommer); });
+    });
+    return n;
   });
-  return Math.round(n * 1000) / 1000;
+  return Math.round((stocks[id] || 0) * 1000) / 1000;
 }
 function intrantARacheter(i) {
   return stockIntrant(i.id) <= (i.seuil || 0);

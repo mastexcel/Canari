@@ -493,7 +493,7 @@ function initCharges() {
       document.querySelectorAll("[data-bilan]").forEach(function (b) { b.setAttribute("aria-pressed", String((b.dataset.bilan === "mois") === mois)); });
       $("vue-mois").hidden = !mois;
       $("vue-7jours").hidden = mois;
-      if (mois) afficherMois();
+      if (mois) afficherMois(); else afficherSemaine();
       return;
     }
     const nav = e.target.closest("[data-mois]");

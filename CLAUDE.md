@@ -150,6 +150,13 @@ Calculs (remplacés par la décision « bénéfice » ci-dessous) : gain = encai
 
 Comment c'est fait : `app/boutique.js` (boutique, produits, stock, choix des produits dans une vente) et `app/facture.js` (factures « F-0001 » et reçus « R-0001 » dessinés en image sur le téléphone, partagés avec le menu de partage d'Android). Le stock n'est jamais tapé à la main : il se calcule à partir des lignes « stock » (départ, arrivage, correction) moins les quantités vendues, donc retirer une vente remet le produit en stock. Un reçu s'appelle « reçu d'acompte » tant qu'il reste quelque chose à payer.
 
+## Étape 7 : solidité sur petit téléphone (fait)
+
+- **Stockage** : les données sont dans la base du navigateur (IndexedDB), plus dans localStorage (limité à ~5 Mo, soit ~2 ans de ventes). Les anciennes données sont déplacées automatiquement au premier lancement. Repli sur localStorage si IndexedDB n'est pas disponible.
+- **Vitesse** : les calculs (ventes par jour, stocks, dettes, listes de clients) sont gardés en mémoire jusqu'au prochain changement (`memo()` dans `app.js`, invalidé par `sauver()`). Seul l'onglet affiché est dessiné. Les historiques des clients ne sont dessinés qu'à l'ouverture. Mesure avec 1 an de données (10 400 lignes) et un processeur 6× plus lent : ouverture < 1 s, onglets < 0,3 s.
+- Icônes compressées (appli ~0,7 Mo), petits textes plus foncés, boutons ✕ et « Modifier » à 48 px.
+- Liste de vérifications sur un vrai téléphone : `docs/tests-telephone.md`.
+
 ## Hors version 1 (plus tard)
 
 Compte en ligne et synchronisation, plusieurs vendeurs par boutique, paiement Wave / Orange Money / MTN dans l'appli, abonnement payant, autres langues (dioula, baoulé), autres pays.

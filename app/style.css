@@ -289,9 +289,9 @@ body {
 .retirer {
   border: 0;
   background: none;
-  color: #8A7564;
-  width: 44px;
-  height: 44px;
+  color: #76604F;
+  width: 48px;
+  height: 48px;
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -373,7 +373,7 @@ body {
   font-family: "Fredoka", system-ui, sans-serif;
   font-weight: 700;
   font-size: 32px;
-  color: #8A7564;
+  color: #76604F;
 }
 .rapides {
   display: grid;
@@ -758,7 +758,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 44px;
+  min-height: 48px;
   padding: 0 10px;
   border: 0;
   border-radius: 10px;
@@ -977,7 +977,7 @@ button.ligne-texte {
   stroke-width: 2.2;
   stroke-linejoin: round;
 }
-.t-stock .pastille { background: #8A7564; }
+.t-stock .pastille { background: #76604F; }
 .m-stock { color: #5A4636; }
 
 /* ---------- Choisir les produits dans une vente ---------- */
@@ -1081,7 +1081,7 @@ button.ligne-texte {
   overflow: hidden;
   background: #fff;
   font-size: 13px;
-  color: #8A7564;
+  color: #76604F;
   text-align: center;
 }
 .logo-apercu img { max-width: 100%; max-height: 100%; }
@@ -1211,7 +1211,7 @@ button.ligne-texte {
 .lc-haut .lc-nom { flex: 1; min-width: 0; font-weight: 600; border-color: transparent; padding: 6px 8px; min-height: 44px; }
 .lc-bas .lc-montant { flex: 1; min-width: 0; font-family: "Fredoka", system-ui, sans-serif; font-size: 20px; min-height: 48px; }
 .lc-bas select { min-height: 48px; padding: 6px 8px; font-size: 15px; max-width: 45%; }
-.lc-f { font-family: "Fredoka", system-ui, sans-serif; font-size: 20px; color: #8A7564; }
+.lc-f { font-family: "Fredoka", system-ui, sans-serif; font-size: 20px; color: #76604F; }
 
 /* ---------- Rappels et seuil ---------- */
 .rappel-parametrage { background: #EAF4EE; border-color: var(--entre); padding-left: 8px; }
@@ -1314,7 +1314,7 @@ input.qte {
 .ligne-fiche .lf-qte { width: 64px; flex: 0 0 64px; min-height: 48px; text-align: center; font-family: "Fredoka", system-ui, sans-serif; font-size: 18px; padding: 4px; }
 .ligne-fiche .lf-unite { flex: 1; min-width: 0; max-width: none; }
 .ligne-fiche .lf-prix { width: 88px; flex: 0 0 88px; min-height: 48px; text-align: right; font-family: "Fredoka", system-ui, sans-serif; font-size: 18px; padding: 4px 8px; }
-.lf-fois { color: #8A7564; font-weight: 700; }
+.lf-fois { color: #76604F; font-weight: 700; }
 .lf-cout { margin: 0; text-align: right; font-weight: 600; color: var(--credit); font-size: 15px; }
 .fiche-total {
   margin: 0;

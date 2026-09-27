@@ -347,7 +347,7 @@ body {
   margin: 0 0 4px;
   color: var(--couleur-saisie, var(--entre));
 }
-.champ-etiquette { font-size: 16px; font-weight: 500; }
+.champ-etiquette { font-size: 16px; font-weight: 500; margin: 0; }
 .montant-boite {
   display: flex;
   align-items: center;
@@ -566,7 +566,7 @@ body {
   color: var(--credit);
   white-space: nowrap;
 }
-.client-info { margin: 0; font-size: 15px; color: #6B5646; }
+.client-info { margin: -4px 0 0; font-size: 15px; color: #6B5646; }
 .historique summary {
   cursor: pointer;
   color: var(--vert-foret);
@@ -632,3 +632,53 @@ body {
   background: rgba(23, 74, 63, .1);
   color: var(--vert-foret);
 }
+
+/* ---------- Client identifié par son numéro ---------- */
+.suggestion {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  line-height: 1.2;
+  padding: 6px 14px;
+  border-radius: 14px;
+}
+.suggestion b { font-weight: 600; }
+.suggestion small { font-size: 13px; color: #6B5646; }
+.suggestions:empty { display: none; }
+.client-reconnu {
+  margin: -2px 0 0;
+  color: var(--entre);
+  font-weight: 600;
+}
+.client-tel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  color: var(--vert-foret);
+  font-weight: 600;
+  font-size: 17px;
+  text-decoration: none;
+}
+.client-tel svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linejoin: round;
+}
+.sans-tel { color: var(--sort); font-weight: 500; }
+.client-boutons {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 8px;
+}
+.bouton-fiche {
+  background: #fff;
+  border: 2px solid var(--bord);
+  color: var(--brun);
+  font-size: 16px;
+}
+.bouton-fiche svg { width: 22px; height: 22px; }

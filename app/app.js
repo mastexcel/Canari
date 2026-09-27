@@ -18,16 +18,19 @@ const $ = function (id) { return document.getElementById(id); };
 
 /* ---------- Données enregistrées sur le téléphone ---------- */
 
-// Chaque mouvement : { id, type, montant, encaisse, note, client, t }
+// Chaque mouvement : { id, type, montant, encaisse, note, client, clientId, t }
 // type : vente, depense, paye (remboursement client), maison, fdette, fpaye
 // Pour une vente, « encaisse » est ce que le client a donné ; le reste est à crédit.
-// meta : infos par client (téléphone, promesse, relances), utilisées plus tard.
-let donnees = { mouvements: [], meta: {} };
+// clients : fiche de chaque client, rangée par son numéro de téléphone
+//   (le numéro identifie le client : deux « Koffi » différents ne sont jamais mélangés).
+// meta : suivi des relances par client (promesse, relances), rangé par numéro aussi.
+let donnees = { mouvements: [], clients: {}, meta: {} };
 try {
   const brut = JSON.parse(lire(CLE_DONNEES));
   if (brut && Array.isArray(brut.mouvements)) donnees = brut;
 } catch (e) { /* données illisibles : on repart de zéro */ }
 if (!donnees.meta) donnees.meta = {};
+if (!donnees.clients) donnees.clients = {};
 
 function sauver() {
   if (!ecrire(CLE_DONNEES, JSON.stringify(donnees))) {
@@ -64,6 +67,28 @@ const echapper = function (s) {
 };
 const cleClient = function (nom) { return "c:" + nom.trim().toLowerCase().replace(/\s+/g, " "); };
 
+// Numéro de téléphone : on garde seulement les chiffres. Un numéro ivoirien écrit
+// avec l'indicatif (225 ou 00225) est ramené à ses 10 chiffres.
+function normaliserTel(texte) {
+  let d = String(texte || "").replace(/\D/g, "");
+  if (d.startsWith("00")) d = d.slice(2);
+  if (d.length === 13 && d.startsWith("225")) d = d.slice(3);
+  return d;
+}
+function afficherTel(tel) {
+  return tel.length === 10 ? tel.replace(/(\d{2})(?=\d)/g, "$1 ") : tel;
+}
+// Identifiant du client d'un mouvement : son numéro, ou son nom pour les
+// anciennes lignes notées avant qu'on demande le numéro.
+function idClientDe(m) {
+  if (m.clientId) return m.clientId;
+  return m.client ? cleClient(m.client) : "";
+}
+function ficheClient(id, nomParDefaut) {
+  const f = donnees.clients[id];
+  return { id: id, nom: (f && f.nom) || nomParDefaut || "", tel: f ? f.tel : "" };
+}
+
 /* ---------- Calculs ---------- */
 
 // Argent réellement reçu pour une vente (les anciennes ventes étaient payées en entier).
@@ -97,13 +122,12 @@ function totauxDuJour(jour) {
 function clientsQuiDoivent() {
   const parCle = new Map();
   donnees.mouvements.slice().sort(function (a, b) { return a.t - b.t; }).forEach(function (m) {
-    const nom = (m.client || "").trim();
-    if (!nom) return;
+    const cle = idClientDe(m);
+    if (!cle) return;
     const credit = creditDe(m);
     if (credit <= 0 && m.type !== "paye") return;
-    const cle = cleClient(nom);
-    const c = parCle.get(cle) || { cle: cle, nom: nom, du: 0, depuis: 0, historique: [] };
-    c.nom = nom;
+    const fiche = ficheClient(cle, m.client);
+    const c = parCle.get(cle) || { cle: cle, nom: fiche.nom, tel: fiche.tel, du: 0, depuis: 0, historique: [] };
     if (m.type === "paye") {
       c.du -= m.montant;
       c.historique.push({ t: m.t, texte: "A payé", montant: -m.montant });
@@ -120,12 +144,13 @@ function clientsQuiDoivent() {
     .sort(function (a, b) { return b.du - a.du; });
 }
 
-function nomsClients() {
+// Tous les clients connus, les plus récents d'abord : { id, nom, tel }.
+function listeClients() {
   const vus = new Map();
   donnees.mouvements.slice().sort(function (a, b) { return b.t - a.t; }).forEach(function (m) {
-    if (!m.client || !(m.type === "vente" || m.type === "credit" || m.type === "paye")) return;
-    const cle = cleClient(m.client);
-    if (!vus.has(cle)) vus.set(cle, m.client.trim());
+    const id = idClientDe(m);
+    if (!id || vus.has(id) || !(m.type === "vente" || m.type === "credit" || m.type === "paye")) return;
+    vus.set(id, ficheClient(id, m.client));
   });
   return Array.from(vus.values());
 }
@@ -171,7 +196,7 @@ function afficherJour() {
 
 function ligneHtml(m) {
   const heure = new Date(m.t).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-  const qui = m.client ? " · " + echapper(m.client) : "";
+  const qui = m.client ? " · " + echapper(ficheClient(idClientDe(m), m.client).nom) : "";
   let type = m.type, montants;
   if (m.type === "vente" || m.type === "credit") {
     const recu = m.type === "vente" ? encaisseDe(m) : 0;
@@ -214,18 +239,26 @@ function afficherCredits() {
     '<div class="total-credits"><span>Tes clients te doivent</span><strong>' + franc(total) + '</strong>' +
     '<small>' + clients.length + ' client' + (clients.length > 1 ? 's' : '') + '</small></div>' +
     '<ul class="clients">' + clients.map(function (c) {
-      const derniers = c.historique.filter(function (h) { return h.montant > 0; }).slice(-2)
-        .map(function (h) { return h.texte; }).join(", ");
+      const notes = c.historique.filter(function (h) { return h.montant > 0 && h.texte !== "Achat à crédit"; })
+        .map(function (h) { return h.texte; });
+      const derniers = notes.filter(function (t, i) { return notes.lastIndexOf(t) === i; }).slice(-2).join(", ");
       return '<li class="client">' +
         '<div class="client-haut"><b>' + echapper(c.nom) + '</b><strong>' + franc(c.du) + '</strong></div>' +
+        '<p class="client-info">' + (c.tel ? '<a class="client-tel" href="tel:' + c.tel + '">' +
+          '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>' +
+          afficherTel(c.tel) + '</a>' : '<span class="sans-tel">Pas de numéro</span>') + '</p>' +
         '<p class="client-info">Doit depuis ' + ilYA(c.depuis).replace("il y a ", "") + (derniers ? ' · ' + echapper(derniers) : '') + '</p>' +
         '<details class="historique"><summary>Voir l\'historique</summary><ul>' +
         c.historique.slice().reverse().map(function (h) {
           return '<li><span>' + dateCourte(h.t) + ' · ' + echapper(h.texte) + '</span><span class="' + (h.montant < 0 ? 'm-entre' : 'm-credit') + '">' +
             (h.montant < 0 ? '− ' : '+ ') + franc(Math.abs(h.montant)) + '</span></li>';
         }).join("") + '</ul></details>' +
+        '<div class="client-boutons">' +
+        '<button type="button" class="bouton bouton-fiche" data-fiche="' + echapper(c.cle) + '">' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16zM13 7l4 4"/></svg>Modifier</button>' +
         '<button type="button" class="bouton bouton-paye" data-paye="' + echapper(c.cle) + '">' +
         '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>Il a payé</button>' +
+        '</div>' +
         '</li>';
     }).join("") + '</ul>';
 }
@@ -285,6 +318,8 @@ function ouvrirSaisie(mode, client) {
   $("montant").value = "";
   $("donne").value = "";
   $("client").value = "";
+  $("tel").value = "";
+  $("client-reconnu").hidden = true;
   $("note").value = "";
   $("erreur").hidden = true;
 
@@ -325,14 +360,31 @@ function majReste() {
   $("reste").textContent = "Reste à crédit : " + franc(total - donne);
 }
 
+// Propose les clients déjà connus qui correspondent à ce qui est tapé (nom ou numéro).
 function afficherSuggestions() {
-  const tape = $("client").value.trim().toLowerCase();
-  const noms = nomsClients().filter(function (n) {
-    return n.toLowerCase() !== tape && (!tape || n.toLowerCase().indexOf(tape) !== -1);
+  const nomTape = $("client").value.trim().toLowerCase();
+  const telTape = normaliserTel($("tel").value);
+  const clients = listeClients().filter(function (c) {
+    if (telTape && c.tel === telTape) return false; // déjà choisi
+    if (telTape) return c.tel.indexOf(telTape) !== -1;
+    return !nomTape || c.nom.toLowerCase().indexOf(nomTape) !== -1;
   }).slice(0, 6);
-  $("suggestions").innerHTML = noms.map(function (n) {
-    return '<button type="button" class="suggestion" data-nom="' + echapper(n) + '">' + echapper(n) + '</button>';
+  $("suggestions").innerHTML = clients.map(function (c) {
+    return '<button type="button" class="suggestion" data-client="' + echapper(c.id) + '">' +
+      '<b>' + echapper(c.nom) + '</b><small>' + (c.tel ? afficherTel(c.tel) : 'pas de numéro') + '</small></button>';
   }).join("");
+  $("quel-client").hidden = clients.length === 0;
+}
+
+// Si le numéro tapé est celui d'un client connu, on remplit son nom.
+function reconnaitreClient() {
+  const tel = normaliserTel($("tel").value);
+  const f = tel && donnees.clients[tel];
+  $("client-reconnu").hidden = !f;
+  if (f) {
+    $("client-reconnu").textContent = "C'est " + f.nom + ", déjà dans ton carnet.";
+    $("client").value = f.nom;
+  }
 }
 
 function fermerSaisie() {
@@ -350,10 +402,15 @@ function formaterChamp(e) {
 $("montant").addEventListener("input", formaterChamp);
 $("donne").addEventListener("input", formaterChamp);
 $("client").addEventListener("input", function () { $("erreur").hidden = true; afficherSuggestions(); });
+$("tel").addEventListener("input", function () { $("erreur").hidden = true; reconnaitreClient(); afficherSuggestions(); });
 $("suggestions").addEventListener("click", function (e) {
-  const b = e.target.closest("[data-nom]");
+  const b = e.target.closest("[data-client]");
   if (!b) return;
-  $("client").value = b.dataset.nom;
+  const c = listeClients().find(function (x) { return x.id === b.dataset.client; });
+  if (!c) return;
+  $("tel").value = c.tel ? afficherTel(c.tel) : "";
+  $("client").value = c.nom;
+  reconnaitreClient();
   afficherSuggestions();
 });
 $("rapides").addEventListener("click", function (e) {
@@ -368,7 +425,7 @@ $("bloc-paiement").addEventListener("click", function (e) {
   if (b) choisirPaiement(b.dataset.paiement === "partiel");
 });
 $("saisie-annuler").addEventListener("click", fermerSaisie);
-$("fond-saisie").addEventListener("click", fermerSaisie);
+$("fond-saisie").addEventListener("click", function () { fermerSaisie(); fermerFiche(); });
 
 function erreur(texte, champ) {
   $("erreur").textContent = texte;
@@ -386,22 +443,31 @@ $("saisie").addEventListener("submit", function (e) {
   let mouvement, texte, joyeux = false;
 
   if (M.paiement) {
-    let encaisse = montant, client = "";
+    let encaisse = montant, client = "", tel = "";
     if (paiementPartiel) {
       encaisse = lireMontant($("donne").value);
       client = $("client").value.trim().replace(/\s+/g, " ");
+      tel = normaliserTel($("tel").value);
       if (encaisse > montant) return erreur("Il a donné plus que le prix. Vérifie les montants.", $("donne"));
       if (encaisse === montant) {
-        client = "";
+        client = ""; tel = "";
+      } else if (tel.length < 8) {
+        return erreur("Écris le numéro du client : c'est lui qui permet de le retrouver et de le relancer.", $("tel"));
       } else if (!client) {
-        return erreur("Écris le nom du client pour savoir qui te doit.", $("client"));
+        return erreur("Écris le nom du client.", $("client"));
       }
     }
-    mouvement = { id: nouvelId(), type: "vente", montant: montant, encaisse: encaisse, note: note, client: client, t: Date.now() };
+    if (tel) {
+      // Le numéro identifie le client. Un client déjà connu garde sa fiche.
+      if (donnees.clients[tel]) client = donnees.clients[tel].nom;
+      else donnees.clients[tel] = { tel: tel, nom: client, depuis: Date.now() };
+    }
+    mouvement = { id: nouvelId(), type: "vente", montant: montant, encaisse: encaisse, note: note, client: client, clientId: tel, t: Date.now() };
+    if (!tel) delete mouvement.clientId;
     donnees.mouvements.push(mouvement);
     const reste = montant - encaisse;
     if (reste > 0) {
-      const c = clientsQuiDoivent().find(function (x) { return x.cle === cleClient(client); });
+      const c = clientsQuiDoivent().find(function (x) { return x.cle === tel; });
       texte = "Noté. " + client + " te doit maintenant " + franc(c ? c.du : reste) + ".";
     } else {
       texte = "Vente de " + franc(montant) + " notée.";
@@ -411,6 +477,7 @@ $("saisie").addEventListener("submit", function (e) {
     const c = clientRembourse;
     if (montant > c.du) return erreur(c.nom + " ne te doit que " + franc(c.du) + ".", $("montant"));
     mouvement = { id: nouvelId(), type: "paye", montant: montant, encaisse: montant, note: note, client: c.nom, t: Date.now() };
+    if (c.tel) mouvement.clientId = c.tel;
     donnees.mouvements.push(mouvement);
     // Quand le client rembourse, sa promesse de paiement est effacée.
     if (donnees.meta[c.cle]) donnees.meta[c.cle].promesse = "";
@@ -458,11 +525,65 @@ $("onglets").addEventListener("click", function (e) {
 $("vue-credits").addEventListener("click", function (e) {
   const cote = e.target.closest("[data-cote]");
   if (cote) { coteCredits = cote.dataset.cote; afficherCredits(); return; }
+  const fiche = e.target.closest("[data-fiche]");
+  if (fiche) {
+    const c = clientsQuiDoivent().find(function (x) { return x.cle === fiche.dataset.fiche; });
+    if (c) ouvrirFiche(c);
+    return;
+  }
   const paye = e.target.closest("[data-paye]");
   if (paye) {
     const c = clientsQuiDoivent().find(function (x) { return x.cle === paye.dataset.paye; });
     if (c) ouvrirSaisie("paye", c);
   }
+});
+
+/* ---------- Fiche client (corriger nom ou numéro) ---------- */
+
+let clientFiche = null;
+function ouvrirFiche(c) {
+  clientFiche = c;
+  $("fiche-tel").value = c.tel ? afficherTel(c.tel) : "";
+  $("fiche-nom").value = c.nom;
+  $("fiche-erreur").hidden = true;
+  $("message").hidden = true;
+  $("fond-saisie").hidden = false;
+  $("fiche").hidden = false;
+}
+function fermerFiche() {
+  $("fiche").hidden = true;
+  $("fond-saisie").hidden = true;
+  if (document.activeElement) document.activeElement.blur();
+}
+$("fiche-annuler").addEventListener("click", fermerFiche);
+$("fiche").addEventListener("submit", function (e) {
+  e.preventDefault();
+  const ancien = clientFiche.cle;
+  const tel = normaliserTel($("fiche-tel").value);
+  const nom = $("fiche-nom").value.trim().replace(/\s+/g, " ");
+  const oups = function (t, champ) { $("fiche-erreur").textContent = t; $("fiche-erreur").hidden = false; champ.focus(); };
+  if (tel.length < 8) return oups("Écris le numéro du client (au moins 8 chiffres).", $("fiche-tel"));
+  if (!nom) return oups("Écris le nom du client.", $("fiche-nom"));
+  if (tel !== ancien && donnees.clients[tel]) {
+    return oups("Ce numéro est déjà celui de " + donnees.clients[tel].nom + ".", $("fiche-tel"));
+  }
+  // On range tout ce qui concerne ce client sous son (nouveau) numéro.
+  const fiche = donnees.clients[ancien] || { depuis: Date.now() };
+  delete donnees.clients[ancien];
+  fiche.tel = tel;
+  fiche.nom = nom;
+  donnees.clients[tel] = fiche;
+  donnees.mouvements.forEach(function (m) {
+    if (idClientDe(m) === ancien) { m.clientId = tel; m.client = nom; }
+  });
+  if (donnees.meta[ancien]) {
+    donnees.meta[tel] = donnees.meta[ancien];
+    if (tel !== ancien) delete donnees.meta[ancien];
+  }
+  sauver();
+  fermerFiche();
+  afficher();
+  message("Fiche de " + nom + " enregistrée.");
 });
 
 /* ---------- Démarrage ---------- */

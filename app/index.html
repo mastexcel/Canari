@@ -131,9 +131,13 @@
   </div>
 
   <div id="bloc-client">
-    <label class="champ-etiquette" for="client">Nom du client</label>
-    <input id="client" class="note" placeholder="ex. Maman Awa" enterkeyhint="done" autocapitalize="words">
+    <p class="champ-etiquette" id="quel-client">Client déjà connu ?</p>
     <div class="suggestions" id="suggestions"></div>
+    <label class="champ-etiquette" for="tel">Son numéro de téléphone</label>
+    <input id="tel" class="note" type="tel" inputmode="tel" placeholder="ex. 07 00 00 00 00" enterkeyhint="next">
+    <p class="client-reconnu" id="client-reconnu" hidden></p>
+    <label class="champ-etiquette" for="client">Son nom</label>
+    <input id="client" class="note" placeholder="ex. Maman Awa" enterkeyhint="done" autocapitalize="words">
   </div>
 
   <label class="champ-etiquette" for="note" id="note-etiquette">Quoi ? (facultatif)</label>
@@ -143,6 +147,22 @@
   <div class="saisie-boutons">
     <button type="button" class="bouton bouton-annuler" id="saisie-annuler">Annuler</button>
     <button type="submit" class="bouton bouton-ok" id="saisie-ok">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>Enregistrer
+    </button>
+  </div>
+</form>
+
+<!-- Fiche client : corriger le nom ou le numéro -->
+<form class="saisie" id="fiche" hidden novalidate autocomplete="off" style="--couleur-saisie: var(--credit)">
+  <h2 class="saisie-titre">Fiche du client</h2>
+  <label class="champ-etiquette" for="fiche-tel">Numéro de téléphone</label>
+  <input id="fiche-tel" class="note" type="tel" inputmode="tel" placeholder="ex. 07 00 00 00 00">
+  <label class="champ-etiquette" for="fiche-nom">Nom</label>
+  <input id="fiche-nom" class="note" autocapitalize="words">
+  <p class="erreur" id="fiche-erreur" hidden></p>
+  <div class="saisie-boutons">
+    <button type="button" class="bouton bouton-annuler" id="fiche-annuler">Annuler</button>
+    <button type="submit" class="bouton bouton-ok">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>Enregistrer
     </button>
   </div>

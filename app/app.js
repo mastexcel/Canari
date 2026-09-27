@@ -126,21 +126,66 @@ function creditDe(m) {
   return 0;
 }
 
+/* Bénéfice (décision du propriétaire) :
+   bénéfice = ventes (même à crédit) − prix de revient de ce qui est vendu − autres dépenses.
+   L'achat de marchandise à revendre ne baisse pas le bénéfice le jour de l'achat :
+   il est compté au moment où la marchandise est vendue (prix de revient).
+   À côté, l'argent en caisse = argent entré − argent sorti (marchandise comprise). */
+
+// Marge habituelle de la boutique, en % du prix de vente (Réglages).
+function margeHabituelle() {
+  const m = donnees.boutique.marge;
+  return typeof m === "number" ? m : 20;
+}
+function coutParMarge(prixVente) {
+  return Math.round(prixVente * (100 - margeHabituelle()) / 100);
+}
+// Prix de revient d'un produit : son prix d'achat, ou déduit de la marge habituelle.
+function coutProduit(p) {
+  return typeof p.cout === "number" ? p.cout : coutParMarge(p.prix);
+}
+// Prix de revient d'une vente.
+function coutDe(m) {
+  if (m.type !== "vente" && m.type !== "credit") return 0;
+  if (m.lignes && m.lignes.length) {
+    return m.lignes.reduce(function (s, l) {
+      const p = donnees.produits[l.produitId];
+      const cout = typeof l.cout === "number" ? l.cout : p ? coutProduit(p) : coutParMarge(l.prix);
+      return s + cout * l.qte;
+    }, 0);
+  }
+  return typeof m.cout === "number" ? m.cout : coutParMarge(m.montant);
+}
+// Une dépense de marchandise à revendre ne compte pas dans le bénéfice.
+function estMarchandise(m) {
+  return m.type === "depense" && m.categorie === "marchandise";
+}
+
 function totauxDuJour(jour) {
-  let encaisse = 0, depense = 0, maison = 0, vendu = 0, aCredit = 0;
+  let encaisse = 0, sorti = 0, depenses = 0, maison = 0, vendu = 0, aCredit = 0, cout = 0;
   donnees.mouvements.forEach(function (m) {
     if (cleJour(m.t) !== jour) return;
     if (m.type === "vente" || m.type === "credit") {
       vendu += m.montant;
       aCredit += creditDe(m);
+      cout += coutDe(m);
       if (m.type === "vente") encaisse += encaisseDe(m);
     }
     else if (m.type === "paye") encaisse += m.montant;
-    else if (m.type === "depense" || m.type === "fpaye") depense += m.montant;
-    else if (m.type === "fdette") depense += m.verse || 0;
+    else if (m.type === "depense") {
+      sorti += m.montant;
+      if (!estMarchandise(m)) depenses += m.montant;
+    }
+    else if (m.type === "fpaye") sorti += m.montant;
+    else if (m.type === "fdette") sorti += m.verse || 0;
     else if (m.type === "maison") maison += m.montant;
   });
-  return { encaisse: encaisse, depense: depense, maison: maison, gain: encaisse - depense, vendu: vendu, aCredit: aCredit };
+  return {
+    vendu: vendu, aCredit: aCredit, cout: cout, depenses: depenses,
+    benefice: vendu - cout - depenses,
+    encaisse: encaisse, sorti: sorti, maison: maison,
+    caisse: encaisse - sorti - maison
+  };
 }
 
 // Liste des clients qui doivent de l'argent, du plus gros au plus petit.
@@ -280,16 +325,19 @@ function afficher() {
 function afficherJour() {
   const aujourdhui = cleJour(Date.now());
   const t = totauxDuJour(aujourdhui);
-  $("gain").textContent = (t.gain < 0 ? "− " : "") + franc(Math.abs(t.gain));
-  $("gain").classList.toggle("negatif", t.gain < 0);
-  $("encaisse").textContent = franc(t.encaisse);
-  $("depense").textContent = franc(t.depense);
-  $("maison").textContent = franc(t.maison);
-  $("vendu").hidden = t.aCredit === 0;
-  $("vendu").textContent = "Vendu aujourd'hui : " + franc(t.vendu) + ", dont " + franc(t.aCredit) + " à crédit";
-  const reste = t.gain - t.maison;
+  const signe = function (n) { return (n < 0 ? "− " : "") + franc(Math.abs(n)); };
+  $("gain").textContent = signe(t.benefice);
+  $("gain").classList.toggle("negatif", t.benefice < 0);
+  $("ventes").textContent = franc(t.vendu);
+  $("cout").textContent = franc(t.cout);
+  $("depense").textContent = franc(t.depenses);
+  const bouge = t.encaisse || t.sorti || t.maison;
+  $("caisse").hidden = !bouge;
+  $("caisse").innerHTML = '<span>Argent en caisse</span><b>' + (t.caisse > 0 ? "+ " : "") + signe(t.caisse) + '</b>' +
+    '<small>entré ' + franc(t.encaisse) + ' · sorti ' + franc(t.sorti + t.maison) + '</small>';
+  const reste = t.benefice - t.maison;
   $("reste-boutique").hidden = t.maison === 0;
-  $("reste-boutique").textContent = "Reste pour la boutique : " + (reste < 0 ? "− " : "") + franc(Math.abs(reste));
+  $("reste-boutique").innerHTML = '<span>Pris pour la maison ' + franc(t.maison) + '</span><b>Reste pour la boutique ' + signe(reste) + '</b>';
 
   afficherBilan(t);
 
@@ -325,6 +373,7 @@ function ligneHtml(m) {
   }
   const RAISONS = { depart: "Stock de départ", arrivage: "Arrivage", correction: "Stock corrigé" };
   const nomType = m.type === "stock" ? (RAISONS[m.raison] || "Stock")
+    : estMarchandise(m) ? "Achat de marchandise"
     : type === "credit" ? "Vente à crédit" : m.type === "vente" && creditDe(m) > 0 ? "Vente, pas tout payé" : NOMS[m.type];
   const produits = m.lignes && m.lignes.length
     ? m.lignes.map(function (l) { return l.qte + " × " + l.nom; }).join(", ") : "";
@@ -414,19 +463,21 @@ function afficherBilan(t) {
   const phrases = [];
   const fort = function (x) { return "<strong>" + x + "</strong>"; };
 
-  if (t.encaisse || t.depense) {
-    phrases.push(t.gain >= 0
-      ? "Aujourd'hui tu as gagné " + fort(franc(t.gain)) + "."
-      : "Aujourd'hui tu as dépensé " + fort(franc(-t.gain)) + " de plus que ce que tu as encaissé.");
-  } else if (t.vendu) {
-    phrases.push("Aujourd'hui tu as vendu " + fort(franc(t.vendu)) + ", tout à crédit pour l'instant.");
-  } else {
+  if (t.vendu) {
+    phrases.push("Aujourd'hui tu as vendu " + franc(t.vendu) +
+      (t.aCredit ? " (dont " + franc(t.aCredit) + " à crédit)" : "") + ".");
+  }
+  if (t.vendu || t.depenses) {
+    phrases.push(t.benefice >= 0
+      ? "Ton bénéfice est de " + fort(franc(t.benefice)) + "."
+      : "Tu es en perte de " + fort(franc(-t.benefice)) + " aujourd'hui.");
+  } else if (!t.encaisse && !t.sorti && !t.maison) {
     phrases.push("Rien de noté aujourd'hui pour l'instant.");
   }
   if (t.maison) {
-    const reste = t.gain - t.maison;
+    const reste = t.benefice - t.maison;
     phrases.push("Tu as pris " + franc(t.maison) + " pour la maison, il reste donc " +
-      fort((reste < 0 ? "− " : "") + franc(Math.abs(reste))) + " pour la boutique.");
+      fort((reste < 0 ? "− " : "") + franc(Math.abs(reste))) + " de bénéfice pour la boutique.");
   }
   if (clients.length) {
     const total = clients.reduce(function (s, c) { return s + c.du; }, 0);
@@ -446,13 +497,13 @@ function afficherBilan(t) {
   $("bilan-texte").innerHTML = phrases.join(" ");
 
   // Humeur du Petit Canari : grand sourire les très bons jours.
-  const passes = derniersJours(7).slice(0, 6).map(function (j) { return j.totaux.gain; })
+  const passes = derniersJours(7).slice(0, 6).map(function (j) { return j.totaux.benefice; })
     .filter(function (g) { return g !== 0; });
   const moyenne = passes.length ? passes.reduce(function (a, b) { return a + b; }, 0) / passes.length : 0;
   let humeur = "canari-tranquille";
-  if (t.gain > 0 && passes.length && t.gain >= moyenne) humeur = "canari-yeux-fermes";
-  else if (t.gain > 0) humeur = "canari-joyeux";
-  else if (t.gain < 0) humeur = "canari-pensif";
+  if (t.benefice > 0 && passes.length && t.benefice >= moyenne) humeur = "canari-yeux-fermes";
+  else if (t.benefice > 0) humeur = "canari-joyeux";
+  else if (t.benefice < 0) humeur = "canari-pensif";
   const image = "icones/" + humeur + ".webp";
   if ($("bilan-image").getAttribute("src") !== image) $("bilan-image").setAttribute("src", image);
 }
@@ -473,13 +524,14 @@ function derniersJours(n) {
 
 function afficherSemaine() {
   const jours = derniersJours(7);
-  const gains = jours.map(function (j) { return j.totaux.gain; });
+  const gains = jours.map(function (j) { return j.totaux.benefice; });
   const plusGrand = Math.max.apply(null, gains.map(Math.abs).concat([1]));
   const somme = function (cle) { return jours.reduce(function (s, j) { return s + j.totaux[cle]; }, 0); };
-  const gain = somme("gain"), maison = somme("maison"), vendu = somme("vendu"), aCredit = somme("aCredit");
+  const gain = somme("benefice"), maison = somme("maison"), vendu = somme("vendu"), aCredit = somme("aCredit");
+  const caisse = somme("caisse");
   const reste = gain - maison;
   const signe = function (n) { return (n < 0 ? "− " : "") + franc(Math.abs(n)); };
-  const rien = jours.every(function (j) { return !j.totaux.encaisse && !j.totaux.depense && !j.totaux.maison && !j.totaux.vendu; });
+  const rien = jours.every(function (j) { return !j.totaux.encaisse && !j.totaux.sorti && !j.totaux.maison && !j.totaux.vendu; });
 
   if (rien) {
     $("vue-semaine").innerHTML = videHtml("canari-tranquille",
@@ -489,17 +541,18 @@ function afficherSemaine() {
 
   $("vue-semaine").innerHTML =
     '<div class="carte-gain carte-semaine">' +
-      '<p class="etiquette">Gain des 7 derniers jours</p>' +
+      '<p class="etiquette">Bénéfice des 7 derniers jours</p>' +
       '<p class="gros-chiffre' + (gain < 0 ? ' negatif' : '') + '">' + signe(gain) + '</p>' +
       '<div class="trois-chiffres deux">' +
         '<div class="chiffre maison"><span>Pris pour la maison</span><strong>' + franc(maison) + '</strong></div>' +
         '<div class="chiffre entre"><span>Reste pour la boutique</span><strong' + (reste < 0 ? ' class="m-sort"' : '') + '>' + signe(reste) + '</strong></div>' +
       '</div>' +
-      (aCredit ? '<p class="vendu">Vendu sur 7 jours : ' + franc(vendu) + ', dont ' + franc(aCredit) + ' à crédit</p>' : '') +
+      '<p class="vendu">Vendu sur 7 jours : ' + franc(vendu) + (aCredit ? ', dont ' + franc(aCredit) + ' à crédit' : '') + '</p>' +
+      '<p class="vendu">Argent en caisse sur 7 jours : ' + signe(caisse) + '</p>' +
     '</div>' +
-    '<h2 class="titre-liste">Gain de chaque jour</h2>' +
-    '<ul class="barres" aria-label="Gain de chaque jour">' + jours.map(function (j) {
-      const g = j.totaux.gain;
+    '<h2 class="titre-liste">Bénéfice de chaque jour</h2>' +
+    '<ul class="barres" aria-label="Bénéfice de chaque jour">' + jours.map(function (j) {
+      const g = j.totaux.benefice;
       const largeur = g === 0 ? 0 : Math.max(3, Math.round(Math.abs(g) / plusGrand * 100));
       const nom = j.aujourdhui ? "Auj." : j.date.toLocaleDateString("fr-FR", { weekday: "short" }).replace(".", "");
       return '<li class="barre' + (g < 0 ? ' negative' : '') + (j.aujourdhui ? ' aujourdhui' : '') + '">' +
@@ -629,6 +682,12 @@ function ouvrirSaisie(mode, client) {
   $("rapides").classList.toggle("avec-tout", !!client);
 
   preparerChoixVente(mode);
+  coutTape = false;
+  $("cout-vente").value = "";
+  $("cout-saisie").hidden = true;
+  $("bloc-categorie").hidden = mode !== "depense";
+  if (mode === "depense") choisirCategorie(lire("canari.categorieDepense") === "marchandise" ? "marchandise" : "autre");
+  majCout();
   $("bloc-paiement").hidden = !M.paiement;
   $("bloc-fournisseur").hidden = !M.fournisseur;
   $("donne-etiquette").textContent = M.fournisseur ? "Combien tu as déjà donné ? (facultatif)" : "Combien il a donné ?";
@@ -654,7 +713,46 @@ function choisirPaiement(partiel) {
   majReste();
 }
 
+/* ---------- Prix de revient et type de dépense ---------- */
+
+let coutTape = false;      // le vendeur a changé le prix de revient à la main
+let categorieDepense = "autre";
+
+// Affiche le prix de revient et le bénéfice de la vente en cours.
+function majCout() {
+  const M = MODES[modeSaisie];
+  if (!M || !M.paiement) { $("bloc-cout").hidden = true; $("cout-saisie").hidden = true; return; }
+  const parProduits = faconVente === "produits";
+  const total = parProduits ? totalPanier() : lireMontant($("montant").value);
+  if (!total) { $("bloc-cout").hidden = true; return; }
+  let cout;
+  if (parProduits) {
+    cout = lignesPanier().reduce(function (s, l) { return s + coutProduit(donnees.produits[l.produitId]) * l.qte; }, 0);
+  } else {
+    cout = coutTape ? lireMontant($("cout-vente").value) : coutParMarge(total);
+    if (!coutTape) $("cout-vente").value = nombre(cout);
+  }
+  const benef = total - cout;
+  $("bloc-cout").hidden = false;
+  $("cout-texte").innerHTML = "Prix de revient : <b>" + franc(cout) + "</b>" +
+    (!parProduits && !coutTape ? " (marge " + margeHabituelle() + " %)" : "") +
+    "<br>Bénéfice : <b class='" + (benef < 0 ? "m-sort" : "m-entre") + "'>" + (benef < 0 ? "− " : "") + franc(Math.abs(benef)) + "</b>";
+  $("cout-changer").hidden = parProduits || !$("cout-saisie").hidden;
+}
+
+function choisirCategorie(c) {
+  categorieDepense = c;
+  ecrire("canari.categorieDepense", c);
+  document.querySelectorAll("[data-categorie]").forEach(function (b) {
+    b.setAttribute("aria-pressed", String(b.dataset.categorie === c));
+  });
+  $("categorie-aide").textContent = c === "marchandise"
+    ? "Ne baisse pas ton bénéfice : il est compté quand tu revends (prix de revient). Ça sort quand même de la caisse."
+    : "Transport, loyer, électricité, sachets… Baisse ton bénéfice.";
+}
+
 function majReste() {
+  majCout();
   const total = lireMontant($("montant").value);
   const donne = lireMontant($("donne").value);
   if (!total) { $("reste").textContent = ""; return; }
@@ -758,6 +856,22 @@ $("rapides").addEventListener("click", function (e) {
   $("erreur").hidden = true;
   majReste();
 });
+$("cout-changer").addEventListener("click", function () {
+  $("cout-saisie").hidden = false;
+  $("cout-changer").hidden = true;
+  $("cout-vente").focus();
+  $("cout-vente").select();
+});
+$("cout-vente").addEventListener("input", function (e) {
+  const chiffres = e.target.value.replace(/\D/g, "").slice(0, 9);
+  e.target.value = chiffres ? nombre(Number(chiffres)) : "";
+  coutTape = true;
+  majCout();
+});
+$("bloc-categorie").addEventListener("click", function (e) {
+  const b = e.target.closest("[data-categorie]");
+  if (b) choisirCategorie(b.dataset.categorie);
+});
 $("bloc-paiement").addEventListener("click", function (e) {
   const b = e.target.closest("[data-paiement]");
   if (b) choisirPaiement(b.dataset.paiement === "partiel");
@@ -805,7 +919,13 @@ $("saisie").addEventListener("submit", function (e) {
     }
     mouvement = { id: nouvelId(), type: "vente", montant: montant, encaisse: encaisse, note: note, client: client, clientId: tel, t: Date.now() };
     if (!tel) delete mouvement.clientId;
-    if (lignes) mouvement.lignes = lignes;
+    if (lignes) {
+      // Le prix de revient de chaque produit est gardé tel qu'il était le jour de la vente.
+      lignes.forEach(function (l) { l.cout = coutProduit(donnees.produits[l.produitId]); });
+      mouvement.lignes = lignes;
+    } else {
+      mouvement.cout = coutTape ? lireMontant($("cout-vente").value) : coutParMarge(montant);
+    }
     donnees.compteurs.facture = (donnees.compteurs.facture || 0) + 1;
     mouvement.numero = donnees.compteurs.facture;
     donnees.mouvements.push(mouvement);
@@ -855,6 +975,7 @@ $("saisie").addEventListener("submit", function (e) {
     joyeux = true;
   } else {
     mouvement = { id: nouvelId(), type: modeSaisie, montant: montant, note: note, client: "", t: Date.now() };
+    if (modeSaisie === "depense") mouvement.categorie = categorieDepense;
     donnees.mouvements.push(mouvement);
     texte = modeSaisie === "maison" ? franc(montant) + " pris pour la maison, c'est noté." : NOMS[modeSaisie] + " de " + franc(montant) + " notée.";
   }

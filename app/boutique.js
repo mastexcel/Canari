@@ -45,13 +45,13 @@ function afficherStock() {
   }
 
   const valeur = produits.reduce(function (s, p) {
-    return s + (p.suivi ? Math.max(0, stockDe(p.id)) * p.prix : 0);
+    return s + (p.suivi ? Math.max(0, stockDe(p.id)) * coutProduit(p) : 0);
   }, 0);
   const ordre = bas.concat(produits.filter(function (p) { return !aRacheter(p); }));
 
   $("vue-stock").innerHTML =
     '<div class="carte-gain carte-stock">' +
-      '<p class="etiquette">Valeur de ton stock (prix de vente)</p>' +
+      '<p class="etiquette">Valeur de ton stock (prix d\'achat)</p>' +
       '<p class="gros-chiffre">' + franc(valeur) + '</p>' +
       '<div class="trois-chiffres deux">' +
         '<div class="chiffre entre"><span>Produits</span><strong>' + produits.length + '</strong></div>' +
@@ -68,6 +68,8 @@ function afficherStock() {
           (aRacheter(p) ? ' · à racheter' : '') + '</span>';
       return '<li class="produit' + (aRacheter(p) ? ' bas' : '') + '" data-nom="' + echapper(p.nom.toLowerCase()) + '">' +
         '<div class="client-haut"><b>' + echapper(p.nom) + '</b><strong>' + franc(p.prix) + '</strong></div>' +
+        '<p class="aide">Coûte ' + franc(coutProduit(p)) + (typeof p.cout === "number" ? "" : " (marge habituelle)") +
+          ' · bénéfice ' + franc(p.prix - coutProduit(p)) + ' par vente</p>' +
         '<p>' + etat + '</p>' +
         '<div class="client-boutons' + (p.suivi ? '' : ' un-seul') + '">' +
           '<button type="button" class="bouton bouton-fiche" data-modifier-produit="' + p.id + '">' +
@@ -90,6 +92,18 @@ function choisirSuivi(oui) {
     b.setAttribute("aria-pressed", String((b.dataset.suivi === "oui") === oui));
   });
   $("bloc-quantite").hidden = !oui;
+  $("produit-cout-etiquette").textContent = oui ? "Prix d'achat (ce qu'il te coûte)" : "Ce que ça te coûte (facultatif)";
+  majMargeProduit();
+}
+
+function majMargeProduit() {
+  const prix = lireMontant($("produit-prix").value);
+  const tape = $("produit-cout").value.trim() !== "";
+  const cout = tape ? lireMontant($("produit-cout").value) : coutParMarge(prix);
+  if (!prix) { $("produit-marge").textContent = "Si tu ne sais pas, laisse vide : Canari utilisera ta marge habituelle (" + margeHabituelle() + " %)."; return; }
+  const b = prix - cout;
+  $("produit-marge").textContent = (tape ? "" : "Marge habituelle (" + margeHabituelle() + " %) : ") +
+    "tu gagnes " + (b < 0 ? "− " : "") + franc(Math.abs(b)) + " sur chaque vente.";
 }
 
 function ouvrirProduit(id) {
@@ -98,6 +112,7 @@ function ouvrirProduit(id) {
   $("produit-titre").textContent = p ? "Modifier " + p.nom : "Nouveau produit";
   $("produit-nom").value = p ? p.nom : "";
   $("produit-prix").value = p ? nombre(p.prix) : "";
+  $("produit-cout").value = p && typeof p.cout === "number" ? nombre(p.cout) : "";
   $("produit-quantite").value = p ? String(stockDe(p.id)) : "";
   $("produit-quantite-etiquette").textContent = p ? "Combien il en reste vraiment ?" : "Combien tu en as maintenant ?";
   $("produit-seuil").value = p ? String(p.seuil) : "3";
@@ -126,6 +141,8 @@ function enregistrerProduit(e) {
   const p = produitEnCours || { id: nouvelId() };
   p.nom = nom;
   p.prix = prix;
+  if ($("produit-cout").value.trim() !== "") p.cout = lireMontant($("produit-cout").value);
+  else delete p.cout;
   p.suivi = suiviProduit;
   p.seuil = isNaN(seuil) ? 3 : seuil;
   donnees.produits[p.id] = p;
@@ -216,6 +233,9 @@ function choisirFacon(facon) {
   $("rapides").hidden = parProduits;
   $("montant").readOnly = parProduits;
   $("montant").classList.toggle("calcule", parProduits);
+  $("cout-saisie").hidden = true;
+  coutTape = false;
+  if (!parProduits) majCout();
   if (parProduits) {
     $("recherche-produit").value = "";
     $("recherche-produit").hidden = listeProduits().length <= 6;
@@ -268,6 +288,7 @@ function remplirFormBoutique() {
   $("boutique-tel").value = b.tel ? afficherTel(b.tel) : "";
   $("boutique-adresse").value = b.adresse || "";
   $("boutique-merci").value = b.merci || "";
+  $("boutique-marge").value = String(margeHabituelle());
   afficherLogo();
 }
 function afficherLogo() {
@@ -304,6 +325,8 @@ function enregistrerBoutique(e) {
   b.tel = normaliserTel($("boutique-tel").value);
   b.adresse = $("boutique-adresse").value.trim();
   b.merci = $("boutique-merci").value.trim();
+  const marge = parseInt($("boutique-marge").value.replace(/\D/g, ""), 10);
+  if (!isNaN(marge) && marge < 100) b.marge = marge;
   sauver();
   if (document.activeElement) document.activeElement.blur();
   message("Infos de la boutique enregistrées.", null, true);
@@ -331,9 +354,12 @@ function initBoutique() {
     const b = e.target.closest("[data-suivi]");
     if (b) choisirSuivi(b.dataset.suivi === "oui");
   });
-  $("produit-prix").addEventListener("input", function (e) {
-    const chiffres = e.target.value.replace(/\D/g, "").slice(0, 9);
-    e.target.value = chiffres ? nombre(Number(chiffres)) : "";
+  ["produit-prix", "produit-cout"].forEach(function (id) {
+    $(id).addEventListener("input", function (e) {
+      const chiffres = e.target.value.replace(/\D/g, "").slice(0, 9);
+      e.target.value = chiffres ? nombre(Number(chiffres)) : "";
+      majMargeProduit();
+    });
   });
   $("produit-form").addEventListener("submit", enregistrerProduit);
   $("produit-annuler").addEventListener("click", fermerFeuilles);

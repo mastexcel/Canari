@@ -47,15 +47,15 @@
   <!-- Onglet Jour -->
   <div id="vue-jour" class="vue">
     <div class="carte-gain">
-      <p class="etiquette">Gain du jour</p>
+      <p class="etiquette">Bénéfice du jour</p>
       <p class="gros-chiffre" id="gain">0 F</p>
       <div class="trois-chiffres">
-        <div class="chiffre entre"><span>Encaissé</span><strong id="encaisse">0 F</strong></div>
-        <div class="chiffre sort"><span>Dépensé</span><strong id="depense">0 F</strong></div>
-        <div class="chiffre maison"><span>Maison</span><strong id="maison">0 F</strong></div>
+        <div class="chiffre entre"><span>Ventes</span><strong id="ventes">0 F</strong></div>
+        <div class="chiffre revient"><span>Prix de revient</span><strong id="cout">0 F</strong></div>
+        <div class="chiffre sort"><span>Dépenses</span><strong id="depense">0 F</strong></div>
       </div>
-      <p class="vendu" id="vendu" hidden></p>
-      <p class="reste-boutique" id="reste-boutique" hidden></p>
+      <p class="ligne-carte" id="caisse" hidden></p>
+      <p class="ligne-carte maison-carte" id="reste-boutique" hidden></p>
     </div>
 
     <div class="gros-boutons">
@@ -140,6 +140,9 @@
     <input id="boutique-tel" class="note" type="tel" inputmode="tel" placeholder="ex. 07 00 00 00 00">
     <label class="champ-etiquette" for="boutique-adresse">Adresse</label>
     <input id="boutique-adresse" class="note" placeholder="ex. Yopougon Selmer, Abidjan">
+    <label class="champ-etiquette" for="boutique-marge">Ta marge habituelle (en %)</label>
+    <input id="boutique-marge" class="note quantite" inputmode="numeric" placeholder="20">
+    <p class="aide" id="marge-aide">Sert à calculer le bénéfice quand tu notes une vente « Par montant ».</p>
     <label class="champ-etiquette" for="boutique-merci">Message en bas des factures</label>
     <input id="boutique-merci" class="note" placeholder="Merci et à bientôt !">
     <button type="submit" class="bouton bouton-sauver">
@@ -227,6 +230,29 @@
   </div>
   <div class="rapides" id="rapides"></div>
 
+  <div id="bloc-cout" class="bloc-cout" hidden>
+    <p id="cout-texte"></p>
+    <button type="button" class="petit-modifier" id="cout-changer">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16zM13 7l4 4"/></svg>Changer
+    </button>
+  </div>
+  <div id="cout-saisie" hidden>
+    <label class="champ-etiquette" for="cout-vente">Ce que ça t'a coûté (prix de revient)</label>
+    <div class="montant-boite petite">
+      <input id="cout-vente" class="montant" inputmode="numeric" placeholder="0">
+      <span class="montant-f">F</span>
+    </div>
+  </div>
+
+  <div id="bloc-categorie">
+    <p class="champ-etiquette">C'est pour quoi ?</p>
+    <div class="deux-choix" role="group" aria-label="Type de dépense">
+      <button type="button" class="choix" data-categorie="marchandise" aria-pressed="false">Marchandise à revendre</button>
+      <button type="button" class="choix" data-categorie="autre" aria-pressed="true">Autre dépense</button>
+    </div>
+    <p class="aide" id="categorie-aide"></p>
+  </div>
+
   <div id="bloc-paiement" class="deux-choix" role="group" aria-label="Le client a-t-il tout payé ?">
     <button type="button" class="choix" data-paiement="tout" aria-pressed="true">Tout payé</button>
     <button type="button" class="choix" data-paiement="partiel" aria-pressed="false">Pas tout payé</button>
@@ -281,6 +307,12 @@
     <input id="produit-prix" class="montant" inputmode="numeric" placeholder="0">
     <span class="montant-f">F</span>
   </div>
+  <label class="champ-etiquette" for="produit-cout" id="produit-cout-etiquette">Prix d'achat (ce qu'il te coûte)</label>
+  <div class="montant-boite petite">
+    <input id="produit-cout" class="montant" inputmode="numeric" placeholder="0">
+    <span class="montant-f">F</span>
+  </div>
+  <p class="aide" id="produit-marge"></p>
   <p class="champ-etiquette">Compter le stock ?</p>
   <div class="deux-choix" id="produit-suivi" role="group" aria-label="Compter le stock">
     <button type="button" class="choix" data-suivi="oui" aria-pressed="true">Oui</button>

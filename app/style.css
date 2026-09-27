@@ -1096,3 +1096,39 @@ button.ligne-texte {
   background: #fff;
 }
 .onglet { font-size: 12px; }
+
+/* ---------- Bénéfice ---------- */
+.chiffre.revient { border-color: var(--credit); }
+.chiffre.revient strong { color: var(--credit); }
+.chiffre span { line-height: 1.15; }
+.ligne-carte {
+  margin: 10px 0 0;
+  background: rgba(255, 255, 255, .1);
+  border-radius: 10px;
+  padding: 8px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0 10px;
+  text-align: left;
+}
+.ligne-carte b { font-family: "Fredoka", system-ui, sans-serif; font-size: 20px; }
+.ligne-carte small { width: 100%; font-size: 14px; opacity: .85; }
+.maison-carte { background: rgba(75, 79, 168, .35); }
+.maison-carte b { font-size: 16px; font-family: inherit; }
+.bloc-cout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: #fff;
+  border: 2px dashed var(--bord);
+  border-radius: 14px;
+  padding: 8px 8px 8px 14px;
+}
+.bloc-cout[hidden], #cout-saisie[hidden], #bloc-categorie[hidden] { display: none; }
+.bloc-cout p { margin: 0; line-height: 1.4; }
+#cout-saisie, #bloc-categorie { display: flex; flex-direction: column; gap: 8px; }
+#bloc-categorie .choix { font-size: 15px; line-height: 1.15; padding: 4px; }
+.produit .aide { font-size: 14px; }

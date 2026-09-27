@@ -1379,3 +1379,14 @@ input.qte {
 #arrivage-paye .choix[aria-pressed="true"] { background: var(--vert-foret); color: #fff; }
 .paiement-resume { font-weight: 600; color: var(--brun); }
 .paiement-resume:empty { display: none; }
+
+/* ---------- Paiement mobile ---------- */
+#bloc-moyen { display: flex; flex-direction: column; gap: 8px; }
+#bloc-moyen[hidden] { display: none; }
+#choix-moyen .suggestion[aria-pressed="true"] { border-color: var(--entre); background: #EAF4EE; }
+.liste-paiements { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.ligne-paiement { display: flex; flex-direction: column; gap: 8px; }
+.ligne-paiement.actif { background: #F3F9F5; border-radius: 16px; padding-bottom: 8px; }
+.compte-details { display: flex; flex-direction: column; gap: 8px; padding: 0 8px; }
+.compte-details[hidden] { display: none; }
+.par-moyen { opacity: 1 !important; font-weight: 600; }

@@ -144,6 +144,17 @@
     <h1 class="titre-ecran">Réglages</h1>
   </header>
 
+  <form class="carte-reglage" id="form-paiements" novalidate autocomplete="off">
+    <h2>Paiement mobile</h2>
+    <p class="aide">Les comptes sur lesquels tes clients peuvent te payer. Leurs numéros apparaîtront sur tes factures et dans tes relances WhatsApp.</p>
+    <ul class="liste-paiements" id="liste-paiements"></ul>
+    <p class="erreur" id="paiements-erreur" hidden></p>
+    <button type="submit" class="bouton bouton-sauver">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>Enregistrer
+    </button>
+    <p class="aide">Canari ne reçoit pas l'argent lui-même : tu vérifies sur ton téléphone que le paiement est bien arrivé, puis tu le notes.</p>
+  </form>
+
   <form class="carte-reglage" id="form-boutique" novalidate autocomplete="off">
     <h2>Ma boutique</h2>
     <p class="aide">Ces infos apparaissent sur tes factures et tes reçus.</p>
@@ -342,6 +353,11 @@
     <div class="suggestions" id="suggestions-f"></div>
     <label class="champ-etiquette" for="tel-f">Son numéro (facultatif)</label>
     <input id="tel-f" class="note" type="tel" inputmode="tel" placeholder="ex. 07 00 00 00 00" enterkeyhint="done">
+  </div>
+
+  <div id="bloc-moyen" hidden>
+    <p class="champ-etiquette" id="moyen-etiquette">Argent reçu en…</p>
+    <div class="suggestions" id="choix-moyen"></div>
   </div>
 
   <label class="champ-etiquette" for="note" id="note-etiquette">Quoi ? (facultatif)</label>
@@ -610,6 +626,7 @@
   <button type="button" id="message-annuler" hidden>Annuler</button>
 </div>
 
+<script src="paiements.js"></script>
 <script src="charges.js"></script>
 <script src="fiches.js"></script>
 <script src="intrants.js"></script>

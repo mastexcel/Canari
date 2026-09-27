@@ -200,6 +200,17 @@ function dessinerDocument(doc) {
         ctx.restore();
       }
 
+      // Comptes de paiement mobile de la boutique.
+      const paiement = lignesPaiement();
+      if (paiement.length) {
+        y += 50;
+        texte(doc.reste > 0 ? "Pour payer le reste :" : "Paiement accepté :", marge, y, rubik(24, 600), C.texte);
+        paiement.forEach(function (l) {
+          ctx.font = rubik(24);
+          couper(ctx, l, L - 2 * marge).forEach(function (morceau) { y += 34; texte(morceau, marge, y, rubik(24), C.doux); });
+        });
+      }
+
       y += 60;
       trait(y, C.ligne, 3);
       y += 56;

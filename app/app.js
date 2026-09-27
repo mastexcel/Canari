@@ -468,8 +468,13 @@ function afficherJour() {
   $("rappel-parametrage").hidden = !!donnees.boutique.parametre || !$("rappel-sauvegarde").hidden;
   const bouge = t.encaisse || t.sorti || t.maison;
   $("caisse").hidden = !bouge;
+  const parMoyen = caisseParMoyen(aujourdhui);
+  const detail = Object.keys(parMoyen).length > 1 || (Object.keys(parMoyen)[0] && Object.keys(parMoyen)[0] !== "especes")
+    ? '<small class="par-moyen">' + Object.keys(MOYENS).filter(function (k) { return parMoyen[k]; }).map(function (k) {
+        return MOYENS[k] + " " + (parMoyen[k] > 0 ? "+ " : "") + signe(parMoyen[k]);
+      }).join(" · ") + '</small>' : '';
   $("caisse").innerHTML = '<span>Argent en caisse</span><b>' + (t.caisse > 0 ? "+ " : "") + signe(t.caisse) + '</b>' +
-    '<small>entré ' + franc(t.encaisse) + ' · sorti ' + franc(t.sorti + t.maison) + '</small>';
+    '<small>entré ' + franc(t.encaisse) + ' · sorti ' + franc(t.sorti + t.maison) + '</small>' + detail;
   const reste = t.benefice - t.maison;
   $("reste-boutique").hidden = t.maison === 0;
   $("reste-boutique").innerHTML = '<span>Pris pour la maison ' + franc(t.maison) + '</span><b>Reste du bénéfice net ' + signe(reste) + '</b>';
@@ -487,7 +492,7 @@ function ligneHtml(m) {
   const heure = new Date(m.t).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
   const estFournisseur = m.type === "fdette" || m.type === "fpaye";
   const nomQui = !m.client ? "" : estFournisseur ? ficheFournisseur(idFournisseurDe(m), m.client).nom : ficheClient(idClientDe(m), m.client).nom;
-  const qui = nomQui ? " · " + echapper(nomQui) : "";
+  const qui = (nomQui ? " · " + echapper(nomQui) : "") + (m.moyen && MOYENS[m.moyen] ? " · " + MOYENS[m.moyen] : "");
   let type = m.type, montants;
   if (m.type === "vente" || m.type === "credit") {
     const recu = m.type === "vente" ? encaisseDe(m) : 0;
@@ -844,6 +849,7 @@ function ouvrirSaisie(mode, client) {
   $("rapides").classList.toggle("avec-tout", !!client);
 
   preparerChoixVente(mode);
+  preparerMoyen(mode);
   coutTape = false;
   $("cout-vente").value = "";
   $("cout-saisie").hidden = true;
@@ -1162,6 +1168,7 @@ $("saisie").addEventListener("submit", function (e) {
     texte = modeSaisie === "maison" ? franc(montant) + " pris pour la maison, c'est noté." : NOMS[modeSaisie] + " de " + franc(montant) + " notée.";
   }
 
+  moyenPour(mouvement); // espèces, Wave, Orange Money…
   sauver();
   fermerSaisie();
   afficher();
@@ -1236,7 +1243,12 @@ function numeroWhatsApp(tel) {
   const d = normaliserTel(tel);
   return d.length === 10 ? "225" + d : d;
 }
+// Ajoute « Tu peux payer par Wave au 07… » aux relances, si la boutique a des comptes mobiles.
 function messageRelance(c, ton) {
+  const paiement = lignesPaiement();
+  return messageRelanceBase(c, ton) + (paiement.length ? "\nTu peux aussi payer par " + paiement.join(", ") + "." : "");
+}
+function messageRelanceBase(c, ton) {
   const montant = nombre(c.du).replace(/ /g, "\u00a0");
   const j = joursDepuis(c.depuis);
   const duree = j <= 0 ? "aujourd'hui" : j === 1 ? "hier" : j + " jours";
@@ -1422,6 +1434,7 @@ function afficherRappelSauvegarde() {
 
 function afficherReglages() {
   remplirFormBoutique();
+  remplirFormPaiements();
   const parJour = Math.round((fixeMensuel("charge") + fixeMensuel("impot")) / joursTravail());
   const taux = tauxVentes("charge") + tauxVentes("impot");
   $("resume-charges").textContent = aDesCharges()
@@ -1573,6 +1586,7 @@ document.addEventListener("visibilitychange", function () {
 chargerDonnees().then(function (d) {
   if (d) donnees = d;
   completerDonnees();
+  initPaiements();
   initCharges();
   initFiches();
   initIntrants();

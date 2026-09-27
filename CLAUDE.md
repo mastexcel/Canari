@@ -157,9 +157,18 @@ Comment c'est fait : `app/boutique.js` (boutique, produits, stock, choix des pro
 - Icônes compressées (appli ~0,7 Mo), petits textes plus foncés, boutons ✕ et « Modifier » à 48 px.
 - Liste de vérifications sur un vrai téléphone : `docs/tests-telephone.md`.
 
+## Paiement mobile (fait, sans contrat opérateur)
+
+Demande du propriétaire : recevoir l'argent par Wave, Orange Money, MTN MoMo, Moov Money (Flooz) ou Djamo. Fait sans intégration automatique (qui exige un contrat marchand, une entreprise enregistrée, des frais et un serveur) :
+- Réglages → **Paiement mobile** : comptes acceptés, numéro de réception, lien de paiement Wave facultatif.
+- Ces moyens apparaissent **sur les factures et reçus** (« Pour payer le reste : Wave : 07… ») et **à la fin des relances WhatsApp** (« Tu peux aussi payer par… »).
+- Chaque entrée ou sortie d'argent note son **moyen** (espèces par défaut, champ `moyen` du mouvement ; rien pour une vente tout à crédit). L'argent en caisse du jour est détaillé par moyen (« Espèces + 1 500 F · Wave + 5 000 F »).
+- Aucun logo d'opérateur, seulement les noms. Code : `app/paiements.js`.
+- Plus tard (décision d'entreprise du propriétaire) : paiement automatique par lien, avec confirmation, via un agrégateur de paiement ivoirien ou les API des opérateurs ; nécessite un serveur.
+
 ## Hors version 1 (plus tard)
 
-Compte en ligne et synchronisation, plusieurs vendeurs par boutique, paiement Wave / Orange Money / MTN dans l'appli, abonnement payant, autres langues (dioula, baoulé), autres pays.
+Compte en ligne et synchronisation, plusieurs vendeurs par boutique, paiement mobile automatique dans l'appli (voir ci-dessus), abonnement payant, autres langues (dioula, baoulé), autres pays.
 
 ## Ordre de travail conseillé
 

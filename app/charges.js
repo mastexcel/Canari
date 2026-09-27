@@ -236,7 +236,7 @@ function preremplirCharges(b) {
 function ouvrirParametrage(depart, retour) {
   const b = donnees.boutique;
   brouillon = {
-    nom: b.nom || "", tel: b.tel || "", rccm: b.rccm || "", dfe: b.dfe || "",
+    nom: b.nom || "", tel: b.tel || "", rccm: b.rccm || "", dfe: b.dfe || "", devise: b.devise || "XOF", symbole: b.symbole || "",
     canaux: (b.canaux || []).slice(), activites: (b.activites || []).slice(),
     marge: margeHabituelle(), joursTravail: joursTravail(),
     charges: JSON.parse(JSON.stringify(donnees.charges || []))
@@ -254,6 +254,9 @@ function lireEtape() {
     brouillon.tel = normaliserTel($("param-tel").value);
     brouillon.rccm = $("param-rccm").value.trim().toUpperCase();
     brouillon.dfe = $("param-dfe").value.trim().toUpperCase();
+    brouillon.devise = $("param-devise").value;
+    brouillon.symbole = $("param-symbole").value.trim();
+    deviseCourante = lireDevise(brouillon); // les étapes suivantes montrent déjà la bonne monnaie
   } else if (nom === "marge") {
     const m = parseInt($("param-marge").value.replace(/\D/g, ""), 10);
     if (!isNaN(m) && m < 100) brouillon.marge = m;
@@ -284,9 +287,9 @@ function ligneChargeHtml(l, avecMode) {
     '<div class="lc-bas">' +
       '<input class="note lc-montant" inputmode="numeric" placeholder="0" value="' + (pourcent ? (l.taux || "") : (l.montant ? nombre(l.montant) : "")) + '" aria-label="Montant">' +
       (avecMode || pourcent
-        ? '<select class="note lc-mode" aria-label="Montant ou pourcentage"><option value="fixe"' + (pourcent ? '' : ' selected') + '>F</option>' +
+        ? '<select class="note lc-mode" aria-label="Montant ou pourcentage"><option value="fixe"' + (pourcent ? '' : ' selected') + '>' + echapper(deviseCourante.symbole) + '</option>' +
           '<option value="pourcent"' + (pourcent ? ' selected' : '') + '>% des ventes</option></select>'
-        : '<span class="lc-f">F</span>') +
+        : '<span class="lc-f">' + echapper(deviseCourante.symbole) + '</span>') +
       '<select class="note lc-frequence" aria-label="Fréquence"' + (pourcent ? ' hidden' : '') + '>' +
         Object.keys(FREQUENCES).map(function (f) {
           return '<option value="' + f + '"' + (l.frequence === f ? ' selected' : '') + '>' + FREQUENCES[f] + '</option>';
@@ -318,6 +321,7 @@ function afficherEtape() {
       '<input id="param-nom" class="note" placeholder="ex. Boutique Awa" autocapitalize="words" value="' + echapper(b.nom) + '">' +
       '<label class="champ-etiquette" for="param-tel">Son téléphone</label>' +
       '<input id="param-tel" class="note" type="tel" inputmode="tel" placeholder="ex. 07 00 00 00 00" value="' + (b.tel ? afficherTel(b.tel) : "") + '">' +
+      champsDevise("param", b.devise, b.symbole) +
       '<p class="champ-etiquette">Ton logo (image ou PDF, facultatif)</p>' +
       '<div class="logo-boutique"><div class="logo-apercu" id="param-logo-apercu">' +
         (donnees.boutique.logo ? '<img src="' + donnees.boutique.logo + '" alt="Logo de la boutique">' : '<span>Pas de logo</span>') + '</div>' +
@@ -338,13 +342,13 @@ function afficherEtape() {
   } else if (nom === "marge") {
     image = "canari-joyeux";
     titre = "Ta marge habituelle";
-    html = '<p>Quand tu vends pour <b>1 000 F</b>, combien te reste-t-il une fois la marchandise (ou les ingrédients) payée ?</p>' +
+    html = '<p>Quand tu vends pour <b>' + franc(1000) + '</b>, combien te reste-t-il une fois la marchandise (ou les ingrédients) payée ?</p>' +
       '<div class="rapides">' + [100, 200, 300, 400].map(function (v) {
         return '<button type="button" class="rapide" data-marge="' + (v / 10) + '">' + franc(v) + '</button>';
       }).join("") + '</div>' +
       '<label class="champ-etiquette" for="param-marge">Ou tape ta marge en %</label>' +
       '<input id="param-marge" class="note quantite" inputmode="numeric" value="' + b.marge + '">' +
-      '<p class="aide" id="param-marge-aide">Sur 1 000 F vendus, il te reste ' + franc(b.marge * 10) + '.</p>';
+      '<p class="aide" id="param-marge-aide">Sur ' + franc(1000) + ' vendus, il te reste ' + franc(b.marge * 10) + '.</p>';
   } else if (nom === "charges") {
     titre = "Tes charges fixes";
     preremplirCharges(b);
@@ -396,6 +400,8 @@ function terminerParametrage() {
   if (brouillon.nom) b.nom = brouillon.nom;
   if (brouillon.tel) b.tel = brouillon.tel;
   b.rccm = brouillon.rccm;
+  b.devise = brouillon.devise;
+  b.symbole = brouillon.symbole;
   b.dfe = brouillon.dfe;
   b.canaux = brouillon.canaux;
   b.activites = brouillon.activites;
@@ -484,7 +490,7 @@ function initCharges() {
   $("param-contenu").addEventListener("input", function (e) {
     if (e.target.id === "param-marge") {
       const m = parseInt(e.target.value.replace(/\D/g, ""), 10) || 0;
-      $("param-marge-aide").textContent = "Sur 1 000 F vendus, il te reste " + franc(Math.min(99, m) * 10) + ".";
+      $("param-marge-aide").textContent = "Sur " + franc(1000) + " vendus, il te reste " + franc(Math.min(99, m) * 10) + ".";
     }
     if (e.target.classList.contains("lc-montant")) {
       const li = e.target.closest(".ligne-charge");

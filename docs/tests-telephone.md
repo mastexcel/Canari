@@ -59,6 +59,7 @@ Téléphone testé : ______________________  Version d'Android : ________  Date 
 33. ☐ « Parler » puis « Vente deux mille » : la vente de 2 000 F s'ouvre et Canari le dit à voix haute.
 34. ☐ « Crédit Koffi cinq mille », « Koffi a payé mille », « Combien j'ai gagné ? » (avec internet).
 35. ☐ « Écouter » lit le bilan du jour, même sans internet.
+36. ☐ Questionnaire → Ta boutique → choisir une autre monnaie : les montants, les boutons rapides, une facture et une relance l'affichent.
 
 ---
 

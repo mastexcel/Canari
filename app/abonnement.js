@@ -13,11 +13,16 @@
 // Seules les nouvelles ventes, dépenses et achats demandent un abonnement.
 
 const ESSAI_JOURS = 90;
+// Les prix de l'abonnement sont en FCFA, quelle que soit la monnaie de la boutique.
+function francCFA(n) {
+  const cfa = deviseCourante.symbole === "F" && !deviseCourante.avant;
+  return nombre(n).replace(/ /g, "\u00a0") + (cfa ? "\u00a0F" : "\u00a0FCFA");
+}
 const PREVENIR_JOURS = 10; // bandeau sur l'écran principal avant la fin
 const FORMULES = [
-  { id: "mois", nom: "1 mois", jours: 31, prix: 1000, detail: "Environ 35 F par jour" },
-  { id: "trimestre", nom: "3 mois", jours: 92, prix: 2500, detail: "Tu économises 500 F" },
-  { id: "an", nom: "1 an", jours: 366, prix: 9000, detail: "3 mois offerts", conseil: true }
+  { id: "mois", nom: "1 mois", jours: 31, prix: 1000, detail: function () { return "Environ " + francCFA(35) + " par jour"; } },
+  { id: "trimestre", nom: "3 mois", jours: 92, prix: 2500, detail: function () { return "Tu économises " + francCFA(500); } },
+  { id: "an", nom: "1 an", jours: 366, prix: 9000, detail: function () { return "3 mois offerts"; }, conseil: true }
 ];
 // Comptes de Canari (le propriétaire) qui reçoivent les abonnements, tous sur son
 // compte entreprise Djamo. À remplir avant le lancement.
@@ -171,7 +176,7 @@ function ouvrirAbonnement(raison) {
   $("abo-formules").innerHTML = FORMULES.map(function (f) {
     return '<button type="button" class="choix-carte abo-formule" data-formule="' + f.id + '">' +
       (f.conseil ? '<span class="abo-conseil">Conseillé</span>' : '') +
-      '<b>' + f.nom + '</b><span class="abo-prix">' + franc(f.prix) + '</span><small>' + f.detail + '</small></button>';
+      '<b>' + f.nom + '</b><span class="abo-prix">' + francCFA(f.prix) + '</span><small>' + f.detail() + '</small></button>';
   }).join("");
   choisirFormule(formuleChoisie);
   // QR code Djamo : se scanne avec Djamo, Wave, Orange Money, MTN MoMo ou Moov Money.
@@ -201,9 +206,9 @@ function choisirFormule(id) {
   document.querySelectorAll("[data-formule]").forEach(function (b) {
     b.setAttribute("aria-pressed", String(b.dataset.formule === id));
   });
-  $("abo-montant").textContent = franc(f.prix);
+  $("abo-montant").textContent = francCFA(f.prix);
   const b = donnees.boutique;
-  const texte = tr("Bonjour Canari, je veux l'abonnement " + f.nom + " (" + franc(f.prix) + ").") + "\n" +
+  const texte = tr("Bonjour Canari, je veux l'abonnement " + f.nom + " (" + francCFA(f.prix) + ").") + "\n" +
     tr("Mon numéro Canari : " + idAffiche(donnees.abonnement.id)) + "\n" +
     (b.nom ? tr("Boutique : " + b.nom) + "\n" : "") +
     tr("J'ai payé par (QR Djamo, Wave, Orange Money, MTN, Moov ou carte Visa) : ");

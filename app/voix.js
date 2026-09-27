@@ -39,15 +39,15 @@ Object.assign(EN, {
   "Je ne trouve pas ce client dans tes crédits.": "I can't find this customer in your credits."
 });
 EN_MOTIFS.push(
-  [/^Vente de (.+) francs\.$/, "Sale of $1 francs."],
-  [/^Crédit de (.+) francs pour (.+)\.$/, "Credit of $1 francs for $2."],
-  [/^Crédit de (.+) francs\.$/, "Credit of $1 francs."],
-  [/^(.+) a payé (.+) francs\.$/, "$1 paid $2 francs."],
-  [/^Dépense de (.+) francs\.$/, "Expense of $1 francs."],
-  [/^Dépense de (.+) francs pour (.+)\.$/, "Expense of $1 francs for $2."],
-  [/^Pris pour la maison : (.+) francs\.$/, "Taken for home: $1 francs."],
-  [/^Tes clients te doivent (.+) francs\.$/, "Your customers owe you $1 francs."],
-  [/^(.+) te doit (.+) francs\.$/, "$1 owes you $2 francs."],
+  [/^Vente de (.+)\.$/, "Sale of $1."],
+  [/^Crédit de (.+) pour (.+)\.$/, "Credit of $1 for $2."],
+  [/^Crédit de (.+)\.$/, "Credit of $1."],
+  [/^(.+) a payé (.+)\.$/, "$1 paid $2."],
+  [/^Dépense de (.+) pour (.+)\.$/, "Expense of $1 for $2."],
+  [/^Dépense de (.+)\.$/, "Expense of $1."],
+  [/^Pris pour la maison : (.+)\.$/, "Taken for home: $1."],
+  [/^Tes clients te doivent (.+)\.$/, "Your customers owe you $1."],
+  [/^(.+) te doit (.+)\.$/, "$1 owes you $2."],
   [/^J'ai entendu : « (.+) »$/, "I heard: “$1”"]
 );
 
@@ -58,9 +58,10 @@ let ecoute = null;
 
 function parler(texte) {
   if (!("speechSynthesis" in window) || !texte) return;
-  const phrase = tr(texte)
-    .replace(/(\d)[\s  ](?=\d{3}\b)/g, "$1")   // « 2 000 » se lit « deux mille »
-    .replace(/(\d)[\s ]F\b/g, "$1 francs");
+  // Les montants de l'écran (« 2 000 F », « ₦2 000 ») sont dits « 2000 francs », « 2000 naira »…
+  const phrase = versMontantsF(tr(texte))
+    .replace(/(\d)[\s\u00a0\u202f](?=\d{3}\b)/g, "$1")   // « 2 000 » se lit « deux mille »
+    .replace(/(\d)[\s\u00a0]F\b/g, "$1 " + motParle());
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(phrase);
   u.lang = LANGUE === "en" ? "en-GB" : "fr-FR";
@@ -97,6 +98,13 @@ function motsDe(phrase) {
 
 // Trouve le montant dans les mots : « 2000 », « deux mille cinq cents », « two thousand »…
 // Rend { montant, mots } : les mots qui restent, sans le montant ni « francs ».
+function motParle() { return tr(deviseCourante.parle || deviseCourante.symbole); }
+// « francs », « FCFA », « naira », « GNF »… ne font pas partie du nom ou de la note.
+function estMotDevise(mot) {
+  const d = deviseCourante;
+  return /^(francs?|f|fcfa|cfa)$/.test(mot) || [d.symbole, d.mot].concat((d.parle || "").split(" "))
+    .some(function (x) { return x && x.toLowerCase() === mot; });
+}
 function lireMontantParle(mots) {
   let meilleur = 0, total = 0, courant = 0, dansNombre = false;
   const garde = [];
@@ -118,7 +126,7 @@ function lireMontantParle(mots) {
     }
     if (dansNombre && (mot === "et" || mot === "and" || mot === "a")) return;
     finir();
-    if (!/^(francs?|f|fcfa|cfa)$/.test(mot)) garde.push(mot);
+    if (!estMotDevise(mot)) garde.push(mot);
   });
   finir();
   return { montant: meilleur, mots: garde };
@@ -186,7 +194,7 @@ function remplirMontant(n) {
   $("montant").dispatchEvent(new Event("input", { bubbles: true }));
 }
 function executer(ordre) {
-  const montantDit = ordre.montant ? franc(ordre.montant).replace(/ F$/, "").replace(/ F$/, "") : "";
+  const montantDit = ordre.montant ? nombre(ordre.montant) : "";
   if (ordre.nom === "bilan") {
     montrer("principal");
     afficher();
@@ -197,8 +205,8 @@ function executer(ordre) {
     const clients = clientsQuiDoivent();
     if (!clients.length) return parler("Personne ne te doit de l'argent.");
     const total = clients.reduce(function (s, c) { return s + c.du; }, 0);
-    parler(tr("Tes clients te doivent " + nombre(total) + " francs.") + " " +
-      clients.slice(0, 3).map(function (c) { return tr(c.nom + " te doit " + nombre(c.du) + " francs."); }).join(" "));
+    parler(tr("Tes clients te doivent " + nombre(total) + " " + motParle() + ".") + " " +
+      clients.slice(0, 3).map(function (c) { return tr(c.nom + " te doit " + nombre(c.du) + " " + motParle() + "."); }).join(" "));
     return;
   }
   if (ordre.nom === "paye") {
@@ -207,7 +215,7 @@ function executer(ordre) {
     ouvrirSaisie("paye", c);
     if ($("saisie").hidden) return; // abonnement fini : la fenêtre d'abonnement s'est ouverte
     remplirMontant(ordre.montant);
-    return parler(tr(c.nom + " a payé " + montantDit + " francs.") + " " + tr("Vérifie, puis appuie sur le bouton Enregistrer."));
+    return parler(tr(c.nom + " a payé " + montantDit + " " + motParle() + ".") + " " + tr("Vérifie, puis appuie sur le bouton Enregistrer."));
   }
   const mode = ordre.nom === "credit" ? "credit" : ordre.nom === "maison" ? "maison" : ordre.nom === "depense" ? "depense" : "vente";
   ouvrirSaisie(mode);
@@ -224,13 +232,13 @@ function executer(ordre) {
       $("client").dispatchEvent(new Event("input", { bubbles: true }));
     }
     const pour = c ? c.nom : ordre.texte;
-    parler(tr("Crédit de " + montantDit + " francs" + (pour ? " pour " + pour : "") + ".") + " " +
+    parler(tr("Crédit de " + montantDit + " " + motParle() + (pour ? " pour " + pour : "") + ".") + " " +
       tr(c && c.tel ? "Vérifie, puis appuie sur le bouton Enregistrer." : "Tape son numéro de téléphone, puis appuie sur Enregistrer."));
     return;
   }
-  const phrase = mode === "maison" ? "Pris pour la maison : " + montantDit + " francs."
-    : mode === "depense" ? "Dépense de " + montantDit + " francs" + (ordre.note ? " pour " + ordre.note : "") + "."
-    : "Vente de " + montantDit + " francs.";
+  const phrase = mode === "maison" ? "Pris pour la maison : " + montantDit + " " + motParle() + "."
+    : mode === "depense" ? "Dépense de " + montantDit + " " + motParle() + (ordre.note ? " pour " + ordre.note : "") + "."
+    : "Vente de " + montantDit + " " + motParle() + ".";
   parler(tr(phrase) + " " + tr("Vérifie, puis appuie sur le bouton Enregistrer."));
 }
 

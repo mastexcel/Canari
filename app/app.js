@@ -148,7 +148,7 @@ const nombre = function (n) {
   return Math.round(n).toLocaleString("fr-FR").replace(/[  ]/g, " ");
 };
 // Espaces insécables : « 6 500 F » ne sera jamais coupé en fin de ligne.
-const franc = function (n) { return nombre(n).replace(/ /g, " ") + " F"; };
+const franc = function (n) { return formatDevise(nombre(n).replace(/ /g, "\u00a0")); }; // monnaie : voir devise.js
 const lireMontant = function (texte) { return parseInt(String(texte).replace(/\D/g, ""), 10) || 0; };
 const cleJour = function (t) {
   const d = new Date(t);
@@ -428,6 +428,7 @@ let coteCredits = "clients";
 
 // Dessine seulement l'onglet affiché (les autres le seront quand on les ouvrira).
 function afficher() {
+  appliquerDevise();
   afficherRappelSauvegarde();
   afficherBandeauAbonnement();
   majPastilles();
@@ -894,7 +895,7 @@ function ouvrirSaisie(mode, client) {
   $("note").value = "";
   $("erreur").hidden = true;
 
-  let rapides = (M.rapides || RAPIDES).map(function (v) {
+  let rapides = montantsRapides(M.rapides || RAPIDES).map(function (v) {
     return '<button type="button" class="rapide" data-rapide="' + v + '">' + franc(v) + '</button>';
   }).join("");
   if (client) rapides = '<button type="button" class="rapide rapide-tout" data-rapide="' + client.du + '">Tout : ' + franc(client.du) + '</button>' + rapides;
@@ -1317,26 +1318,26 @@ function messageRelanceBase(c, ton) {
     // Les mêmes messages en anglais (3 tons : gentil, ferme, dernier rappel).
     const depuis = j <= 0 ? "today" : j === 1 ? "yesterday" : j + " days";
     if (ton === "ferme") {
-      return "Hello " + c.nom + ", I am coming back to you about the " + montant + " FCFA you have owed the shop " +
+      return "Hello " + c.nom + ", I am coming back to you about the " + montant + " " + deviseCourante.mot + " you have owed the shop " +
         (j <= 1 ? "since " + depuis : "for " + depuis) + ". Can you come and pay this week? Tell me which day suits you. Thank you.";
     }
     if (ton === "dernier") {
-      return "Hello " + c.nom + ", this is my last reminder about the " + montant + " FCFA owed to the shop. Please pay by " +
+      return "Hello " + c.nom + ", this is my last reminder about the " + montant + " " + deviseCourante.mot + " owed to the shop. Please pay by " +
         dateLimite + ". Without payment, I will not be able to give you credit any more. Thank you for understanding.";
     }
     return "Hello " + c.nom + ", I hope you are well. A small reminder from the shop: " + montant +
-      " FCFA is still to be paid. You can come whenever it suits you. Thank you very much!";
+      " " + deviseCourante.mot + " is still to be paid. You can come whenever it suits you. Thank you very much!";
   }
   if (ton === "ferme") {
-    return "Bonjour " + c.nom + ", je reviens vers toi pour les " + montant + " FCFA que tu dois à la boutique depuis " + duree +
+    return "Bonjour " + c.nom + ", je reviens vers toi pour les " + montant + " " + deviseCourante.mot + " que tu dois à la boutique depuis " + duree +
       ". Peux-tu passer régler cette semaine ? Dis-moi le jour qui t'arrange. Merci.";
   }
   if (ton === "dernier") {
-    return "Bonjour " + c.nom + ", c'est mon dernier rappel pour les " + montant + " FCFA dus à la boutique. Merci de régler d'ici " +
+    return "Bonjour " + c.nom + ", c'est mon dernier rappel pour les " + montant + " " + deviseCourante.mot + " dus à la boutique. Merci de régler d'ici " +
       dateLimite + ". Sans règlement, je ne pourrai plus faire de crédit. Merci de ta compréhension.";
   }
   return "Bonjour " + c.nom + ", j'espère que tu vas bien. Petit rappel de la boutique : il reste " + montant +
-    " FCFA à régler. Tu peux passer quand ça t'arrange. Merci beaucoup !";
+    " " + deviseCourante.mot + " à régler. Tu peux passer quand ça t'arrange. Merci beaucoup !";
 }
 function choisirTon(ton) {
   document.querySelectorAll("[data-ton]").forEach(function (b) {
@@ -1668,6 +1669,8 @@ document.querySelectorAll("[data-langue]").forEach(function (b) {
 chargerDonnees().then(function (d) {
   if (d) donnees = d;
   completerDonnees();
+  appliquerDevise();
+  initDevise();
   initPaiements();
   initCharges();
   initFiches();

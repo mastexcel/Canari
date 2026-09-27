@@ -573,6 +573,7 @@ function remplirFormBoutique() {
   $("boutique-dfe").value = b.dfe || "";
   $("boutique-merci").value = b.merci || "";
   $("boutique-marge").value = String(margeHabituelle());
+  $("boutique-devise-champs").innerHTML = champsDevise("boutique", b.devise, b.symbole);
   afficherLogo();
 }
 function afficherLogo() {
@@ -685,6 +686,18 @@ function enregistrerBoutique(e) {
   b.merci = $("boutique-merci").value.trim();
   const marge = parseInt($("boutique-marge").value.replace(/\D/g, ""), 10);
   if (!isNaN(marge) && marge < 100) b.marge = marge;
+  // Monnaie : les montants déjà notés ne sont pas convertis, on prévient avant de changer.
+  const devise = $("boutique-devise").value, symbole = $("boutique-symbole").value.trim();
+  if (devise === "AUTRE" && !symbole) { message("Écris le symbole de ta monnaie."); $("boutique-symbole").focus(); return; }
+  const avant = lireDevise(b), apres = lireDevise({ devise: devise, symbole: symbole });
+  if ((avant.code !== apres.code || avant.symbole !== apres.symbole) && donnees.mouvements.length &&
+      !window.confirm(tr("Nouvelle monnaie : " + apres.nom + " (avant : " + avant.nom + "). Les montants déjà notés ne seront pas convertis. Continuer ?"))) {
+    $("boutique-devise").value = avant.code;
+    return;
+  }
+  b.devise = devise;
+  b.symbole = symbole;
+  appliquerDevise();
   sauver();
   if (document.activeElement) document.activeElement.blur();
   message("Infos de la boutique enregistrées.", null, true);

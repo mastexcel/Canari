@@ -186,7 +186,7 @@ function dessinerDocument(doc) {
         trait(y - 30, C.ligne, 2);
         y += 10;
         if (doc.reste > 0) rangee(tr("Reste à payer"), franc(doc.reste), C.rouge, true);
-        else rangee(tr("Reste à payer"), "0 F", C.entre, true);
+        else rangee(tr("Reste à payer"), franc(0), C.entre, true);
       }
 
       // Tampon « PAYÉ » quand tout est réglé

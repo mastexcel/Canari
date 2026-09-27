@@ -28,7 +28,8 @@ const dejaAnglais = new Set();  // textes déjà traduits (l'écran les renvoie 
 function tr(texte) {
   if (LANGUE !== "en" || texte == null) return texte;
   const brut = String(texte);
-  const cle = brut.replace(/[\s\u00a0\u202f]+/g, " ").trim();
+  // Les dictionnaires sont écrits avec « 12 500 F » : les autres monnaies y sont ramenées (devise.js).
+  const cle = (typeof versMontantsF === "function" ? versMontantsF(brut) : brut).replace(/[\s\u00a0\u202f]+/g, " ").trim();
   if (!cle || !/[A-Za-zÀ-ÿ]{2}/.test(cle)) return brut;
   if (dejaAnglais.has(cle)) return brut;
   let r = cacheTraduction.get(cle);
@@ -53,7 +54,7 @@ function tr(texte) {
   if (r === null) return brut;
   // Garde les espaces autour (mise en page du HTML).
   const avant = brut.match(/^\s*/)[0], apres = brut.match(/\s*$/)[0];
-  return avant + r + apres;
+  return avant + (typeof depuisMontantsF === "function" ? depuisMontantsF(r) : r) + apres;
 }
 
 /* ---------- Traduction de l'écran ---------- */

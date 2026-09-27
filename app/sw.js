@@ -1,6 +1,6 @@
 // Garde une copie de l'appli sur le téléphone pour qu'elle marche sans internet.
 // Change VERSION à chaque mise à jour pour que les téléphones prennent les nouveaux fichiers.
-const VERSION = "canari-v1";
+const VERSION = "canari-v2";
 const FICHIERS = [
   "./",
   "index.html",
@@ -10,6 +10,11 @@ const FICHIERS = [
   "polices/fredoka.woff2",
   "polices/rubik.woff2",
   "icones/canari-joyeux.webp",
+  "icones/mascotte-canari-3d.webp",
+  "icones/canari-clin-doeil.webp",
+  "icones/canari-yeux-fermes.webp",
+  "icones/canari-tranquille.webp",
+  "icones/canari-pensif.webp",
   "icones/icone-180.png",
   "icones/icone-192.png",
   "icones/icone-512.png",

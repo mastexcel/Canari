@@ -77,9 +77,8 @@ body {
 }
 .accueil-mascotte {
   width: 180px;
-  height: 180px;
-  border-radius: 40px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, .3);
+  height: auto;
+  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, .3));
   margin-bottom: 12px;
 }
 .accueil .logo { font-size: 56px; line-height: 1; }
@@ -230,7 +229,7 @@ body {
   margin-top: 28px;
   color: #5A4636;
 }
-.vide img { border-radius: 22px; opacity: .95; }
+.vide img { height: auto; }
 .vide p { margin: 10px 0 0; }
 
 /* ---------- Message bref ---------- */

@@ -70,6 +70,7 @@ Object.assign(EN, {
   "Ce code n'est pas valable. Vérifie que tu l'as copié en entier.": "This code is not valid. Check that you copied all of it.",
   "J'ai payé par (Wave, Orange Money, MTN, Moov, Djamo ou carte Visa) :": "I paid with (Wave, Orange Money, MTN, Moov, Djamo or Visa card):",
   "J'ai payé par (Wave, Orange Money, MTN, Moov ou Djamo) :": "I paid with (Wave, Orange Money, MTN, Moov or Djamo):",
+  "Lien pour Canari :": "Link for Canari:",
   "Payer avec Wave": "Pay with Wave",
   "Orange Money, MTN, Moov ou Djamo": "Orange Money, MTN, Moov or Djamo",
   "Touche le moyen que tu utilises : l'application de paiement s'ouvre avec le compte de Canari déjà rempli.": "Tap the method you use: the payment app opens with Canari's account already filled in.",

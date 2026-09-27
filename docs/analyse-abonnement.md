@@ -37,8 +37,10 @@ Frais : les opérateurs et agrégateurs prennent une commission (souvent de l'or
 1. Dans Canari → Réglages → **Mon abonnement**, le client choisit une formule.
 2. Il paie sur un des comptes du propriétaire (affichés dans l'appli) en écrivant son **numéro Canari** (8 caractères, ex. K7P2-QX9M) dans le message du paiement.
 3. Il touche « Envoyer sur WhatsApp » : un message prêt part vers le WhatsApp du propriétaire.
-4. Le propriétaire vérifie l'argent reçu, ouvre sa page privée **gerant.html**, tape le numéro Canari et la formule : un **code signé** est créé, avec un lien, à envoyer sur WhatsApp.
+4. Le propriétaire vérifie l'argent reçu et **touche le lien à la fin du message** : sa page privée **gerant.html** s'ouvre déjà remplie (numéro Canari, formule, numéro du client, et un bandeau « Demande reçue de « … » : 3 mois (2 500 F) »). Il touche « Créer le code », puis « Envoyer sur WhatsApp » : le **code signé** part dans la conversation du client. Il n'a rien à taper. (Il peut toujours tout saisir à la main si le lien manque.)
 5. Le client touche le lien (ou colle le code) : l'abonnement est activé, même sans internet.
+
+Le lien de la page privée ne contient **aucun secret** : sans la clé privée gardée sur le téléphone du propriétaire, il ne peut fabriquer aucun code, il ne fait que remplir le formulaire.
 
 Sécurité : le code est signé avec une **clé secrète** qui reste sur le téléphone du propriétaire. L'appli ne contient que la clé publique, qui vérifie les codes mais ne peut pas en fabriquer. Un code ne marche que pour un seul numéro Canari et une seule fois.
 

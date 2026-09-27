@@ -25,6 +25,7 @@
   .ligne > * { flex: 1; }
   table { width: 100%; border-collapse: collapse; font-size: 15px; }
   td, th { text-align: left; padding: 6px 4px; border-bottom: 1px solid var(--bord); }
+  .demande { background: #EAF0E0; border-left: 4px solid var(--vert); border-radius: 10px; padding: 10px 12px; margin: 0; font-weight: 600; }
   [hidden] { display: none !important; }
 </style>
 </head>
@@ -53,6 +54,7 @@
 
   <section id="creer" hidden>
     <h2>Créer un code</h2>
+    <p class="demande" id="demande" hidden></p>
     <p class="aide">Vérifie d'abord dans ton compte que l'argent est bien arrivé.</p>
     <label for="numero">Numéro Canari du client</label>
     <input id="numero" placeholder="ex. K7P2-QX9M" autocapitalize="characters" autocomplete="off">
@@ -166,6 +168,8 @@ $("fabriquer").addEventListener("click", function () {
     const tel = $("whatsapp").value.replace(/\D/g, "").replace(/^00225|^225(?=\d{10}$)/, "");
     $("envoyer").href = "https://wa.me/" + (tel.length === 10 ? "225" + tel : tel) + "?text=" + encodeURIComponent(texte);
     $("resultat").hidden = false;
+    $("envoyer").textContent = $("whatsapp").value.replace(/\D/g, "").length >= 8
+      ? "Envoyer sur WhatsApp" : "Ouvrir WhatsApp";
     const journal = lireJson(CLE_JOURNAL) || [];
     journal.unshift({ t: Date.now(), id: id, formule: nom, prix: Number(choix.dataset.prix) || 0 });
     localStorage.setItem(CLE_JOURNAL, JSON.stringify(journal));
@@ -182,8 +186,39 @@ function afficherJournal() {
   }).join("");
 }
 
+// Demande reçue par WhatsApp : le lien du client remplit le formulaire tout seul.
+// Aucun code n'est créé sans la clé secrète de ce téléphone : ce lien ne fait que remplir.
+function lireDemande() {
+  const h = location.hash.slice(1);
+  if (!h) return;
+  const p = new URLSearchParams(h);
+  const id = (p.get("id") || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (!/^[A-Z2-9]{8}$/.test(id)) return;
+  $("numero").value = id.slice(0, 4) + "-" + id.slice(4);
+  const jours = p.get("j");
+  const option = [...$("formule").options].find(function (o) { return o.value === jours; });
+  if (option) $("formule").value = jours;
+  else if (jours && Number(jours) > 0) {
+    $("formule").value = "autre";
+    $("jours-autre").hidden = false;
+    $("jours-autre").value = jours;
+  }
+  const tel = (p.get("t") || "").replace(/\D/g, "");
+  if (tel.length >= 8) $("whatsapp").value = tel;
+  const boutique = p.get("b"), formule = p.get("f"), prix = p.get("p");
+  $("demande").hidden = false;
+  $("demande").textContent = "Demande reçue" + (boutique ? " de « " + boutique + " »" : "") +
+    (formule ? " : " + formule : "") + (prix ? " (" + franc(Number(prix)) + ")" : "") + ".";
+  // On efface le lien de la barre d'adresse : le formulaire garde les valeurs.
+  history.replaceState(null, "", location.pathname + location.search);
+}
+
 cles = lireJson(CLE_PRIVEE);
 montrer();
+lireDemande();
+// Si la page est déjà ouverte, toucher un nouveau lien ne la recharge pas :
+// il faut aussi écouter le changement d'adresse.
+window.addEventListener("hashchange", lireDemande);
 </script>
 </body>
 </html>

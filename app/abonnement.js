@@ -231,7 +231,15 @@ function choisirFormule(id) {
     tr(RECEPTION.carte
       ? "J'ai payé par (Wave, Orange Money, MTN, Moov, Djamo ou carte Visa) : "
       : "J'ai payé par (Wave, Orange Money, MTN, Moov ou Djamo) : ");
-  $("abo-demande").href = "https://wa.me/" + numeroWhatsApp(RECEPTION.whatsapp) + "?text=" + encodeURIComponent(texte);
+  // Lien de service pour le propriétaire : il ouvre sa page privée déjà remplie
+  // (numéro Canari, formule, nom de la boutique). Sans sa clé secrète, ce lien ne
+  // permet de fabriquer aucun code : il ne fait que remplir le formulaire.
+  const lienGerant = new URL("gerant.html", location.href).href + "#id=" + donnees.abonnement.id +
+    "&j=" + f.jours + "&f=" + encodeURIComponent(f.nom) + "&p=" + f.prix +
+    (b.nom ? "&b=" + encodeURIComponent(b.nom.slice(0, 40)) : "") +
+    (b.tel ? "&t=" + b.tel : "");   // pour que la réponse parte dans la bonne conversation
+  $("abo-demande").href = "https://wa.me/" + numeroWhatsApp(RECEPTION.whatsapp) +
+    "?text=" + encodeURIComponent(texte + "\n\n" + tr("Lien pour Canari :") + "\n" + lienGerant);
 }
 function validerCode() {
   const bouton = $("abo-activer");

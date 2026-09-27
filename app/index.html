@@ -353,8 +353,11 @@
 <form class="saisie" id="produit-form" hidden novalidate autocomplete="off" style="--couleur-saisie: var(--vert-foret)">
   <h2 class="saisie-titre" id="produit-titre">Nouveau produit</h2>
   <label class="champ-etiquette" for="produit-nom">Nom du produit ou du service</label>
-  <input id="produit-nom" class="note" placeholder="ex. Riz 5 kg" autocapitalize="sentences">
-  <label class="champ-etiquette" for="produit-prix">Prix de vente</label>
+  <input id="produit-nom" class="note" placeholder="ex. Riz parfumé" autocapitalize="sentences">
+  <label class="champ-etiquette" for="produit-unite">Tu le vends…</label>
+  <select id="produit-unite" class="note"></select>
+  <input id="produit-unite-autre" class="note" placeholder="Écris l'unité (ex. seau, pot, rouleau)" hidden>
+  <label class="champ-etiquette" for="produit-prix" id="produit-prix-etiquette">Prix de vente</label>
   <div class="montant-boite petite">
     <input id="produit-prix" class="montant" inputmode="numeric" placeholder="0">
     <span class="montant-f">F</span>
@@ -372,9 +375,9 @@
   </div>
   <div id="bloc-quantite">
     <label class="champ-etiquette" for="produit-quantite" id="produit-quantite-etiquette">Combien tu en as maintenant ?</label>
-    <input id="produit-quantite" class="note quantite" inputmode="numeric" placeholder="0">
-    <label class="champ-etiquette" for="produit-seuil">Me prévenir quand il en reste</label>
-    <input id="produit-seuil" class="note quantite" inputmode="numeric" placeholder="3">
+    <input id="produit-quantite" class="note quantite" inputmode="decimal" placeholder="0">
+    <label class="champ-etiquette" for="produit-seuil" id="produit-seuil-etiquette">Me prévenir quand il en reste</label>
+    <input id="produit-seuil" class="note quantite" inputmode="decimal" placeholder="3">
   </div>
   <p class="erreur" id="produit-erreur" hidden></p>
   <div class="saisie-boutons">
@@ -390,10 +393,10 @@
 <form class="saisie" id="arrivage-form" hidden novalidate autocomplete="off" style="--couleur-saisie: var(--vert-foret)">
   <h2 class="saisie-titre" id="arrivage-titre">Arrivage</h2>
   <p class="aide" id="arrivage-actuel"></p>
-  <label class="champ-etiquette" for="arrivage-quantite">Combien en as-tu reçu ?</label>
+  <label class="champ-etiquette" for="arrivage-quantite" id="arrivage-etiquette">Combien en as-tu reçu ?</label>
   <div class="pas-a-pas">
     <button type="button" class="bouton pas" data-pas="-1" aria-label="Un de moins">−</button>
-    <input id="arrivage-quantite" class="note quantite" inputmode="numeric" value="1">
+    <input id="arrivage-quantite" class="note quantite" inputmode="decimal" value="1">
     <button type="button" class="bouton pas" data-pas="1" aria-label="Un de plus">+</button>
   </div>
   <p class="aide">Pour noter ce que tu as payé, utilise « Dépense » ou « Dette fournisseur ».</p>

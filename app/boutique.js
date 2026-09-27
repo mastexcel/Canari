@@ -2,9 +2,43 @@
 // Ce fichier est chargé avant app.js ; il utilise ses outils ($, donnees, franc…)
 // seulement quand on l'appelle, et initBoutique() est lancé au démarrage par app.js.
 
+/* ---------- Unités de vente ---------- */
+
+// Chaque produit se vend dans une unité : le prix, le prix d'achat, le stock et
+// l'alerte sont tous comptés dans cette unité (ex. 500 F le kg, 12,5 kg en stock).
+const UNITES = {
+  unite: ["unité", "unités"], kg: ["kg", "kg"], g: ["g", "g"], litre: ["litre", "litres"],
+  cl: ["cl", "cl"], metre: ["mètre", "mètres"], sac: ["sac", "sacs"], carton: ["carton", "cartons"],
+  paquet: ["paquet", "paquets"], sachet: ["sachet", "sachets"], boite: ["boîte", "boîtes"],
+  bouteille: ["bouteille", "bouteilles"], bidon: ["bidon", "bidons"], tas: ["tas", "tas"],
+  botte: ["botte", "bottes"], plat: ["plat", "plats"], prestation: ["prestation", "prestations"]
+};
+function uniteDe(p) { return (p && p.unite) || "unite"; }
+function nomUnite(u, n) {
+  const noms = UNITES[u];
+  if (!noms) return Math.abs(n) >= 2 && !/[sxz]$/.test(u) ? u + "s" : u; // unité tapée à la main
+  return Math.abs(n) >= 2 ? noms[1] : noms[0];
+}
+// Quantité lisible : « 2,5 kg », « 3 sacs », « 1 unité ».
+function qteTexte(n, u) {
+  const q = Math.round(n * 1000) / 1000;
+  return q.toLocaleString("fr-FR", { maximumFractionDigits: 3 }).replace(/[\u00a0\u202f]/g, " ") + "\u00a0" + nomUnite(u || "unite", q);
+}
+// Lit une quantité tapée, avec virgule ou point : « 1,5 » → 1.5.
+function lireQte(texte) {
+  const n = parseFloat(String(texte).replace(/\s/g, "").replace(",", "."));
+  return isNaN(n) ? NaN : Math.round(n * 1000) / 1000;
+}
+// Libellé d'une ligne vendue : « 3 × Savon » ou « Riz 2,5 kg ».
+function libelleLigne(l) {
+  return !l.unite || l.unite === "unite" ? String(l.qte).replace(".", ",") + " × " + l.nom : l.nom + " " + qteTexte(l.qte, l.unite);
+}
+// « 500 F / kg » ; rien pour l'unité simple.
+function parUnite(u) { return !u || u === "unite" ? "" : " / " + nomUnite(u, 1); }
+
 /* ---------- Produits et stock ---------- */
 
-// Un produit : { id, nom, prix, suivi (compter le stock ?), seuil (alerte) }.
+// Un produit : { id, nom, unite, prix, cout, suivi (compter le stock ?), seuil (alerte) }.
 // Le stock n'est jamais écrit à la main : il se calcule à partir des lignes
 // « stock » (départ, arrivage, correction) moins les quantités vendues.
 // Ainsi, retirer une vente remet automatiquement le produit en stock.
@@ -14,7 +48,7 @@ function stockDe(idProduit) {
     if (m.type === "stock" && m.produitId === idProduit) n += m.quantite;
     else if (m.lignes) m.lignes.forEach(function (l) { if (l.produitId === idProduit) n -= l.qte; });
   });
-  return n;
+  return Math.round(n * 1000) / 1000;
 }
 
 function listeProduits() {
@@ -62,14 +96,14 @@ function afficherStock() {
       '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Ajouter un produit</button>' +
     (produits.length > 6 ? '<input class="note recherche-stock" id="recherche-stock" type="search" placeholder="Chercher un produit">' : '') +
     '<ul class="produits" id="liste-produits">' + ordre.map(function (p) {
-      const n = stockDe(p.id);
+      const n = stockDe(p.id), u = uniteDe(p);
       const etat = !p.suivi ? '<span class="stock-quantite neutre">Stock non compté</span>'
-        : '<span class="stock-quantite' + (aRacheter(p) ? ' bas' : '') + '"><b>' + n + '</b> en stock' +
+        : '<span class="stock-quantite' + (aRacheter(p) ? ' bas' : '') + '"><b>' + qteTexte(n, u) + '</b> en stock' +
           (aRacheter(p) ? ' · à racheter' : '') + '</span>';
       return '<li class="produit' + (aRacheter(p) ? ' bas' : '') + '" data-nom="' + echapper(p.nom.toLowerCase()) + '">' +
-        '<div class="client-haut"><b>' + echapper(p.nom) + '</b><strong>' + franc(p.prix) + '</strong></div>' +
-        '<p class="aide">Coûte ' + franc(coutProduit(p)) + (typeof p.cout === "number" ? "" : " (marge habituelle)") +
-          ' · bénéfice ' + franc(p.prix - coutProduit(p)) + ' par vente</p>' +
+        '<div class="client-haut"><b>' + echapper(p.nom) + '</b><strong>' + franc(p.prix) + '<small>' + parUnite(u) + '</small></strong></div>' +
+        '<p class="aide">Coûte ' + franc(coutProduit(p)) + parUnite(u) + (typeof p.cout === "number" ? "" : " (marge habituelle)") +
+          ' · bénéfice ' + franc(p.prix - coutProduit(p)) + (u === "unite" ? " par vente" : " par " + nomUnite(u, 1)) + '</p>' +
         '<p>' + etat + '</p>' +
         '<div class="client-boutons' + (p.suivi ? '' : ' un-seul') + '">' +
           '<button type="button" class="bouton bouton-fiche" data-modifier-produit="' + p.id + '">' +
@@ -92,7 +126,24 @@ function choisirSuivi(oui) {
     b.setAttribute("aria-pressed", String((b.dataset.suivi === "oui") === oui));
   });
   $("bloc-quantite").hidden = !oui;
-  $("produit-cout-etiquette").textContent = oui ? "Prix d'achat (ce qu'il te coûte)" : "Ce que ça te coûte (facultatif)";
+  majUniteProduit();
+}
+
+function uniteChoisie() {
+  const v = $("produit-unite").value;
+  if (v !== "autre") return v;
+  return $("produit-unite-autre").value.trim().toLowerCase() || "unite";
+}
+// Met toutes les étiquettes du formulaire dans l'unité choisie.
+function majUniteProduit() {
+  const u = uniteChoisie();
+  $("produit-unite-autre").hidden = $("produit-unite").value !== "autre";
+  const une = u === "unite" ? "" : " (par " + nomUnite(u, 1) + ")";
+  $("produit-prix-etiquette").textContent = "Prix de vente" + une;
+  $("produit-cout-etiquette").textContent = (suiviProduit ? "Prix d'achat" : "Ce que ça te coûte") + une + (suiviProduit ? "" : " (facultatif)");
+  const plur = u === "unite" ? "" : " (en " + nomUnite(u, 2) + ")";
+  $("produit-quantite-etiquette").textContent = (produitEnCours ? "Combien il en reste vraiment ?" : "Combien tu en as maintenant ?") + plur;
+  $("produit-seuil-etiquette").textContent = "Me prévenir quand il en reste" + plur;
   majMargeProduit();
 }
 
@@ -102,8 +153,9 @@ function majMargeProduit() {
   const cout = tape ? lireMontant($("produit-cout").value) : coutParMarge(prix);
   if (!prix) { $("produit-marge").textContent = "Si tu ne sais pas, laisse vide : Canari utilisera ta marge habituelle (" + margeHabituelle() + " %)."; return; }
   const b = prix - cout;
+  const u = uniteChoisie();
   $("produit-marge").textContent = (tape ? "" : "Marge habituelle (" + margeHabituelle() + " %) : ") +
-    "tu gagnes " + (b < 0 ? "− " : "") + franc(Math.abs(b)) + " sur chaque vente.";
+    "tu gagnes " + (b < 0 ? "− " : "") + franc(Math.abs(b)) + (u === "unite" ? " sur chaque vente." : " par " + nomUnite(u, 1) + " vendu.");
 }
 
 function ouvrirProduit(id) {
@@ -113,9 +165,11 @@ function ouvrirProduit(id) {
   $("produit-nom").value = p ? p.nom : "";
   $("produit-prix").value = p ? nombre(p.prix) : "";
   $("produit-cout").value = p && typeof p.cout === "number" ? nombre(p.cout) : "";
-  $("produit-quantite").value = p ? String(stockDe(p.id)) : "";
-  $("produit-quantite-etiquette").textContent = p ? "Combien il en reste vraiment ?" : "Combien tu en as maintenant ?";
-  $("produit-seuil").value = p ? String(p.seuil) : "3";
+  $("produit-quantite").value = p ? String(stockDe(p.id)).replace(".", ",") : "";
+  $("produit-seuil").value = p ? String(p.seuil).replace(".", ",") : "3";
+  const u = uniteDe(p);
+  $("produit-unite").value = UNITES[u] ? u : "autre";
+  $("produit-unite-autre").value = UNITES[u] ? "" : u;
   $("produit-erreur").hidden = true;
   $("produit-supprimer").hidden = !p;
   choisirSuivi(p ? p.suivi : true);
@@ -136,20 +190,24 @@ function enregistrerProduit(e) {
   if (deja) return oups("Tu as déjà un produit qui s'appelle « " + deja.nom + " ».", $("produit-nom"));
 
   const quantiteTapee = $("produit-quantite").value.trim();
-  const quantite = parseInt(quantiteTapee.replace(/[^\d-]/g, ""), 10);
-  const seuil = parseInt($("produit-seuil").value.replace(/\D/g, ""), 10);
+  const quantite = lireQte(quantiteTapee);
+  const seuil = lireQte($("produit-seuil").value);
+  if ($("produit-unite").value === "autre" && !$("produit-unite-autre").value.trim()) {
+    return oups("Écris l'unité (ex. seau, pot, rouleau).", $("produit-unite-autre"));
+  }
   const p = produitEnCours || { id: nouvelId() };
   p.nom = nom;
+  p.unite = uniteChoisie();
   p.prix = prix;
   if ($("produit-cout").value.trim() !== "") p.cout = lireMontant($("produit-cout").value);
   else delete p.cout;
   p.suivi = suiviProduit;
-  p.seuil = isNaN(seuil) ? 3 : seuil;
+  p.seuil = isNaN(seuil) ? 3 : Math.max(0, seuil);
   donnees.produits[p.id] = p;
 
   // Le stock tapé devient une ligne « stock » (départ ou correction).
   if (suiviProduit && quantiteTapee !== "" && !isNaN(quantite)) {
-    const ecart = quantite - (produitEnCours ? stockDe(p.id) : 0);
+    const ecart = Math.round((quantite - (produitEnCours ? stockDe(p.id) : 0)) * 1000) / 1000;
     if (ecart !== 0) {
       donnees.mouvements.push({
         id: nouvelId(), type: "stock", produitId: p.id, quantite: ecart,
@@ -179,15 +237,17 @@ let produitArrivage = null;
 function ouvrirArrivage(id) {
   produitArrivage = donnees.produits[id];
   $("arrivage-titre").textContent = "Arrivage : " + produitArrivage.nom;
-  $("arrivage-actuel").textContent = "Tu en as " + stockDe(id) + " en ce moment.";
+  const u = uniteDe(produitArrivage);
+  $("arrivage-actuel").textContent = "Tu en as " + qteTexte(stockDe(id), u) + " en ce moment.";
+  $("arrivage-etiquette").textContent = u === "unite" ? "Combien en as-tu reçu ?" : "Combien en as-tu reçu (en " + nomUnite(u, 2) + ") ?";
   $("arrivage-quantite").value = "1";
   $("arrivage-erreur").hidden = true;
   ouvrirFeuille("arrivage-form");
 }
 function enregistrerArrivage(e) {
   e.preventDefault();
-  const n = parseInt($("arrivage-quantite").value.replace(/\D/g, ""), 10);
-  if (!n) {
+  const n = lireQte($("arrivage-quantite").value);
+  if (!(n > 0)) {
     $("arrivage-erreur").textContent = "Écris combien tu en as reçu.";
     $("arrivage-erreur").hidden = false;
     return;
@@ -200,7 +260,7 @@ function enregistrerArrivage(e) {
   sauver();
   fermerFeuilles();
   afficher();
-  message("+" + n + " " + p.nom + ". Il y en a maintenant " + stockDe(p.id) + ".", null, true);
+  message(p.nom + " : + " + qteTexte(n, uniteDe(p)) + ". Il y en a maintenant " + qteTexte(stockDe(p.id), uniteDe(p)) + ".", null, true);
 }
 
 /* ---------- Choisir les produits pendant une vente ---------- */
@@ -211,14 +271,14 @@ let faconVente = "montant";
 function totalPanier() {
   return Object.keys(panier).reduce(function (s, id) {
     const p = donnees.produits[id];
-    return s + (p ? p.prix * panier[id] : 0);
+    return s + (p ? Math.round(p.prix * panier[id]) : 0);
   }, 0);
 }
 function lignesPanier() {
   return Object.keys(panier).filter(function (id) { return panier[id] > 0 && donnees.produits[id]; })
     .map(function (id) {
       const p = donnees.produits[id];
-      return { produitId: id, nom: p.nom, prix: p.prix, qte: panier[id] };
+      return { produitId: id, nom: p.nom, unite: uniteDe(p), prix: p.prix, qte: panier[id] };
     });
 }
 
@@ -248,15 +308,17 @@ function afficherChoixProduits() {
   $("choix-produits").innerHTML = listeProduits().filter(function (p) {
     return !cherche || p.nom.toLowerCase().indexOf(cherche) !== -1 || panier[p.id];
   }).map(function (p) {
-    const q = panier[p.id] || 0;
+    const q = panier[p.id] || 0, u = uniteDe(p);
     const reste = p.suivi ? stockDe(p.id) : null;
-    const alerte = p.suivi && q > reste ? '<small class="m-sort">Il n\'en reste que ' + Math.max(0, reste) + '</small>'
-      : p.suivi ? '<small>' + reste + ' en stock</small>' : '';
+    const alerte = p.suivi && q > reste ? '<small class="m-sort">Il n\'en reste que ' + qteTexte(Math.max(0, reste), u) + '</small>'
+      : p.suivi ? '<small>' + qteTexte(reste, u) + ' en stock</small>' : '';
     return '<li class="choix-produit' + (q ? ' choisi' : '') + '">' +
-      '<span class="choix-produit-nom"><b>' + echapper(p.nom) + '</b><small>' + franc(p.prix) + '</small>' + alerte + '</span>' +
+      '<span class="choix-produit-nom"><b>' + echapper(p.nom) + '</b><small>' + franc(p.prix) + parUnite(u) +
+        (q ? ' · <b>' + franc(Math.round(p.prix * q)) + '</b>' : '') + '</small>' + alerte + '</span>' +
       '<span class="pas-a-pas">' +
         (q ? '<button type="button" class="bouton pas" data-moins="' + p.id + '" aria-label="Un de moins">−</button>' +
-             '<b class="qte">' + q + '</b>' : '') +
+             '<label class="qte-boite"><input class="qte" inputmode="decimal" data-qte="' + p.id + '" value="' + String(q).replace(".", ",") + '" aria-label="Quantité de ' + echapper(p.nom) + '">' +
+             (u === "unite" ? '' : '<small>' + nomUnite(u, q) + '</small>') + '</label>' : '') +
         '<button type="button" class="bouton pas plus" data-plus="' + p.id + '" aria-label="Un de plus">+</button>' +
       '</span></li>';
   }).join("") || '<li class="aide">Aucun produit ne correspond.</li>';
@@ -431,6 +493,11 @@ function initBoutique() {
       majMargeProduit();
     });
   });
+  $("produit-unite").innerHTML = Object.keys(UNITES).map(function (u) {
+    return '<option value="' + u + '">' + (u === "unite" ? "à l'unité (pièce)" : UNITES[u][0]) + '</option>';
+  }).join("") + '<option value="autre">autre…</option>';
+  $("produit-unite").addEventListener("change", majUniteProduit);
+  $("produit-unite-autre").addEventListener("input", majUniteProduit);
   $("produit-form").addEventListener("submit", enregistrerProduit);
   $("produit-annuler").addEventListener("click", fermerFeuilles);
   $("produit-supprimer").addEventListener("click", supprimerProduit);
@@ -440,8 +507,8 @@ function initBoutique() {
   $("arrivage-form").addEventListener("click", function (e) {
     const b = e.target.closest("[data-pas]");
     if (!b) return;
-    const n = (parseInt($("arrivage-quantite").value.replace(/\D/g, ""), 10) || 0) + Number(b.dataset.pas);
-    $("arrivage-quantite").value = String(Math.max(1, n));
+    const n = (lireQte($("arrivage-quantite").value) || 0) + Number(b.dataset.pas);
+    $("arrivage-quantite").value = String(Math.max(1, Math.round(n * 1000) / 1000)).replace(".", ",");
   });
 
   $("choix-vente").addEventListener("click", function (e) {
@@ -449,12 +516,29 @@ function initBoutique() {
     if (b) choisirFacon(b.dataset.facon);
   });
   $("recherche-produit").addEventListener("input", afficherChoixProduits);
+  // Quantité tapée à la main (ex. 1,5 kg) : on met à jour le total sans redessiner la liste.
+  $("choix-produits").addEventListener("input", function (e) {
+    const id = e.target.dataset && e.target.dataset.qte;
+    if (!id) return;
+    const q = lireQte(e.target.value);
+    if (q > 0) panier[id] = q;
+    const total = totalPanier();
+    $("montant").value = total ? nombre(total) : "";
+    majReste();
+  });
+  $("choix-produits").addEventListener("change", function (e) {
+    const id = e.target.dataset && e.target.dataset.qte;
+    if (!id) return;
+    const q = lireQte(e.target.value);
+    if (!(q > 0)) delete panier[id];
+    afficherChoixProduits();
+  });
   $("choix-produits").addEventListener("click", function (e) {
     const plus = e.target.closest("[data-plus]");
     const moins = e.target.closest("[data-moins]");
-    if (plus) panier[plus.dataset.plus] = (panier[plus.dataset.plus] || 0) + 1;
+    if (plus) panier[plus.dataset.plus] = Math.round(((panier[plus.dataset.plus] || 0) + 1) * 1000) / 1000;
     else if (moins) {
-      panier[moins.dataset.moins] = (panier[moins.dataset.moins] || 0) - 1;
+      panier[moins.dataset.moins] = Math.round(((panier[moins.dataset.moins] || 0) - 1) * 1000) / 1000;
       if (panier[moins.dataset.moins] <= 0) delete panier[moins.dataset.moins];
     } else return;
     $("erreur").hidden = true;

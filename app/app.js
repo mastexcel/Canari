@@ -382,7 +382,7 @@ function ligneHtml(m) {
     montants = (verse > 0 ? '<span class="m-sort">− ' + franc(verse) + '</span>' : "") +
       (reste > 0 ? '<span class="m-credit">' + franc(reste) + ' à payer</span>' : "");
   } else if (m.type === "stock") {
-    montants = '<span class="m-stock">' + (m.quantite > 0 ? "+" : "−") + " " + Math.abs(m.quantite) + '</span>';
+    montants = '<span class="m-stock">' + (m.quantite > 0 ? "+" : "−") + " " + qteTexte(Math.abs(m.quantite), uniteDe(donnees.produits[m.produitId])) + '</span>';
   } else {
     const signe = m.type === "paye" ? "+ " : (m.type === "depense" || m.type === "fpaye" || m.type === "maison") ? "− " : "";
     montants = '<span>' + signe + franc(m.montant) + '</span>';
@@ -394,7 +394,7 @@ function ligneHtml(m) {
     : m.type === "depense" && m.categorie === "impot" ? "Impôt ou taxe payé"
     : type === "credit" ? "Vente à crédit" : m.type === "vente" && creditDe(m) > 0 ? "Vente, pas tout payé" : NOMS[m.type];
   const produits = m.lignes && m.lignes.length
-    ? m.lignes.map(function (l) { return l.qte + " × " + l.nom; }).join(", ") : "";
+    ? m.lignes.map(libelleLigne).join(", ") : "";
   const titre = m.note || produits || (m.type === "vente" && creditDe(m) > 0 ? "Vente de " + franc(m.montant) : NOMS[type]);
   const avecDocument = m.type === "vente" || m.type === "credit" || m.type === "paye";
   const texte = '<b>' + echapper(titre) + '</b>' +

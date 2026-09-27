@@ -138,7 +138,7 @@ function dessinerDocument(doc) {
 
       if (doc.lignes) {
         // Tableau des produits
-        const colQte = L - marge - 330, colPu = L - marge - 170, colTot = L - marge;
+        const colQte = L - marge - 350, colPu = L - marge - 170, colTot = L - marge;
         if (vraiment) { ctx.fillStyle = C.sable; ctx.fillRect(marge, y, L - 2 * marge, 52); }
         texte("Désignation", marge + 16, y + 34, rubik(22, 600), C.doux);
         texte("Qté", colQte, y + 34, rubik(22, 600), C.doux, "right");
@@ -147,12 +147,13 @@ function dessinerDocument(doc) {
         y += 52;
         doc.lignes.forEach(function (l) {
           ctx.font = rubik(26);
-          const morceaux = couper(ctx, l.nom, colQte - marge - 90);
+          const morceaux = couper(ctx, l.nom, colQte - marge - 170);
+          const qte = !l.unite || l.unite === "unite" ? String(l.qte).replace(".", ",") : qteTexte(l.qte, l.unite);
           const h = Math.max(60, 26 + morceaux.length * 32);
           morceaux.forEach(function (m, i) { texte(m, marge + 16, y + 40 + i * 32, rubik(26), C.texte); });
-          texte(String(l.qte), colQte, y + 40, rubik(26), C.texte, "right");
-          texte(nombre(l.prix), colPu, y + 40, rubik(26), C.texte, "right");
-          texte(nombre(l.prix * l.qte), colTot - 16, y + 40, rubik(26, 600), C.texte, "right");
+          texte(qte, colQte, y + 40, rubik(26), C.texte, "right");
+          texte(nombre(l.prix) + (l.unite && l.unite !== "unite" ? "/" + nomUnite(l.unite, 1) : ""), colPu, y + 40, rubik(l.unite && l.unite !== "unite" ? 22 : 26), C.texte, "right");
+          texte(nombre(Math.round(l.prix * l.qte)), colTot - 16, y + 40, rubik(26, 600), C.texte, "right");
           y += h;
           trait(y, C.ligne, 2);
         });

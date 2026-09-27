@@ -672,7 +672,7 @@ body {
 .sans-tel { color: var(--sort); font-weight: 500; }
 .client-boutons {
   display: grid;
-  grid-template-columns: 1fr 2fr;
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
 }
 .bouton-fiche {
@@ -699,3 +699,101 @@ body {
 .client.fournisseur { border-left-color: var(--sort); }
 .client.fournisseur .client-haut strong { color: var(--sort); }
 .bouton-fpaye { background: var(--sort); color: #fff; font-size: 18px; }
+
+/* ---------- Relances ---------- */
+.onglet-icone { position: relative; display: flex; }
+.pastille-nombre {
+  position: absolute;
+  top: -6px;
+  right: -14px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--sort);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+}
+.aide { margin: 0; font-size: 15px; color: #6B5646; }
+.groupe .titre-liste { margin-top: 24px; }
+.groupe .aide { margin-bottom: 4px; }
+.groupe .clients { margin-top: 8px; }
+.total-relances {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+}
+.total-relances > div { display: flex; flex-direction: column; }
+.total-relances strong { font-size: 38px; }
+#vue-relances .vide { margin-top: 20px; }
+.client p { margin: 0; }
+.etat {
+  display: inline-block;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 3px 12px;
+}
+.etat-retard { background: #F6DDD6; color: #8E2F1E; }
+.etat-promesse { background: #D8EDE2; color: #155C3B; }
+.etat-attente { background: #ECE4D8; color: #5A4636; }
+.etat-recent { background: #F4E6CC; color: #7A4F0C; }
+.ligne-tel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.petit-modifier {
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: #6B5646;
+  cursor: pointer;
+}
+.petit-modifier svg, .bouton-relancer svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linejoin: round;
+}
+.client-boutons.un-seul { grid-template-columns: 1fr; }
+.bouton-relancer { background: #F4E6CC; color: #7A4F0C; font-size: 18px; }
+.relance-haut { display: flex; align-items: center; gap: 12px; }
+.relance-haut img { flex-shrink: 0; height: auto; }
+.relance-historique { margin: 2px 0 0; color: #6B5646; }
+.relance-tel { margin: 0; font-size: 17px; }
+.tons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.tons .choix { border: 2px solid var(--bord); background: #fff; font-size: 15px; }
+.tons .choix[aria-pressed="true"] { background: var(--credit); border-color: var(--credit); color: #fff; }
+.relance-texte { font-size: 16px; line-height: 1.45; resize: vertical; min-height: 140px; }
+.bouton-whatsapp {
+  background: #1F8F55;
+  color: #fff;
+  text-decoration: none;
+  font-family: "Fredoka", system-ui, sans-serif;
+  font-size: 21px;
+  margin-top: 4px;
+}
+.saisie-boutons.deux-egaux { grid-template-columns: 1fr 1fr; margin-top: 0; }
+#relance-fermer { margin-top: 6px; }

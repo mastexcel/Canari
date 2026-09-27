@@ -140,7 +140,8 @@ function clientsQuiDoivent() {
     const credit = creditDe(m);
     if (credit <= 0 && m.type !== "paye") return;
     const fiche = ficheClient(cle, m.client);
-    const c = parCle.get(cle) || { cle: cle, nom: fiche.nom, tel: fiche.tel, du: 0, depuis: 0, historique: [] };
+    const c = parCle.get(cle) || { cle: cle, nom: fiche.nom, tel: fiche.tel, du: 0, depuis: 0, dernier: 0, historique: [] };
+    c.dernier = m.t;
     if (m.type === "paye") {
       c.du -= m.montant;
       c.historique.push({ t: m.t, texte: "A payé", montant: -m.montant });
@@ -205,6 +206,41 @@ function listeClients() {
   return Array.from(vus.values());
 }
 
+/* ---------- Relances ---------- */
+
+function suiviDe(cle) {
+  if (!donnees.meta[cle]) donnees.meta[cle] = { promesse: "", relances: [] };
+  const s = donnees.meta[cle];
+  if (!Array.isArray(s.relances)) s.relances = [];
+  if (typeof s.promesse !== "string") s.promesse = "";
+  return s;
+}
+const dateLongue = function (cle) {
+  return new Date(cle + "T12:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+};
+
+// Classement d'un client pour les relances (mêmes règles que le prototype) :
+// urgent = promesse dépassée ou pour aujourd'hui, OU jamais relancé et doit depuis
+// 7 jours ou plus, OU relancé sans réponse depuis 5 jours ou plus.
+function statutRelance(c) {
+  const suivi = donnees.meta[c.cle] || { promesse: "", relances: [] };
+  const relances = suivi.relances || [];
+  const derniere = relances.length ? Math.max.apply(null, relances) : 0;
+  const aujourdhui = cleJour(Date.now());
+  if (suivi.promesse) {
+    if (suivi.promesse < aujourdhui) return { code: "retard", urgent: true, texte: "Promesse non tenue (" + dateCourte(suivi.promesse + "T12:00:00") + ")" };
+    if (suivi.promesse === aujourdhui) return { code: "retard", urgent: true, texte: "A promis de payer aujourd'hui" };
+    return { code: "promesse", urgent: false, texte: "A promis de payer le " + dateLongue(suivi.promesse) };
+  }
+  const derniereNouvelle = Math.max(derniere, c.dernier || 0);
+  const silence = joursDepuis(derniereNouvelle);
+  const anciennete = joursDepuis(c.depuis);
+  if (!relances.length && anciennete >= 7) return { code: "retard", urgent: true, texte: "Doit depuis " + anciennete + " jours, jamais relancé" };
+  if (relances.length && silence >= 5) return { code: "retard", urgent: true, texte: "Relancé " + relances.length + " fois, sans réponse depuis " + silence + " jours" };
+  if (relances.length) return { code: "attente", urgent: false, texte: "Relancé " + ilYA(derniere) + ", on attend" };
+  return { code: "recent", urgent: false, texte: "Crédit récent (" + ilYA(c.depuis) + ")" };
+}
+
 /* ---------- Affichage ---------- */
 
 const NOMS = {
@@ -218,6 +254,7 @@ let coteCredits = "clients";
 function afficher() {
   afficherJour();
   afficherCredits();
+  afficherRelances();
   document.querySelectorAll(".vue").forEach(function (v) { v.hidden = v.id !== "vue-" + onglet; });
   document.querySelectorAll("[data-onglet]").forEach(function (b) {
     if (b.dataset.onglet === onglet) b.setAttribute("aria-current", "page");
@@ -307,6 +344,37 @@ function afficherCredits() {
   }
 }
 
+function afficherRelances() {
+  const clients = clientsQuiDoivent();
+  const groupes = { retard: [], promesse: [], attente: [], recent: [] };
+  clients.forEach(function (c) { groupes[statutRelance(c).code].push(c); });
+  const urgents = groupes.retard.length;
+  $("nb-relances").hidden = urgents === 0;
+  $("nb-relances").textContent = urgents;
+
+  if (!clients.length) {
+    $("vue-relances").innerHTML = videHtml("canari-yeux-fermes", "Aucun client ne te doit d'argent.<br>Rien à relancer !");
+    return;
+  }
+  const bloc = function (titre, liste, aide) {
+    if (!liste.length) return "";
+    return '<section class="groupe"><h2 class="titre-liste">' + titre + ' · ' + liste.length + '</h2>' +
+      (aide ? '<p class="aide">' + aide + '</p>' : '') +
+      '<ul class="clients">' + liste.map(function (c) { return carteHtml(c, "client", true); }).join("") + '</ul></section>';
+  };
+  const aRecuperer = groupes.retard.reduce(function (s, c) { return s + c.du; }, 0);
+  $("vue-relances").innerHTML =
+    (urgents
+      ? '<div class="total-credits total-relances"><img src="icones/canari-clin-doeil.webp" width="72" height="84" alt="">' +
+        '<div><span>À récupérer en priorité</span><strong>' + franc(aRecuperer) + '</strong>' +
+        '<small>' + urgents + ' client' + (urgents > 1 ? 's' : '') + ' à relancer aujourd\'hui</small></div></div>'
+      : videHtml("canari-yeux-fermes", "Personne à relancer aujourd'hui. Bien joué !")) +
+    bloc("À relancer aujourd'hui", groupes.retard, "Promesses dépassées, ou clients silencieux depuis trop longtemps.") +
+    bloc("Promesses à venir", groupes.promesse, "") +
+    bloc("Déjà relancés", groupes.attente, "Laisse-leur quelques jours avant de relancer encore.") +
+    bloc("Crédits récents", groupes.recent, "Pas encore besoin de relancer.");
+}
+
 function videHtml(image, texte) {
   return '<div class="vide"><img src="icones/' + image + '.webp" width="96" height="114" alt=""><p>' + texte + '</p></div>';
 }
@@ -317,7 +385,7 @@ function totalHtml(titre, liste, mot, classe) {
 }
 
 // Carte d'un client (« On me doit ») ou d'un fournisseur (« Je dois »).
-function carteHtml(c, sorte) {
+function carteHtml(c, sorte, avecStatut) {
   const client = sorte === "client";
   const parDefaut = client ? "Achat à crédit" : "Marchandise à crédit";
   const notes = c.historique.filter(function (h) { return h.montant > 0 && h.texte !== parDefaut; })
@@ -327,9 +395,13 @@ function carteHtml(c, sorte) {
       '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>' +
       afficherTel(c.tel) + '</a>'
     : client ? '<span class="sans-tel">Pas de numéro</span>' : '';
+  const statut = client ? statutRelance(c) : null;
+  const modifier = '<button type="button" class="petit-modifier" data-fiche="' + echapper(c.cle) + '" data-sorte="' + sorte + '">' +
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16zM13 7l4 4"/></svg>Modifier</button>';
   return '<li class="client' + (client ? '' : ' fournisseur') + '">' +
     '<div class="client-haut"><b>' + echapper(c.nom) + '</b><strong>' + franc(c.du) + '</strong></div>' +
-    (tel ? '<p class="client-info">' + tel + '</p>' : '') +
+    (statut && (avecStatut || statut.urgent) ? '<p><span class="etat etat-' + statut.code + '">' + echapper(statut.texte) + '</span></p>' : '') +
+    '<p class="client-info ligne-tel">' + (tel || '<span></span>') + modifier + '</p>' +
     '<p class="client-info">' + (client ? 'Doit depuis ' : 'Depuis ') + ilYA(c.depuis).replace("il y a ", "") + (derniers ? ' · ' + echapper(derniers) : '') + '</p>' +
     '<details class="historique"><summary>Voir l\'historique</summary><ul>' +
     c.historique.slice().reverse().map(function (h) {
@@ -337,9 +409,9 @@ function carteHtml(c, sorte) {
       return '<li><span>' + dateCourte(h.t) + ' · ' + echapper(h.texte) + '</span><span class="' + (paye ? (client ? 'm-entre' : 'm-sort') : 'm-credit') + '">' +
         (paye ? '− ' : '+ ') + franc(Math.abs(h.montant)) + '</span></li>';
     }).join("") + '</ul></details>' +
-    '<div class="client-boutons">' +
-    '<button type="button" class="bouton bouton-fiche" data-fiche="' + echapper(c.cle) + '" data-sorte="' + sorte + '">' +
-    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16zM13 7l4 4"/></svg>Modifier</button>' +
+    '<div class="client-boutons' + (client ? '' : ' un-seul') + '">' +
+    (client ? '<button type="button" class="bouton bouton-relancer" data-relancer="' + echapper(c.cle) + '">' +
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>Relancer</button>' : '') +
     '<button type="button" class="bouton ' + (client ? 'bouton-paye' : 'bouton-fpaye') + '" data-paye="' + echapper(c.cle) + '" data-sorte="' + sorte + '">' +
     '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>' + (client ? 'Il a payé' : 'J\'ai payé') + '</button>' +
     '</div>' +
@@ -538,7 +610,7 @@ $("bloc-paiement").addEventListener("click", function (e) {
   if (b) choisirPaiement(b.dataset.paiement === "partiel");
 });
 $("saisie-annuler").addEventListener("click", fermerSaisie);
-$("fond-saisie").addEventListener("click", function () { fermerSaisie(); fermerFiche(); });
+$("fond-saisie").addEventListener("click", function () { fermerSaisie(); fermerFiche(); fermerRelance(); });
 
 function erreur(texte, champ) {
   $("erreur").textContent = texte;
@@ -658,9 +730,15 @@ $("onglets").addEventListener("click", function (e) {
   afficher();
   window.scrollTo(0, 0);
 });
-$("vue-credits").addEventListener("click", function (e) {
+function clicCarte(e) {
   const cote = e.target.closest("[data-cote]");
   if (cote) { coteCredits = cote.dataset.cote; afficherCredits(); return; }
+  const r = e.target.closest("[data-relancer]");
+  if (r) {
+    const c = clientsQuiDoivent().find(function (x) { return x.cle === r.dataset.relancer; });
+    if (c) ouvrirRelance(c);
+    return;
+  }
   const b = e.target.closest("[data-fiche], [data-paye]");
   if (!b) return;
   const client = b.dataset.sorte === "client";
@@ -669,7 +747,112 @@ $("vue-credits").addEventListener("click", function (e) {
   if (!c) return;
   if (b.dataset.fiche) ouvrirFiche(c, b.dataset.sorte);
   else ouvrirSaisie(client ? "paye" : "fpaye", c);
+}
+$("vue-credits").addEventListener("click", clicCarte);
+$("vue-relances").addEventListener("click", clicCarte);
+
+/* ---------- Relancer un client sur WhatsApp ---------- */
+
+let clientRelance = null;
+
+// Numéro pour WhatsApp : un numéro ivoirien à 10 chiffres reçoit l'indicatif 225.
+function numeroWhatsApp(tel) {
+  const d = normaliserTel(tel);
+  return d.length === 10 ? "225" + d : d;
+}
+function messageRelance(c, ton) {
+  const montant = nombre(c.du).replace(/ /g, "\u00a0");
+  const j = joursDepuis(c.depuis);
+  const duree = j <= 0 ? "aujourd'hui" : j === 1 ? "hier" : j + " jours";
+  const limite = new Date();
+  limite.setDate(limite.getDate() + 3);
+  const dateLimite = limite.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+  if (ton === "ferme") {
+    return "Bonjour " + c.nom + ", je reviens vers toi pour les " + montant + " FCFA que tu dois à la boutique depuis " + duree +
+      ". Peux-tu passer régler cette semaine ? Dis-moi le jour qui t'arrange. Merci.";
+  }
+  if (ton === "dernier") {
+    return "Bonjour " + c.nom + ", c'est mon dernier rappel pour les " + montant + " FCFA dus à la boutique. Merci de régler d'ici " +
+      dateLimite + ". Sans règlement, je ne pourrai plus faire de crédit. Merci de ta compréhension.";
+  }
+  return "Bonjour " + c.nom + ", j'espère que tu vas bien. Petit rappel de la boutique : il reste " + montant +
+    " FCFA à régler. Tu peux passer quand ça t'arrange. Merci beaucoup !";
+}
+function choisirTon(ton) {
+  document.querySelectorAll("[data-ton]").forEach(function (b) {
+    b.setAttribute("aria-pressed", String(b.dataset.ton === ton));
+  });
+  $("relance-texte").value = messageRelance(clientRelance, ton);
+  majLienWhatsApp();
+}
+function majLienWhatsApp() {
+  $("relance-whatsapp").href = "https://wa.me/" + numeroWhatsApp(clientRelance.tel) +
+    "?text=" + encodeURIComponent($("relance-texte").value);
+}
+function ouvrirRelance(c) {
+  clientRelance = c;
+  const suivi = donnees.meta[c.cle] || { promesse: "", relances: [] };
+  const n = (suivi.relances || []).length;
+  $("relance-titre").textContent = "Relancer " + c.nom;
+  $("relance-historique").textContent = "Doit " + franc(c.du) + ". " + (n
+    ? "Déjà relancé " + n + " fois, la dernière " + ilYA(Math.max.apply(null, suivi.relances)) + "."
+    : "Jamais relancé.");
+  $("relance-tel").innerHTML = c.tel
+    ? "WhatsApp : <b>" + afficherTel(c.tel) + "</b>"
+    : '<span class="sans-tel">Pas de numéro : WhatsApp te demandera de choisir le contact.</span>';
+  $("relance-promesse").value = suivi.promesse || "";
+  $("relance-promesse").min = cleJour(Date.now());
+  choisirTon(n === 0 ? "gentil" : n < 3 ? "ferme" : "dernier");
+  $("message").hidden = true;
+  $("fond-saisie").hidden = false;
+  $("relance").hidden = false;
+  $("relance").scrollTop = 0;
+}
+function fermerRelance() {
+  $("relance").hidden = true;
+  $("fond-saisie").hidden = true;
+}
+// Chaque envoi compte comme une relance (une seule par minute, pour ne pas compter deux fois).
+function noterRelance(texte) {
+  const suivi = suiviDe(clientRelance.cle);
+  const derniere = suivi.relances.length ? Math.max.apply(null, suivi.relances) : 0;
+  if (Date.now() - derniere > 60000) suivi.relances.push(Date.now());
+  sauver();
+  afficher();
+  message(texte);
+}
+$("tons").addEventListener("click", function (e) {
+  const b = e.target.closest("[data-ton]");
+  if (b) choisirTon(b.dataset.ton);
 });
+$("relance-texte").addEventListener("input", majLienWhatsApp);
+$("relance-whatsapp").addEventListener("click", function () {
+  majLienWhatsApp();
+  noterRelance("Relance notée. WhatsApp s'ouvre…");
+  fermerRelance();
+});
+$("relance-copier").addEventListener("click", function () {
+  const texte = $("relance-texte").value;
+  const fini = function () { noterRelance("Message copié. Colle-le dans WhatsApp ou en SMS."); };
+  const secours = function () {
+    $("relance-texte").select();
+    try { document.execCommand("copy"); fini(); } catch (err) { message("Sélectionne le texte pour le copier."); }
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(texte).then(fini, secours);
+  else secours();
+});
+$("relance-note").addEventListener("click", function () {
+  noterRelance("Relance notée pour " + clientRelance.nom + ".");
+  fermerRelance();
+});
+$("relance-promesse").addEventListener("change", function () {
+  const suivi = suiviDe(clientRelance.cle);
+  suivi.promesse = $("relance-promesse").value;
+  sauver();
+  afficher();
+  message(suivi.promesse ? "Promesse notée pour le " + dateLongue(suivi.promesse) + "." : "Promesse retirée.");
+});
+$("relance-fermer").addEventListener("click", fermerRelance);
 
 /* ---------- Fiche client ou fournisseur (corriger nom ou numéro) ---------- */
 

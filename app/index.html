@@ -87,7 +87,10 @@
     </div>
     <div id="credits-clients"></div>
     <div id="credits-fournisseurs" hidden></div>
-    </div>
+  </div>
+
+  <!-- Onglet Relances -->
+  <div id="vue-relances" class="vue" hidden></div>
 </section>
 
 <!-- Barre des onglets -->
@@ -97,6 +100,12 @@
   </button>
   <button type="button" class="onglet" data-onglet="credits">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v10H4zM4 11h16"/></svg>Crédits
+  </button>
+  <button type="button" class="onglet" data-onglet="relances">
+    <span class="onglet-icone">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>
+      <span class="pastille-nombre" id="nb-relances" hidden></span>
+    </span>Relances
   </button>
 </nav>
 
@@ -154,6 +163,41 @@
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>Enregistrer
     </button>
   </div>
+</form>
+
+<!-- Relancer un client -->
+<form class="saisie" id="relance" hidden novalidate autocomplete="off" style="--couleur-saisie: var(--credit)">
+  <div class="relance-haut">
+    <img src="icones/canari-clin-doeil.webp" width="64" height="75" alt="">
+    <div>
+      <h2 class="saisie-titre" id="relance-titre">Relancer</h2>
+      <p class="relance-historique" id="relance-historique"></p>
+    </div>
+  </div>
+  <p class="relance-tel" id="relance-tel"></p>
+  <p class="champ-etiquette">Ton du message</p>
+  <div class="tons" id="tons" role="group" aria-label="Ton du message">
+    <button type="button" class="choix" data-ton="gentil">Gentil</button>
+    <button type="button" class="choix" data-ton="ferme">Ferme</button>
+    <button type="button" class="choix" data-ton="dernier">Dernier rappel</button>
+  </div>
+  <label class="champ-etiquette" for="relance-texte">Message (tu peux le modifier)</label>
+  <textarea id="relance-texte" class="note relance-texte" rows="6"></textarea>
+  <a class="bouton bouton-whatsapp" id="relance-whatsapp" href="#" target="_blank" rel="noopener">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.7z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1-1.5-2-1-1 1a4 4 0 0 1-2-2l1-1-1-2z"/></svg>Envoyer sur WhatsApp
+  </a>
+  <div class="saisie-boutons deux-egaux">
+    <button type="button" class="bouton bouton-annuler" id="relance-copier">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8h11v12H8zM5 16V4h11"/></svg>Copier
+    </button>
+    <button type="button" class="bouton bouton-annuler" id="relance-note">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>Relancé autrement
+    </button>
+  </div>
+  <label class="champ-etiquette" for="relance-promesse">Il a promis de payer le</label>
+  <input id="relance-promesse" class="note" type="date">
+  <p class="aide">S'il ne paie pas à cette date, Canari te le rappellera dans « À relancer ».</p>
+  <button type="button" class="bouton bouton-annuler" id="relance-fermer">Fermer</button>
 </form>
 
 <!-- Fiche client : corriger le nom ou le numéro -->

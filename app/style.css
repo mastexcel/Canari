@@ -141,6 +141,7 @@ body {
 .logo-petit { font-size: 28px; color: var(--vert-foret); }
 .date {
   margin-left: auto;
+  text-align: right;
   font-size: 15px;
   color: #6B5646;
 }
@@ -867,3 +868,85 @@ body {
 #vue-semaine .titre-liste { margin-top: 20px; }
 .onglets { gap: 4px; padding-left: 8px; padding-right: 8px; }
 .onglet { font-size: 13px; }
+
+/* ---------- Réglages et sauvegarde ---------- */
+.bouton-reglages, .bouton-retour {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border: 2px solid var(--bord);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--vert-foret);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.bouton-reglages svg, .bouton-retour svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.titre-ecran {
+  font-family: "Fredoka", system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 26px;
+  margin: 0;
+  color: var(--vert-foret);
+}
+.rappel-sauvegarde {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #FBEBC4;
+  border: 2px solid var(--or);
+  border-radius: 14px;
+  padding: 8px 8px 8px 14px;
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+.rappel-sauvegarde span { flex: 1; }
+.rappel-sauvegarde .bouton {
+  width: auto;
+  min-height: 44px;
+  padding: 0 14px;
+  background: var(--vert-foret);
+  color: #fff;
+  font-size: 16px;
+}
+.carte-reglage {
+  background: var(--carte);
+  border: 2px solid var(--bord);
+  border-radius: var(--arrondi);
+  padding: 16px;
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.carte-reglage h2 {
+  font-family: "Fredoka", system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 21px;
+  margin: 0;
+}
+.carte-reglage p { margin: 0; }
+.reglage-haut { display: flex; gap: 12px; align-items: center; }
+.reglage-haut img { flex-shrink: 0; height: auto; }
+.derniere-sauvegarde { font-weight: 600; color: var(--entre); }
+.derniere-sauvegarde.a-faire { color: var(--sort); }
+.bouton-sauver { background: var(--vert-foret); color: #fff; font-size: 19px; }
+.bouton-fichier { position: relative; overflow: hidden; }
+.bouton-fichier input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.bouton-annuler svg { width: 22px; height: 22px; }
+.version { text-align: center; margin-top: 24px; }

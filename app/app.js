@@ -6,6 +6,8 @@
 
 const CLE_DEJA_VU = "canari.accueilVu";
 const CLE_DONNEES = "canari.donnees";
+const CLE_DERNIERE_SAUVEGARDE = "canari.derniereSauvegarde";
+const CLE_AVANT_RESTAURATION = "canari.avantRestauration";
 const JOUR = 864e5;
 
 function lire(cle) {
@@ -252,6 +254,7 @@ let onglet = "jour";
 let coteCredits = "clients";
 
 function afficher() {
+  afficherRappelSauvegarde();
   afficherJour();
   afficherCredits();
   afficherRelances();
@@ -527,6 +530,7 @@ function montrer(id) {
     e.hidden = e.id !== id;
   });
   $("onglets").hidden = id !== "principal";
+  if (id === "principal") afficher();
   document.querySelector('meta[name="theme-color"]')
     .setAttribute("content", id === "accueil" ? "#174A3F" : "#F6EEE3");
 }
@@ -1028,9 +1032,133 @@ function enregistrerFicheFournisseur(ancien, nom, tel, oups) {
   message("Fiche de " + nom + " enregistrée.");
 }
 
+/* ---------- Sauvegarde et récupération ---------- */
+
+function joursDepuisSauvegarde() {
+  const t = Number(lire(CLE_DERNIERE_SAUVEGARDE));
+  return t ? joursDepuis(t) : null;
+}
+
+// Petit rappel en haut de l'écran : jamais sauvegardé, ou pas depuis 7 jours.
+function afficherRappelSauvegarde() {
+  const premier = donnees.mouvements.reduce(function (min, m) { return Math.min(min, m.t); }, Infinity);
+  const j = joursDepuisSauvegarde();
+  const montrerRappel = premier !== Infinity && joursDepuis(premier) >= 2 && (j === null || j >= 7);
+  $("rappel-sauvegarde").hidden = !montrerRappel;
+  if (montrerRappel) {
+    $("rappel-texte").textContent = j === null
+      ? "Tu n'as jamais sauvegardé tes chiffres."
+      : "Dernière sauvegarde il y a " + j + " jours.";
+  }
+}
+
+function afficherReglages() {
+  const j = joursDepuisSauvegarde();
+  $("derniere-sauvegarde").textContent = j === null ? "Aucune sauvegarde pour l'instant."
+    : "Dernière sauvegarde : " + ilYA(Number(lire(CLE_DERNIERE_SAUVEGARDE))) + ".";
+  $("derniere-sauvegarde").classList.toggle("a-faire", j === null || j >= 7);
+  $("annuler-restauration").hidden = !lire(CLE_AVANT_RESTAURATION);
+}
+
+function fichierSauvegarde() {
+  const contenu = JSON.stringify({ app: "canari", version: 1, date: new Date().toISOString(), donnees: donnees });
+  const nom = "canari-sauvegarde-" + cleJour(Date.now()) + ".json";
+  return new File([contenu], nom, { type: "application/json" });
+}
+function sauvegardeFaite() {
+  ecrire(CLE_DERNIERE_SAUVEGARDE, String(Date.now()));
+  afficherReglages();
+  afficher();
+}
+function telechargerSauvegarde() {
+  const fichier = fichierSauvegarde();
+  const lien = document.createElement("a");
+  lien.href = URL.createObjectURL(fichier);
+  lien.download = fichier.name;
+  document.body.appendChild(lien);
+  lien.click();
+  lien.remove();
+  setTimeout(function () { URL.revokeObjectURL(lien.href); }, 10000);
+  sauvegardeFaite();
+  message("Sauvegarde enregistrée dans « Téléchargements » : " + fichier.name, null, true);
+}
+function partagerSauvegarde() {
+  const fichier = fichierSauvegarde();
+  if (navigator.canShare && navigator.canShare({ files: [fichier] })) {
+    navigator.share({ files: [fichier], title: "Sauvegarde Canari" }).then(function () {
+      sauvegardeFaite();
+      message("Sauvegarde envoyée. Garde bien ce fichier !", null, true);
+    }).catch(function (err) {
+      if (err && err.name === "AbortError") return; // l'utilisateur a fermé la fenêtre
+      telechargerSauvegarde();
+    });
+  } else {
+    telechargerSauvegarde();
+  }
+}
+
+function restaurer(fichier) {
+  const lecteur = new FileReader();
+  lecteur.onload = function () {
+    let contenu = null;
+    try { contenu = JSON.parse(lecteur.result); } catch (e) { contenu = null; }
+    const d = contenu && contenu.app === "canari" && contenu.donnees;
+    if (!d || !Array.isArray(d.mouvements)) {
+      message("Ce fichier n'est pas une sauvegarde Canari.");
+      return;
+    }
+    const quand = contenu.date ? new Date(contenu.date).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }) : "?";
+    const ok = window.confirm("Récupérer la sauvegarde du " + quand + " (" + d.mouvements.length + " lignes) ?\n\n" +
+      "Ce qui est noté sur ce téléphone sera remplacé.");
+    if (!ok) return;
+    ecrire(CLE_AVANT_RESTAURATION, JSON.stringify(donnees));
+    donnees = d;
+    if (!donnees.meta) donnees.meta = {};
+    if (!donnees.clients) donnees.clients = {};
+    if (!donnees.fournisseurs) donnees.fournisseurs = {};
+    sauver();
+    afficher();
+    afficherReglages();
+    message("Sauvegarde récupérée : " + d.mouvements.length + " lignes.", null, true);
+  };
+  lecteur.onerror = function () { message("Impossible de lire ce fichier."); };
+  lecteur.readAsText(fichier);
+}
+
+function ouvrirReglages() {
+  afficherReglages();
+  montrer("reglages");
+  window.scrollTo(0, 0);
+}
+$("ouvrir-reglages").addEventListener("click", ouvrirReglages);
+$("rappel-bouton").addEventListener("click", ouvrirReglages);
+$("fermer-reglages").addEventListener("click", function () { montrer("principal"); window.scrollTo(0, 0); });
+$("sauvegarde-partager").addEventListener("click", partagerSauvegarde);
+$("sauvegarde-telecharger").addEventListener("click", telechargerSauvegarde);
+$("sauvegarde-fichier").addEventListener("change", function (e) {
+  const f = e.target.files && e.target.files[0];
+  if (f) restaurer(f);
+  e.target.value = "";
+});
+$("annuler-restauration").addEventListener("click", function () {
+  const avant = lire(CLE_AVANT_RESTAURATION);
+  if (!avant || !window.confirm("Revenir aux chiffres d'avant la récupération ?")) return;
+  try { donnees = JSON.parse(avant); } catch (e) { return; }
+  sauver();
+  try { localStorage.removeItem(CLE_AVANT_RESTAURATION); } catch (e) { /* rien */ }
+  afficher();
+  afficherReglages();
+  message("C'est revenu comme avant.");
+});
+
+// Demande au téléphone de ne pas effacer les données de Canari pour faire de la place.
+if (navigator.storage && navigator.storage.persist) {
+  navigator.storage.persist().catch(function () {});
+}
+
 /* ---------- Démarrage ---------- */
 
-const dateTexte = new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+const dateTexte = new Date().toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" });
 $("date-du-jour").textContent = dateTexte.charAt(0).toUpperCase() + dateTexte.slice(1);
 
 $("commencer").addEventListener("click", function () {

@@ -42,15 +42,12 @@ Concurrents étudiés : Djago (Côte d'Ivoire), Keiwa, NAFA ERP, OkCredit, Khata
   - Sable `#F6EEE3` (fond clair de l'appli)
   - Brun foncé `#2A1A12` (texte)
   - Rouge dépense `#B8412B`, ambre crédit `#9A6512` (couleurs de sens)
-- **Signature graphique (demande du propriétaire : pas de couleurs foncées, des dégradés, des formes d'arrière-plan, un design unique)**, dans `app/style.css`, section « SIGNATURE GRAPHIQUE CANARI ». Quatre dessins faits maison (SVG écrits dans le CSS, aucune image à charger) reviennent partout et forment la marque :
-  1. **les vagues** — arcs concentriques, le ventre de la jarre : motif très discret sur toute la page, et en filigrane dans le bilan du jour ;
-  2. **les pièces** — pluie de ronds dorés sur les grandes cartes et l'accueil ;
-  3. **le zigzag** — la frise peinte sur le canari, en haut de chaque grande carte et en bas de l'accueil ;
-  4. **le halo** — cercles qui s'échappent du goulot, dans le coin des cartes et des fenêtres de saisie.
-  S'y ajoutent trois formes floues fixes derrière la page (or, vert, terre cuite) et, sur l'accueil, une grande goutte.
-  **Tous les fonds sont clairs** (sable, crème, menthe, miel) : plus aucun bloc foncé. Seuls les textes et les chiffres sont foncés, pour rester lisibles en plein soleil. Les gros boutons Vente / Dépense / Crédit sont des cartes claires avec la pastille d'icône colorée et le texte dans la couleur de sens.
-  Gammes de couleurs : `-fonce` (textes et chiffres), `-clair` (bordures et dégradés), `-100` (fonds teintés), plus `--creme`, `--or-clair`, `--vert-200`. Contrastes vérifiés : tous les textes ≥ 6,6:1, la plupart > 8:1.
-  Le fond ne doit pas être en `background-attachment: fixed` (défilement saccadé sur les petits téléphones) : les formes sont posées par `body::before`, qui ne se redessine pas.
+- **Signature graphique (demande du propriétaire : les couleurs nationales — orange, blanc, vert — en nuances sourdes, aucune couleur vive, des motifs et des formes en fond, un rendu professionnel)**, dans `app/style.css`, section « SIGNATURE GRAPHIQUE CANARI ».
+  - **Trois familles de couleurs** : **ivoire** (`--ivoire`, `--ivoire-2`, `--sable`), **ocre** (l'orange sourd : `--ocre-500` à `--ocre-800`, `--ocre-100`, `--dore`) et **olive** (`--olive-50` à `--olive-900`). Les couleurs de la marque pointent dessus (`--vert-foret` = olive 700, `--terre-cuite` = ocre 600, `--or` = doré). Les couleurs de sens gardent leurs rôles en versions sourdes : olive = argent qui entre, terre brûlée = argent qui sort, ocre = crédit, ardoise = maison. Aucune couleur vive, aucun fond foncé : seuls les textes sont foncés.
+  - **Cinq dessins faits maison** (SVG écrits dans le CSS, aucune image à charger) : **les vagues** (arcs concentriques, en filigrane sur toute la page et dans le bilan du jour), **les pièces** (ronds dorés au trait, sur les grandes cartes et l'accueil), **le zigzag** (la frise du canari, en haut des cartes et en bas de l'accueil), **le halo** (cercles du goulot, coin des cartes et des fenêtres) et **la trame** (fines hachures obliques : la tenue du papier). Plus trois voiles de couleur fixes derrière la page et une grande goutte sur l'accueil.
+  - **Rendu sobre** : bordures fines de 1 px, ombres légères, angles à 16-18 px, pas d'effet de relief, étiquettes des grandes cartes en petites capitales.
+  - Contrastes vérifiés : tous les textes ≥ 6,8:1 (le minimum exigé est 4,5:1).
+  - Le fond ne doit pas être en `background-attachment: fixed` (défilement saccadé sur les petits téléphones) : les formes sont posées par `body::before`, qui ne se redessine pas.
 - **Polices** : Fredoka (nom, titres, gros chiffres) et Rubik (texte). Toutes deux sur Google Fonts.
 - **Icône de l'appli** : `images/canari-joyeux.png` (jarre souriante, pièce qui tombe, fond vert). Une version simplifiée du personnage 3D pourra la remplacer.
 - **Mascotte « Petit Canari »** : `images/mascotte-canari-3d.png`. À utiliser sur l'écran d'accueil, les écrans vides, les messages de réussite. Humeurs :

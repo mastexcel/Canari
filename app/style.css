@@ -1295,3 +1295,59 @@ input.qte {
 .stock-quantite small { font-size: 14px; color: #6B5646; font-weight: 400; }
 .aide.conversion { font-weight: 600; color: var(--entre); }
 .ligne-montant .m-stock.petit { font-size: 14px; font-weight: 500; }
+
+/* ---------- Fiches de coût ---------- */
+.trois-choix {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  background: #fff;
+  border: 2px solid var(--bord);
+  border-radius: 16px;
+  padding: 4px;
+}
+.trois-choix .choix { font-size: 14px; line-height: 1.15; padding: 4px; min-height: 52px; }
+.saisie .trois-choix .choix[aria-pressed="true"] { background: var(--vert-foret); color: #fff; }
+#bloc-fiche, #fiche-rendement-bloc, #arrivage-achat { display: flex; flex-direction: column; gap: 8px; }
+#bloc-fiche[hidden], #fiche-rendement-bloc[hidden], #arrivage-achat[hidden] { display: none; }
+.ligne-fiche .lc-bas { flex-wrap: nowrap; }
+.ligne-fiche .lf-qte { width: 64px; flex: 0 0 64px; min-height: 48px; text-align: center; font-family: "Fredoka", system-ui, sans-serif; font-size: 18px; padding: 4px; }
+.ligne-fiche .lf-unite { flex: 1; min-width: 0; max-width: none; }
+.ligne-fiche .lf-prix { width: 88px; flex: 0 0 88px; min-height: 48px; text-align: right; font-family: "Fredoka", system-ui, sans-serif; font-size: 18px; padding: 4px 8px; }
+.lf-fois { color: #8A7564; font-weight: 700; }
+.lf-cout { margin: 0; text-align: right; font-weight: 600; color: var(--credit); font-size: 15px; }
+.fiche-total {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 10px;
+  background: #fff;
+  border: 2px solid var(--vert-foret);
+  border-radius: 14px;
+  padding: 10px 14px;
+}
+.fiche-total b { font-family: "Fredoka", system-ui, sans-serif; font-size: 19px; text-align: right; }
+.voir-fiche { align-self: flex-start; color: var(--vert-foret); padding-left: 0; }
+.voir-fiche svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.2; }
+.matrice {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border: 2px solid var(--bord);
+  border-radius: 14px;
+  overflow: hidden;
+  font-size: 15px;
+}
+.matrice th { background: var(--sable); text-align: left; font-weight: 600; color: #6B5646; padding: 8px 10px; font-size: 14px; }
+.matrice td { padding: 8px 10px; border-top: 1px solid var(--bord); vertical-align: top; }
+.matrice td small { display: block; font-size: 13px; color: #6B5646; }
+.matrice th:nth-child(2), .matrice th:nth-child(3), .matrice td:nth-child(2), .matrice td:last-child { text-align: right; white-space: nowrap; }
+.matrice td[colspan] + td { text-align: right; }
+.matrice .sous-total td { font-weight: 600; background: #FBF7F1; }
+.matrice .total td { font-weight: 700; font-size: 16px; border-top: 2px solid var(--brun); }
+.matrice .marge td { font-weight: 700; font-family: "Fredoka", system-ui, sans-serif; font-size: 18px; }
+.matrice .marge.bonne td { color: var(--entre); }
+.matrice .marge.faible td { color: var(--credit); }
+.matrice .marge.perte td { color: var(--sort); }
+.alerte-marge { margin: 10px 0 0; padding: 10px 12px; border-radius: 12px; background: #F6DDD6; color: #8E2F1E; font-weight: 600; }
+.alerte-marge.faible { background: #F4E6CC; color: #7A4F0C; }

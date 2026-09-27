@@ -388,7 +388,7 @@ function ligneHtml(m) {
     const signe = m.type === "paye" ? "+ " : (m.type === "depense" || m.type === "fpaye" || m.type === "maison") ? "− " : "";
     montants = '<span>' + signe + franc(m.montant) + '</span>';
   }
-  const RAISONS = { depart: "Stock de départ", arrivage: "Arrivage", correction: "Stock corrigé" };
+  const RAISONS = { depart: "Stock de départ", arrivage: "Arrivage", correction: "Stock corrigé", production: "Fabriqué" };
   const nomType = m.type === "stock" ? (RAISONS[m.raison] || "Stock")
     : estMarchandise(m) ? "Achat de marchandise"
     : m.type === "depense" && m.categorie === "charge" ? "Charge fixe payée"
@@ -1387,6 +1387,7 @@ const dateTexte = new Date().toLocaleDateString("fr-FR", { weekday: "short", day
 $("date-du-jour").textContent = dateTexte.charAt(0).toUpperCase() + dateTexte.slice(1);
 
 initCharges();
+initFiches();
 initBoutique();
 initFacture();
 

@@ -357,6 +357,12 @@
   <label class="champ-etiquette" for="produit-unite">Tu le vends…</label>
   <select id="produit-unite" class="note"></select>
   <input id="produit-unite-autre" class="note" placeholder="Écris l'unité (ex. seau, pot, rouleau)" hidden>
+  <p class="champ-etiquette">C'est…</p>
+  <div class="trois-choix" id="produit-type" role="group" aria-label="Type de produit">
+    <button type="button" class="choix" data-type-produit="revente" aria-pressed="true">Je le revends</button>
+    <button type="button" class="choix" data-type-produit="fabrication" aria-pressed="false">Je le fabrique</button>
+    <button type="button" class="choix" data-type-produit="service" aria-pressed="false">Un service</button>
+  </div>
   <label class="champ-etiquette" for="produit-prix" id="produit-prix-etiquette">Prix de vente</label>
   <div class="montant-boite petite">
     <input id="produit-prix" class="montant" inputmode="numeric" placeholder="0">
@@ -386,6 +392,21 @@
       <input id="produit-cout" class="montant" inputmode="numeric" placeholder="0">
       <span class="montant-f">F</span>
     </div>
+  </div>
+  <div id="bloc-fiche" hidden>
+    <p class="champ-etiquette">Partir d'un modèle</p>
+    <div class="suggestions" id="fiche-modeles"></div>
+    <div id="fiche-rendement-bloc">
+      <label class="champ-etiquette" for="fiche-rendement" id="fiche-rendement-etiquette">Une fournée donne combien ?</label>
+      <input id="fiche-rendement" class="note quantite" inputmode="decimal" placeholder="ex. 100">
+    </div>
+    <p class="champ-etiquette" id="fiche-titre-lignes">Ce que coûte une fournée</p>
+    <p class="aide">Pour chaque ligne : quantité, unité et prix de 1 unité (ex. 25 kg × 600 F).</p>
+    <ul class="lignes-charges" id="fiche-lignes"></ul>
+    <button type="button" class="bouton bouton-annuler" id="fiche-ajouter">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Ajouter une ligne
+    </button>
+    <p class="fiche-total" id="fiche-total"></p>
   </div>
   <p class="aide" id="produit-marge"></p>
   <p class="champ-etiquette">Compter le stock ?</p>
@@ -420,6 +441,7 @@
     <button type="button" class="bouton pas" data-pas="1" aria-label="Un de plus">+</button>
   </div>
   <p class="aide conversion" id="arrivage-conversion"></p>
+  <div id="arrivage-achat">
   <label class="champ-etiquette" for="arrivage-prix" id="arrivage-prix-etiquette">Prix d'achat cette fois</label>
   <div class="montant-boite petite">
     <input id="arrivage-prix" class="montant" inputmode="numeric" placeholder="0">
@@ -432,6 +454,7 @@
     <button type="button" class="choix" data-arrivage-paye="non" aria-pressed="true">Non / déjà noté</button>
   </div>
   <p class="aide" id="arrivage-paye-aide">Pour un achat à crédit, utilise aussi « Dette fournisseur ».</p>
+  </div>
   <p class="erreur" id="arrivage-erreur" hidden></p>
   <div class="saisie-boutons">
     <button type="button" class="bouton bouton-annuler" id="arrivage-annuler">Annuler</button>
@@ -440,6 +463,19 @@
     </button>
   </div>
 </form>
+
+<!-- Fiche de coût d'un produit (matrice) -->
+<div class="saisie" id="fiche-apercu" hidden style="--couleur-saisie: var(--vert-foret)">
+  <h2 class="saisie-titre" id="fiche-apercu-titre">Fiche de coût</h2>
+  <p class="aide" id="fiche-apercu-type"></p>
+  <div id="fiche-apercu-contenu"></div>
+  <div class="saisie-boutons deux-egaux">
+    <button type="button" class="bouton bouton-annuler" id="fiche-apercu-fermer">Fermer</button>
+    <button type="button" class="bouton bouton-sauver" id="fiche-apercu-modifier">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16zM13 7l4 4"/></svg>Modifier
+    </button>
+  </div>
+</div>
 
 <!-- Aperçu d'une facture ou d'un reçu -->
 <div class="saisie facture-apercu" id="facture-apercu" hidden style="--couleur-saisie: var(--vert-foret)">
@@ -515,6 +551,7 @@
 </div>
 
 <script src="charges.js"></script>
+<script src="fiches.js"></script>
 <script src="boutique.js"></script>
 <script src="facture.js"></script>
 <script src="app.js"></script>

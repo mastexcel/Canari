@@ -175,9 +175,16 @@ Demande du propriétaire : le client enregistré dans Canari doit aussi apparaî
 - Dans l'autre sens, « Choisir dans mes contacts » (saisie d'une vente à crédit) remplit le nom et le numéro depuis le répertoire, si le téléphone le permet (Chrome sur Android) ; le bouton est caché sinon.
 - Quand l'appli sera sur le Play Store (étape 8), l'écriture directe dans les contacts pourra être ajoutée. Code : `app/contacts.js`.
 
+## Abonnement (fait, décision du propriétaire, voir `docs/analyse-abonnement.md`)
+
+- **Gratuit 3 mois** (90 jours depuis le premier jour d'utilisation), puis payant. Prix proposés : 1 mois 1 000 F, 3 mois 2 500 F, 1 an 9 000 F (conseillé). À confirmer par le propriétaire et sur le terrain.
+- Bandeau 10 jours avant la fin. Après la fin, **rien n'est effacé ni caché** : on voit tout, on relance, on note les remboursements, on sauvegarde ; seules les nouvelles ventes, dépenses et achats demandent un abonnement.
+- Chaque téléphone a un **numéro Canari** (8 caractères). Le client paie sur les comptes du propriétaire (`RECEPTION` dans `app/abonnement.js`, à remplir), envoie sa demande sur WhatsApp ; le propriétaire crée un **code d'activation signé** (ECDSA P-256) avec sa page privée `app/gerant.html` (clé secrète gardée sur son téléphone) ; le client touche le lien `…/#code=…` ou colle le code. L'appli vérifie avec la clé publique (`CLE_PUBLIQUE`, à remplir avec celle du propriétaire). Jours payés ajoutés à la suite ; un code ne sert qu'une fois ; l'abonnement suit la sauvegarde et a une copie à part (localStorage) pour ne rien perdre en récupérant une vieille sauvegarde.
+- Argent vers le compte entreprise **Djamo** : à vérifier avec Djamo (réception mobile money, lien de paiement, carte). Carte bancaire et activation automatique : agrégateur de paiement + serveur, plus tard.
+
 ## Hors version 1 (plus tard)
 
-Compte en ligne et synchronisation, plusieurs vendeurs par boutique, paiement mobile automatique dans l'appli (voir ci-dessus), abonnement payant, autres langues (dioula, baoulé), autres pays.
+Compte en ligne et synchronisation, plusieurs vendeurs par boutique, paiement mobile automatique dans l'appli (voir ci-dessus), activation automatique de l'abonnement, autres langues (dioula, baoulé), autres pays.
 
 ## Ordre de travail conseillé
 

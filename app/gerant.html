@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Canari · Codes d'abonnement</title>
+<style>
+  :root { --vert: #174A3F; --or: #F2B233; --sable: #F6EEE3; --brun: #2A1A12; --rouge: #B8412B; --bord: #E4D5C2; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--sable); color: var(--brun); font: 17px/1.4 system-ui, sans-serif; }
+  main { max-width: 520px; margin: 0 auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  h1 { margin: 0; color: var(--vert); font-size: 24px; }
+  h2 { margin: 0 0 8px; font-size: 19px; }
+  section { background: #fff; border: 2px solid var(--bord); border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+  label { font-weight: 600; }
+  input, select, textarea { font: inherit; width: 100%; min-height: 48px; padding: 8px 12px; border: 2px solid var(--bord); border-radius: 12px; background: #fff; color: inherit; }
+  textarea { font-family: monospace; font-size: 14px; word-break: break-all; }
+  button, .bouton { font: inherit; font-weight: 600; min-height: 48px; border: 0; border-radius: 12px; padding: 0 16px; background: var(--vert); color: #fff; cursor: pointer; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; }
+  .secondaire { background: #fff; color: var(--brun); border: 2px solid var(--bord); }
+  .whatsapp { background: #1F8F55; }
+  .alerte { background: #F7DDD5; color: var(--rouge); border-radius: 12px; padding: 10px 12px; margin: 0; }
+  .aide { margin: 0; color: #6B5646; font-size: 15px; }
+  .ligne { display: flex; gap: 8px; }
+  .ligne > * { flex: 1; }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  td, th { text-align: left; padding: 6px 4px; border-bottom: 1px solid var(--bord); }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Codes d'abonnement Canari</h1>
+  <p class="alerte">Page réservée au propriétaire de Canari. Ne donne jamais ta clé secrète ni ton fichier de clé à personne.</p>
+
+  <section id="sans-cle" hidden>
+    <h2>1. Ta clé secrète</h2>
+    <p class="aide">Elle sert à fabriquer les codes. Elle est créée et gardée sur ce téléphone seulement.</p>
+    <button type="button" id="creer-cle">Créer ma clé</button>
+    <label class="bouton secondaire" for="charger-cle">J'ai déjà un fichier de clé</label>
+    <input type="file" id="charger-cle" accept=".json,application/json" hidden>
+  </section>
+
+  <section id="avec-cle" hidden>
+    <h2>Ta clé</h2>
+    <p class="aide">Envoie la <b>clé publique</b> ci-dessous au développeur pour qu'il la mette dans l'appli (elle ne permet pas de fabriquer des codes, tu peux la partager). Puis <b>sauvegarde ton fichier de clé</b> dans un endroit sûr (ton e-mail, Google Drive) : si tu perds ce téléphone sans ce fichier, tu ne pourras plus créer de codes.</p>
+    <textarea id="cle-publique" rows="4" readonly></textarea>
+    <div class="ligne">
+      <button type="button" class="secondaire" id="copier-publique">Copier la clé publique</button>
+      <button type="button" class="secondaire" id="sauver-cle">Sauvegarder mon fichier de clé</button>
+    </div>
+  </section>
+
+  <section id="creer" hidden>
+    <h2>Créer un code</h2>
+    <p class="aide">Vérifie d'abord dans ton compte que l'argent est bien arrivé.</p>
+    <label for="numero">Numéro Canari du client</label>
+    <input id="numero" placeholder="ex. K7P2-QX9M" autocapitalize="characters" autocomplete="off">
+    <label for="formule">Formule payée</label>
+    <select id="formule">
+      <option value="31" data-prix="1000">1 mois · 1 000 F</option>
+      <option value="92" data-prix="2500">3 mois · 2 500 F</option>
+      <option value="366" data-prix="9000" selected>1 an · 9 000 F</option>
+      <option value="autre" data-prix="0">Autre nombre de jours (geste commercial)</option>
+    </select>
+    <input id="jours-autre" inputmode="numeric" placeholder="Nombre de jours" hidden>
+    <label for="whatsapp">Son numéro WhatsApp (facultatif)</label>
+    <input id="whatsapp" type="tel" inputmode="tel" placeholder="ex. 07 00 00 00 00">
+    <p class="alerte" id="erreur" hidden></p>
+    <button type="button" id="fabriquer">Créer le code</button>
+  </section>
+
+  <section id="resultat" hidden>
+    <h2>Message à envoyer</h2>
+    <textarea id="message" rows="8" readonly></textarea>
+    <div class="ligne">
+      <button type="button" class="secondaire" id="copier-message">Copier</button>
+      <a class="bouton whatsapp" id="envoyer" target="_blank" rel="noopener">Envoyer sur WhatsApp</a>
+    </div>
+  </section>
+
+  <section id="journal-carte" hidden>
+    <h2>Codes créés</h2>
+    <p class="aide" id="total"></p>
+    <table><thead><tr><th>Date</th><th>Numéro</th><th>Formule</th><th>Prix</th></tr></thead><tbody id="journal"></tbody></table>
+  </section>
+</main>
+<script>
+const CLE_PRIVEE = "canari.gerant.cle";
+const CLE_JOURNAL = "canari.gerant.journal";
+const ALGO = { name: "ECDSA", namedCurve: "P-256" };
+const $ = function (id) { return document.getElementById(id); };
+const franc = function (n) { return Math.round(n).toLocaleString("fr-FR").replace(/[  ]/g, " ") + " F"; };
+let cles = null;
+
+function lireJson(cle) { try { return JSON.parse(localStorage.getItem(cle)); } catch (e) { return null; } }
+function base64url(octets) {
+  let b = "";
+  new Uint8Array(octets).forEach(function (n) { b += String.fromCharCode(n); });
+  return btoa(b).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+function clePubliqueTexte() { return JSON.stringify({ kty: cles.publique.kty, crv: cles.publique.crv, x: cles.publique.x, y: cles.publique.y }); }
+
+function montrer() {
+  $("sans-cle").hidden = !!cles;
+  ["avec-cle", "creer", "journal-carte"].forEach(function (id) { $(id).hidden = !cles; });
+  if (cles) $("cle-publique").value = clePubliqueTexte();
+  afficherJournal();
+}
+
+function garder(c) {
+  cles = c;
+  localStorage.setItem(CLE_PRIVEE, JSON.stringify(c));
+  montrer();
+}
+
+$("creer-cle").addEventListener("click", function () {
+  crypto.subtle.generateKey(ALGO, true, ["sign", "verify"]).then(function (paire) {
+    return Promise.all([crypto.subtle.exportKey("jwk", paire.privateKey), crypto.subtle.exportKey("jwk", paire.publicKey)]);
+  }).then(function (r) {
+    garder({ privee: r[0], publique: r[1], creee: Date.now() });
+    alert("Ta clé est créée. Sauvegarde maintenant ton fichier de clé, puis envoie la clé publique au développeur.");
+  });
+});
+$("charger-cle").addEventListener("change", function (e) {
+  const f = e.target.files[0];
+  if (!f) return;
+  f.text().then(function (t) {
+    const c = JSON.parse(t);
+    if (!c.privee || !c.publique) throw new Error();
+    garder(c);
+  }).catch(function () { alert("Ce fichier n'est pas un fichier de clé Canari."); });
+});
+$("sauver-cle").addEventListener("click", function () {
+  const lien = document.createElement("a");
+  lien.href = URL.createObjectURL(new Blob([JSON.stringify(cles)], { type: "application/json" }));
+  lien.download = "cle-canari-SECRETE.json";
+  lien.click();
+});
+function copier(texte, quoi) {
+  navigator.clipboard.writeText(texte).then(function () { alert(quoi + " copié."); }, function () {});
+}
+$("copier-publique").addEventListener("click", function () { copier(clePubliqueTexte(), "Clé publique"); });
+$("copier-message").addEventListener("click", function () { copier($("message").value, "Message"); });
+$("formule").addEventListener("change", function () { $("jours-autre").hidden = $("formule").value !== "autre"; });
+
+$("fabriquer").addEventListener("click", function () {
+  const id = $("numero").value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+  const choix = $("formule").selectedOptions[0];
+  const jours = choix.value === "autre" ? parseInt($("jours-autre").value, 10) : Number(choix.value);
+  const oups = function (t) { $("erreur").textContent = t; $("erreur").hidden = false; };
+  if (!/^[A-Z2-9]{8}$/.test(id)) return oups("Le numéro Canari a 8 caractères, par exemple K7P2-QX9M.");
+  if (!(jours > 0 && jours < 10000)) return oups("Écris un nombre de jours.");
+  $("erreur").hidden = true;
+  const charge = id + "." + jours + "." + Date.now().toString(36);
+  crypto.subtle.importKey("jwk", cles.privee, ALGO, false, ["sign"]).then(function (cle) {
+    return crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, cle, new TextEncoder().encode(charge));
+  }).then(function (signature) {
+    const code = charge + "." + base64url(signature);
+    const lien = new URL("./#code=" + code, location.href).href;
+    const nom = choix.value === "autre" ? jours + " jours" : choix.textContent.split(" · ")[0];
+    const texte = "Merci pour ton paiement ! Voici ton abonnement Canari (" + nom + ").\n\n" +
+      "Touche ce lien pour l'activer :\n" + lien + "\n\n" +
+      "Ou colle ce code dans Canari (Réglages → Mon abonnement) :\n" + code;
+    $("message").value = texte;
+    const tel = $("whatsapp").value.replace(/\D/g, "").replace(/^00225|^225(?=\d{10}$)/, "");
+    $("envoyer").href = "https://wa.me/" + (tel.length === 10 ? "225" + tel : tel) + "?text=" + encodeURIComponent(texte);
+    $("resultat").hidden = false;
+    const journal = lireJson(CLE_JOURNAL) || [];
+    journal.unshift({ t: Date.now(), id: id, formule: nom, prix: Number(choix.dataset.prix) || 0 });
+    localStorage.setItem(CLE_JOURNAL, JSON.stringify(journal));
+    afficherJournal();
+    $("resultat").scrollIntoView({ behavior: "smooth" });
+  });
+});
+
+function afficherJournal() {
+  const journal = lireJson(CLE_JOURNAL) || [];
+  $("total").textContent = journal.length + " code(s) · " + franc(journal.reduce(function (s, l) { return s + l.prix; }, 0)) + " encaissés";
+  $("journal").innerHTML = journal.slice(0, 200).map(function (l) {
+    return "<tr><td>" + new Date(l.t).toLocaleDateString("fr-FR") + "</td><td>" + l.id.slice(0, 4) + "-" + l.id.slice(4) + "</td><td>" + l.formule + "</td><td>" + franc(l.prix) + "</td></tr>";
+  }).join("");
+}
+
+cles = lireJson(CLE_PRIVEE);
+montrer();
+</script>
+</body>
+</html>

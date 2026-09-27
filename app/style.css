@@ -1399,3 +1399,17 @@ input.qte {
 .message.deux-boutons { flex-wrap: wrap; }
 .message.deux-boutons #message-texte { flex: 1 1 calc(100% - 60px); }
 .message.deux-boutons button { flex: 1; }
+
+/* Abonnement */
+.abo-etat { margin: 0; padding: 10px 14px; border-radius: 12px; font-weight: 600; background: #EAF4EE; color: var(--vert-foret); }
+.abo-etat.bientot { background: #FBEBC4; color: var(--brun); }
+.abo-etat.fini { background: #F7DDD5; color: var(--sort); }
+.abo-raison { margin: 0; font-size: 16px; }
+.abo-formules { display: flex; flex-direction: column; gap: 10px; }
+.abo-formule { padding-right: 110px; }
+.abo-prix { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-family: "Fredoka", system-ui, sans-serif; font-size: 22px; font-weight: 600; color: var(--vert-foret); }
+.abo-conseil { align-self: flex-start; background: var(--or); color: var(--brun); font-size: 13px; font-weight: 600; border-radius: 8px; padding: 1px 8px; margin-bottom: 2px; }
+.abo-comptes { margin: 0; padding-left: 20px; font-size: 17px; display: flex; flex-direction: column; gap: 4px; }
+.abo-code { font-family: monospace; font-size: 14px; resize: vertical; word-break: break-all; }
+.lien-bouton { font: inherit; font-weight: 600; color: var(--vert-foret); background: none; border: 0; text-decoration: underline; min-height: 44px; padding: 0 6px; cursor: pointer; }
+.rappel-abonnement img { flex: none; }

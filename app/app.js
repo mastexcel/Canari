@@ -429,6 +429,7 @@ let coteCredits = "clients";
 // Dessine seulement l'onglet affiché (les autres le seront quand on les ouvrira).
 function afficher() {
   afficherRappelSauvegarde();
+  afficherBandeauAbonnement();
   majPastilles();
   if (onglet === "jour") afficherJour();
   else if (onglet === "credits") afficherCredits();
@@ -1446,6 +1447,7 @@ function afficherRappelSauvegarde() {
 function afficherReglages() {
   remplirFormBoutique();
   remplirFormPaiements();
+  afficherAbonnementReglages();
   const parJour = Math.round((fixeMensuel("charge") + fixeMensuel("impot")) / joursTravail());
   const taux = tauxVentes("charge") + tauxVentes("impot");
   $("resume-charges").textContent = aDesCharges()
@@ -1510,8 +1512,10 @@ function restaurer(fichier) {
       "Ce qui est noté sur ce téléphone sera remplacé.");
     if (!ok) return;
     garderAvantRestauration(donnees);
+    const abonnement = donnees.abonnement;
     donnees = d;
     completerDonnees();
+    garderAbonnement(abonnement);
     sauver();
     afficher();
     afficherReglages();
@@ -1551,8 +1555,10 @@ $("annuler-restauration").addEventListener("click", function () {
   if (!window.confirm("Revenir aux chiffres d'avant la récupération ?")) return;
   lireAvantRestauration().then(function (avant) {
     if (!avant || !Array.isArray(avant.mouvements)) { message("La copie d'avant n'est plus disponible."); return; }
+    const abonnement = donnees.abonnement;
     donnees = avant;
     completerDonnees();
+    garderAbonnement(abonnement);
     sauver();
     try { localStorage.removeItem(CLE_AVANT_RESTAURATION); localStorage.removeItem(CLE_AVANT_RESTAURATION + ".copie"); } catch (e) { /* rien */ }
     if (modeStockage === "base") ecrireBase("avantRestauration", null).catch(function () {});
@@ -1604,6 +1610,7 @@ chargerDonnees().then(function (d) {
   initBoutique();
   initFacture();
   initContacts();
+  initAbonnement();
   montrer(lire(CLE_DEJA_VU) ? "principal" : "accueil");
 });
 

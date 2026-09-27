@@ -47,6 +47,12 @@
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
   </div>
 
+  <div class="rappel-sauvegarde rappel-abonnement" id="rappel-abonnement" hidden>
+    <img src="icones/canari-tranquille.webp" width="44" height="52" alt="">
+    <span id="rappel-abonnement-texte"></span>
+    <button type="button" class="bouton" id="rappel-abonnement-bouton">S'abonner</button>
+  </div>
+
   <div class="rappel-sauvegarde" id="rappel-sauvegarde" hidden>
     <span id="rappel-texte"></span>
     <button type="button" class="bouton" id="rappel-bouton">Sauvegarder</button>
@@ -143,6 +149,15 @@
     </button>
     <h1 class="titre-ecran">Réglages</h1>
   </header>
+
+  <section class="carte-reglage">
+    <h2>Mon abonnement</h2>
+    <p class="aide" id="reglage-abo-etat"></p>
+    <p class="aide">Ton numéro Canari : <b id="reglage-abo-id"></b></p>
+    <button type="button" class="bouton bouton-sauver" id="reglage-abo-ouvrir">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>Voir les formules
+    </button>
+  </section>
 
   <form class="carte-reglage" id="form-paiements" novalidate autocomplete="off">
     <h2>Paiement mobile</h2>
@@ -623,6 +638,37 @@
   <button type="button" class="bouton bouton-annuler" id="relance-fermer">Fermer</button>
 </form>
 
+<!-- Abonnement : formules, paiement, code d'activation -->
+<div class="saisie" id="abonnement" hidden style="--couleur-saisie: var(--vert-foret)">
+  <h2 class="saisie-titre">Mon abonnement</h2>
+  <p class="abo-raison" id="abo-raison" hidden></p>
+  <p class="abo-etat" id="abo-etat"></p>
+  <p class="champ-etiquette">1. Choisis ta formule</p>
+  <div class="abo-formules" id="abo-formules"></div>
+  <p class="aide">Sans publicité, et tes chiffres restent toujours à toi.</p>
+  <p class="champ-etiquette">2. Paie <span id="abo-montant"></span> sur un de ces comptes</p>
+  <ul class="abo-comptes" id="abo-comptes"></ul>
+  <a class="bouton bouton-annuler" id="abo-carte" target="_blank" rel="noopener" hidden>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>Payer par carte bancaire
+  </a>
+  <p class="aide">Dans le message du paiement, écris ton numéro Canari : <b id="abo-id"></b>
+    <button type="button" class="lien-bouton" id="abo-copier-id">Copier</button></p>
+  <p class="champ-etiquette">3. Envoie ta demande</p>
+  <a class="bouton bouton-whatsapp" id="abo-demande" target="_blank" rel="noopener">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.7z"/></svg>Envoyer sur WhatsApp
+  </a>
+  <p class="aide">Tu reçois ton code d'activation sur WhatsApp. Touche le lien, ou colle le code ici :</p>
+  <label class="champ-etiquette" for="abo-code">4. Ton code d'activation</label>
+  <textarea id="abo-code" class="note abo-code" rows="3" placeholder="Colle ici le code reçu"></textarea>
+  <p class="erreur" id="abo-erreur" hidden></p>
+  <div class="saisie-boutons">
+    <button type="button" class="bouton bouton-annuler" id="abo-fermer">Fermer</button>
+    <button type="button" class="bouton bouton-ok" id="abo-activer">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>Activer
+    </button>
+  </div>
+</div>
+
 <!-- Fiche client : corriger le nom ou le numéro -->
 <form class="saisie" id="fiche" hidden novalidate autocomplete="off" style="--couleur-saisie: var(--credit)">
   <h2 class="saisie-titre" id="fiche-titre">Fiche du client</h2>
@@ -656,6 +702,7 @@
 <script src="boutique.js"></script>
 <script src="facture.js"></script>
 <script src="contacts.js"></script>
+<script src="abonnement.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

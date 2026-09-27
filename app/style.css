@@ -1461,3 +1461,305 @@ a.bouton { text-decoration: none; }
 .voix-ecoute.compact .voix-entendu { font-size: 15px; flex: 1; min-width: 0; }
 .voix-ecoute.compact .aide, .voix-ecoute.compact .voix-exemples { display: none; }
 .voix-ecoute.compact .bouton { width: auto; min-height: 44px; padding: 0 14px; flex: none; }
+
+/* =====================================================================
+   Habillage : nuances de couleurs (demande du propriétaire : agréable,
+   attractif, lisible). Chaque couleur de Canari a sa gamme :
+   -fonce (texte et chiffres sur fond clair), -clair (dégradés),
+   -100 (fonds teintés). Les couleurs de sens ne changent pas :
+   vert = entre, rouge = sort, ambre = crédit, bleu-violet = maison.
+   ===================================================================== */
+:root {
+  --vert-900: #0E3129;
+  --vert-700: #1F6353;
+  --vert-500: #2F8A73;
+  --vert-100: #DCEDE6;
+  --vert-50: #EFF7F3;
+  --entre-fonce: #135E3A;
+  --entre-clair: #2A9A63;
+  --entre-100: #DDF1E4;
+  --sort-fonce: #8F2D1B;
+  --sort-clair: #D3593E;
+  --sort-100: #FAE2DA;
+  --credit-fonce: #74490A;
+  --credit-clair: #BE8424;
+  --credit-100: #F8EACB;
+  --maison-fonce: #353987;
+  --maison-clair: #6A6FCB;
+  --maison-100: #E4E5F7;
+  --or-fonce: #B97E0B;
+  --or-100: #FDF1D2;
+  --terre-100: #FBE7DC;
+  --sable-clair: #FCF8F2;
+  --sable-fonce: #EEE1CD;
+  --texte-doux: #5E4A3C;       /* petits textes : contraste 7:1 sur blanc */
+  --bord: #E8DAC6;
+  --ombre: 0 1px 2px rgba(42, 26, 18, .06), 0 6px 16px rgba(42, 26, 18, .07);
+  --ombre-forte: 0 2px 4px rgba(42, 26, 18, .08), 0 10px 24px rgba(42, 26, 18, .12);
+}
+
+body {
+  background: var(--sable);
+  background-image: radial-gradient(120% 60% at 50% -10%, var(--sable-clair) 0%, var(--sable) 60%);
+  background-attachment: fixed;
+}
+.ligne-texte small, .client-info, .aide, .vide, .date, .barre-jour small { color: var(--texte-doux); }
+
+/* ---------- Accueil ---------- */
+.accueil {
+  background:
+    radial-gradient(circle at 50% 28%, rgba(242, 178, 51, .22) 0, rgba(242, 178, 51, 0) 38%),
+    radial-gradient(140% 90% at 50% 0%, var(--vert-700) 0%, var(--vert-foret) 45%, var(--vert-900) 100%);
+}
+.accueil-mascotte { filter: drop-shadow(0 12px 28px rgba(0, 0, 0, .35)) drop-shadow(0 0 30px rgba(242, 178, 51, .25)); }
+.accueil .logo { color: #FFF8EC; text-shadow: 0 3px 0 rgba(0, 0, 0, .15); }
+.accueil-texte { color: #F2E9DC; opacity: 1; }
+.bouton-principal {
+  background: linear-gradient(180deg, var(--terre-claire) 0%, var(--terre-cuite) 55%, #B0542E 100%);
+  box-shadow: 0 4px 0 #8E4322, 0 10px 22px rgba(0, 0, 0, .25);
+}
+.bouton-principal:active { box-shadow: 0 1px 0 #8E4322; transform: translateY(3px); }
+
+/* ---------- En-tête ---------- */
+.bouton-reglages, .bouton-retour {
+  background: #fff;
+  border-color: var(--vert-100);
+  box-shadow: var(--ombre);
+}
+#voix-ecran { background: var(--vert-50); }
+
+/* ---------- Grande carte du jour ---------- */
+.carte-gain {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 92% 8%, rgba(242, 178, 51, .28) 0, rgba(242, 178, 51, 0) 34%),
+    radial-gradient(circle at 0% 100%, rgba(224, 138, 95, .22) 0, rgba(224, 138, 95, 0) 40%),
+    linear-gradient(150deg, var(--vert-700) 0%, var(--vert-foret) 50%, var(--vert-900) 100%);
+  box-shadow: var(--ombre-forte);
+}
+/* Frise en zigzag, comme le motif de la jarre */
+.carte-gain::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 6px;
+  background:
+    linear-gradient(135deg, var(--terre-claire) 25%, transparent 25%) -6px 0 / 12px 12px,
+    linear-gradient(225deg, var(--terre-claire) 25%, transparent 25%) -6px 0 / 12px 12px;
+  opacity: .85;
+}
+.carte-gain .etiquette { color: #DDEEE7; opacity: 1; letter-spacing: .2px; }
+.gros-chiffre { color: var(--or); text-shadow: 0 2px 0 rgba(0, 0, 0, .18); }
+.chiffre {
+  border-top: 0;
+  box-shadow: inset 0 4px 0 currentColor;
+  padding: 10px 4px 8px;
+  border-radius: 14px;
+}
+.chiffre span { color: var(--brun); font-weight: 500; }
+.chiffre.revient { background: var(--credit-100); color: var(--credit-clair); }
+.chiffre.revient strong { color: var(--credit-fonce); }
+.chiffre.sort { background: var(--sort-100); color: var(--sort-clair); }
+.chiffre.sort strong { color: var(--sort-fonce); }
+.chiffre.entre { background: var(--entre-100); color: var(--entre-clair); }
+.chiffre.entre strong { color: var(--entre-fonce); }
+.chiffre.maison { background: var(--maison-100); color: var(--maison-clair); }
+.chiffre.maison strong { color: var(--maison-fonce); }
+.ligne-carte { background: rgba(255, 255, 255, .12); border: 1px solid rgba(255, 255, 255, .12); }
+.maison-carte { background: linear-gradient(90deg, rgba(106, 111, 203, .45), rgba(75, 79, 168, .3)); }
+.seuil-carte { background: linear-gradient(90deg, rgba(242, 178, 51, .32), rgba(242, 178, 51, .16)); }
+
+/* ---------- Gros boutons ---------- */
+.action {
+  position: relative;
+  border-radius: 18px;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, .15);
+}
+.action svg {
+  width: 44px;
+  height: 44px;
+  padding: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .2);
+  box-sizing: border-box;
+}
+.action.vente {
+  background: linear-gradient(170deg, var(--entre-clair) 0%, var(--entre) 55%, var(--entre-fonce) 100%);
+  box-shadow: 0 4px 0 #0E4A2D, 0 8px 18px rgba(30, 122, 79, .28);
+}
+.action.depense {
+  background: linear-gradient(170deg, var(--sort-clair) 0%, var(--sort) 55%, var(--sort-fonce) 100%);
+  box-shadow: 0 4px 0 #6F2214, 0 8px 18px rgba(184, 65, 43, .28);
+}
+.action.credit {
+  background: linear-gradient(170deg, var(--credit-clair) 0%, var(--credit) 55%, var(--credit-fonce) 100%);
+  box-shadow: 0 4px 0 #5A3807, 0 8px 18px rgba(154, 101, 18, .28);
+}
+.action:active { transform: translateY(3px); box-shadow: none; }
+.secondaire { border: 0; box-shadow: var(--ombre); font-weight: 600; }
+.secondaire.maison { background: var(--maison-100); color: var(--maison-fonce); }
+.secondaire.fournisseur { background: var(--credit-100); color: var(--credit-fonce); }
+
+/* ---------- Bandeaux ---------- */
+.rappel-sauvegarde {
+  background: linear-gradient(90deg, var(--or-100), #FFF8E6);
+  border-color: #F0C75E;
+  box-shadow: var(--ombre);
+}
+.rappel-parametrage { background: linear-gradient(90deg, var(--vert-100), var(--vert-50)); border-color: var(--vert-500); }
+
+/* ---------- Bilan du jour ---------- */
+.bilan {
+  border: 0;
+  background: linear-gradient(135deg, #fff 0%, #fff 55%, var(--or-100) 100%);
+  box-shadow: var(--ombre);
+}
+.bilan strong { color: var(--vert-foret); }
+
+/* ---------- Liste du jour ---------- */
+.titre-liste { color: var(--vert-foret); }
+.liste { border: 0; box-shadow: var(--ombre); overflow: hidden; }
+.ligne { border-bottom-color: #F1E7DA; }
+.pastille {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Fredoka", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1;
+}
+.t-vente .pastille, .t-paye .pastille { background: var(--entre-100); color: var(--entre-fonce); }
+.t-depense .pastille, .t-fpaye .pastille { background: var(--sort-100); color: var(--sort-fonce); }
+.t-credit .pastille, .t-fdette .pastille, .t-intrant .pastille { background: var(--credit-100); color: var(--credit-fonce); }
+.t-maison .pastille { background: var(--maison-100); color: var(--maison-fonce); }
+/* Petite icône dessinée dans la pastille : + (entre), − (sort), horloge (crédit), maison, boîte (stock) */
+.pastille::after {
+  content: "";
+  width: 18px;
+  height: 18px;
+  background: currentColor;
+  -webkit-mask: var(--icone) center / contain no-repeat;
+  mask: var(--icone) center / contain no-repeat;
+}
+.t-vente .pastille, .t-paye .pastille { --icone: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M12%205v14M5%2012h14%22/%3E%3C/svg%3E"); }
+.t-depense .pastille, .t-fpaye .pastille { --icone: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M5%2012h14%22/%3E%3C/svg%3E"); }
+.t-credit .pastille, .t-fdette .pastille { --icone: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%228%22/%3E%3Cpath%20d%3D%22M12%208v4l3%202%22/%3E%3C/svg%3E"); }
+.t-maison .pastille { --icone: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M4%2011%2012%204l8%207v9H4z%22/%3E%3C/svg%3E"); }
+.t-stock .pastille, .t-intrant .pastille { --icone: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M4%208l8-4%208%204v8l-8%204-8-4zM4%208l8%204%208-4M12%2012v8%22/%3E%3C/svg%3E"); }
+.t-stock .pastille { background: var(--sable-fonce); color: var(--texte-doux); }
+.t-vente .ligne-montant, .t-paye .ligne-montant { color: var(--entre-fonce); }
+.t-depense .ligne-montant, .t-fpaye .ligne-montant { color: var(--sort-fonce); }
+.t-credit .ligne-montant, .t-fdette .ligne-montant { color: var(--credit-fonce); }
+.t-maison .ligne-montant { color: var(--maison-fonce); }
+
+/* ---------- Barre des onglets ---------- */
+.onglets {
+  border-top: 0;
+  box-shadow: 0 -4px 18px rgba(42, 26, 18, .08);
+  background: rgba(255, 255, 255, .97);
+}
+.onglet { color: var(--texte-doux); }
+.onglet[aria-current="page"] {
+  background: linear-gradient(180deg, var(--vert-100), var(--vert-50));
+  color: var(--vert-foret);
+  box-shadow: inset 0 -3px 0 var(--vert-500);
+}
+.pastille-nombre { background: var(--sort); box-shadow: 0 0 0 2px #fff; }
+
+/* ---------- Choix à deux boutons ---------- */
+.deux-choix { border: 0; background: var(--sable-fonce); box-shadow: inset 0 1px 2px rgba(42, 26, 18, .08); }
+.choix { color: var(--texte-doux); }
+.choix[aria-pressed="true"] {
+  background: linear-gradient(180deg, var(--vert-700), var(--vert-foret));
+  box-shadow: 0 2px 6px rgba(23, 74, 63, .3);
+}
+.saisie .choix[aria-pressed="true"] { box-shadow: 0 2px 6px rgba(42, 26, 18, .2); }
+
+/* ---------- Fenêtres de saisie ---------- */
+.saisie {
+  background: var(--sable);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--couleur-saisie, var(--entre)) 12%, var(--sable)) 0, var(--sable) 160px);
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, .18);
+}
+.montant-boite {
+  background: #fff;
+  box-shadow: inset 0 2px 4px rgba(42, 26, 18, .05);
+}
+.rapide { border-color: var(--sable-fonce); box-shadow: 0 2px 0 var(--sable-fonce); }
+.rapide:active { transform: translateY(2px); box-shadow: none; }
+.note { border-color: var(--sable-fonce); }
+.bouton-ok {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--couleur-saisie, var(--entre)) 80%, #fff) 0%, var(--couleur-saisie, var(--entre)) 60%);
+  box-shadow: 0 4px 0 color-mix(in srgb, var(--couleur-saisie, var(--entre)) 70%, #000), 0 8px 16px rgba(0, 0, 0, .15);
+}
+.bouton-ok:active { transform: translateY(3px); box-shadow: none; }
+.bouton-annuler { border-color: var(--sable-fonce); }
+.suggestion { box-shadow: 0 2px 0 var(--sable-fonce); }
+
+/* ---------- Crédits et relances ---------- */
+.total-credits {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 90% 10%, rgba(242, 178, 51, .35) 0, rgba(242, 178, 51, 0) 40%),
+    linear-gradient(150deg, var(--credit-clair) 0%, var(--credit) 50%, var(--credit-fonce) 100%);
+  box-shadow: var(--ombre-forte);
+}
+.total-dettes {
+  background:
+    radial-gradient(circle at 90% 10%, rgba(255, 255, 255, .18) 0, rgba(255, 255, 255, 0) 40%),
+    linear-gradient(150deg, var(--sort-clair) 0%, var(--sort) 50%, var(--sort-fonce) 100%);
+}
+.client, .produit {
+  border: 0;
+  border-left: 6px solid var(--credit);
+  box-shadow: var(--ombre);
+}
+.produit { border-left-color: var(--entre); }
+.produit.bas { border-left-color: var(--sort); background: linear-gradient(90deg, var(--sort-100) 0, #fff 60%); }
+.client-haut strong { color: var(--credit-fonce); }
+.bouton-paye {
+  background: linear-gradient(180deg, var(--entre-clair), var(--entre));
+  box-shadow: 0 3px 0 var(--entre-fonce);
+}
+.bouton-fpaye {
+  background: linear-gradient(180deg, var(--sort-clair), var(--sort));
+  box-shadow: 0 3px 0 var(--sort-fonce);
+}
+.bouton-relancer { background: var(--credit-100); color: var(--credit-fonce); box-shadow: 0 3px 0 #EBD5A6; }
+.bouton-arrivage { background: linear-gradient(180deg, var(--entre-clair), var(--entre)); box-shadow: 0 3px 0 var(--entre-fonce); }
+.historique summary { color: var(--vert-700); }
+
+/* ---------- Bilan de la semaine ---------- */
+.barres { border: 0; box-shadow: var(--ombre); }
+.barre-piste { background: var(--sable-fonce); height: 18px; border-radius: 9px; }
+.barre-remplie { background: linear-gradient(90deg, var(--entre-clair), var(--entre)); border-radius: 9px; }
+.barre.negative .barre-remplie { background: linear-gradient(90deg, var(--sort-clair), var(--sort)); }
+.barre.aujourdhui { background: var(--vert-50); border-radius: 12px; margin: 0 -8px; padding: 0 8px; }
+.barre-valeur { color: var(--entre-fonce); }
+
+/* ---------- Réglages et questionnaire ---------- */
+.carte-reglage { border: 0; box-shadow: var(--ombre); }
+.carte-reglage h2 { display: flex; align-items: center; gap: 10px; color: var(--vert-foret); }
+.carte-reglage h2::before {
+  content: "";
+  width: 6px;
+  height: 22px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, var(--or), var(--terre-claire));
+  flex: none;
+}
+.bouton-sauver { background: linear-gradient(180deg, var(--vert-700), var(--vert-foret)); box-shadow: 0 3px 0 var(--vert-900); }
+.choix-carte { border-color: var(--sable-fonce); box-shadow: 0 2px 0 var(--sable-fonce); }
+.choix-carte[aria-pressed="true"] { background: var(--entre-100); border-color: var(--entre); }
+.param-progres span { background: var(--sable-fonce); }
+.param-progres span.fait { background: linear-gradient(90deg, var(--entre-clair), var(--entre)); }
+.param-progres span.actuel { background: linear-gradient(90deg, var(--or), var(--terre-claire)); }
+.param-corps .titre-ecran { color: var(--vert-foret); }
+
+/* ---------- Message du bas ---------- */
+.message { background: linear-gradient(135deg, #3A2619, var(--brun)); box-shadow: 0 10px 28px rgba(0, 0, 0, .3); }

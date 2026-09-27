@@ -42,6 +42,7 @@ Concurrents étudiés : Djago (Côte d'Ivoire), Keiwa, NAFA ERP, OkCredit, Khata
   - Sable `#F6EEE3` (fond clair de l'appli)
   - Brun foncé `#2A1A12` (texte)
   - Rouge dépense `#B8412B`, ambre crédit `#9A6512` (couleurs de sens)
+- **Nuances (habillage, demande du propriétaire : agréable, attractif, lisible)** : chaque couleur a sa gamme dans `app/style.css` (section « Habillage ») : `-fonce` pour les chiffres et textes sur fond clair, `-clair` pour les dégradés, `-100` pour les fonds teintés (ex. `--entre-100`, `--sort-fonce`, `--credit-clair`, `--maison-100`, `--vert-700`, `--or-100`). Grandes cartes en dégradé avec une frise en zigzag (motif de la jarre) ; chiffres du jour sur fonds teintés de leur couleur de sens ; gros boutons en relief ; pastilles-icônes dans la liste (+, −, horloge, maison, boîte) ; ombres douces au lieu de bordures. Contrastes vérifiés (petits textes ≥ 7:1, textes colorés sur fond teinté ≥ 6,5:1).
 - **Polices** : Fredoka (nom, titres, gros chiffres) et Rubik (texte). Toutes deux sur Google Fonts.
 - **Icône de l'appli** : `images/canari-joyeux.png` (jarre souriante, pièce qui tombe, fond vert). Une version simplifiée du personnage 3D pourra la remplacer.
 - **Mascotte « Petit Canari »** : `images/mascotte-canari-3d.png`. À utiliser sur l'écran d'accueil, les écrans vides, les messages de réussite. Humeurs :

@@ -119,9 +119,17 @@ Calculs : gain = encaissé − dépensé ; reste pour la boutique = gain − pri
 - Pas de publicité, pas de collecte de données inutile.
 - Sauvegarde : prévoir un export des données (fichier) pour ne rien perdre si le téléphone change.
 
+## Ajouts demandés par le propriétaire (à faire après les étapes 4 à 6)
+
+- **Paramètres de la boutique** : nom, logo, numéro, adresse (utilisés sur les factures).
+- **Produits et services** avec leur prix.
+- **Saisie d'une vente au choix** : choisir des produits (total calculé, stock mis à jour, facture prête) OU taper juste un montant pour aller vite.
+- **Factures en image avec le logo**, partagées sur WhatsApp comme une photo : facture de vente, et **reçu d'acompte** à chaque paiement d'une partie d'un crédit (déjà payé, reste à payer).
+- **Stock simple** : quantité par produit, qui baisse à chaque vente, monte à chaque arrivée de marchandise, avec une alerte quand un produit va manquer. Permet au vendeur de faire le point sur son stock.
+
 ## Hors version 1 (plus tard)
 
-Compte en ligne et synchronisation, plusieurs vendeurs par boutique, gestion de stock, paiement Wave / Orange Money / MTN dans l'appli, abonnement payant, autres langues (dioula, baoulé), autres pays.
+Compte en ligne et synchronisation, plusieurs vendeurs par boutique, paiement Wave / Orange Money / MTN dans l'appli, abonnement payant, autres langues (dioula, baoulé), autres pays.
 
 ## Ordre de travail conseillé
 
@@ -131,6 +139,7 @@ Compte en ligne et synchronisation, plusieurs vendeurs par boutique, gestion de 
 4. Pris pour la maison, dettes et paiements fournisseurs.
 5. Onglet Relances avec WhatsApp.
 6. Onglet Semaine et bilan du jour.
+6 bis. Paramètres (logo, nom), produits et prix, vente par produits, factures et reçus d'acompte en image sur WhatsApp, stock simple.
 7. Export des données, tests sur un vrai téléphone d'entrée de gamme.
 8. Préparation pour le Play Store (icône, captures d'écran, description).
 

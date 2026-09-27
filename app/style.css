@@ -682,3 +682,20 @@ body {
   font-size: 16px;
 }
 .bouton-fiche svg { width: 22px; height: 22px; }
+
+/* ---------- Maison et fournisseurs ---------- */
+.reste-boutique {
+  margin: 8px 0 0;
+  font-size: 16px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, .1);
+  border-radius: 10px;
+  padding: 6px 10px;
+}
+.m-sort { color: var(--sort); }
+#bloc-fournisseur { display: flex; flex-direction: column; gap: 8px; }
+#bloc-fournisseur[hidden] { display: none; }
+.total-dettes { background: var(--sort); }
+.client.fournisseur { border-left-color: var(--sort); }
+.client.fournisseur .client-haut strong { color: var(--sort); }
+.bouton-fpaye { background: var(--sort); color: #fff; font-size: 18px; }

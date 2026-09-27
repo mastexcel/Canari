@@ -21,16 +21,20 @@ const $ = function (id) { return document.getElementById(id); };
 // Chaque mouvement : { id, type, montant, encaisse, note, client, clientId, t }
 // type : vente, depense, paye (remboursement client), maison, fdette, fpaye
 // Pour une vente, « encaisse » est ce que le client a donné ; le reste est à crédit.
+// Pour une dette fournisseur (fdette), « verse » est ce que j'ai déjà donné
+// (compté comme dépensé) ; le reste est ce que je dois. Le fournisseur est
+// rangé par son nom (fournisseurId) ; son numéro est facultatif.
 // clients : fiche de chaque client, rangée par son numéro de téléphone
 //   (le numéro identifie le client : deux « Koffi » différents ne sont jamais mélangés).
 // meta : suivi des relances par client (promesse, relances), rangé par numéro aussi.
-let donnees = { mouvements: [], clients: {}, meta: {} };
+let donnees = { mouvements: [], clients: {}, fournisseurs: {}, meta: {} };
 try {
   const brut = JSON.parse(lire(CLE_DONNEES));
   if (brut && Array.isArray(brut.mouvements)) donnees = brut;
 } catch (e) { /* données illisibles : on repart de zéro */ }
 if (!donnees.meta) donnees.meta = {};
 if (!donnees.clients) donnees.clients = {};
+if (!donnees.fournisseurs) donnees.fournisseurs = {};
 
 function sauver() {
   if (!ecrire(CLE_DONNEES, JSON.stringify(donnees))) {
@@ -84,6 +88,14 @@ function idClientDe(m) {
   if (m.clientId) return m.clientId;
   return m.client ? cleClient(m.client) : "";
 }
+const cleFournisseur = function (nom) { return "f:" + nom.trim().toLowerCase().replace(/\s+/g, " "); };
+function idFournisseurDe(m) {
+  return m.fournisseurId || (m.client ? cleFournisseur(m.client) : "");
+}
+function ficheFournisseur(id, nomParDefaut) {
+  const f = donnees.fournisseurs[id];
+  return { id: id, nom: (f && f.nom) || nomParDefaut || "", tel: (f && f.tel) || "" };
+}
 function ficheClient(id, nomParDefaut) {
   const f = donnees.clients[id];
   return { id: id, nom: (f && f.nom) || nomParDefaut || "", tel: f ? f.tel : "" };
@@ -113,6 +125,7 @@ function totauxDuJour(jour) {
     }
     else if (m.type === "paye") encaisse += m.montant;
     else if (m.type === "depense" || m.type === "fpaye") depense += m.montant;
+    else if (m.type === "fdette") depense += m.verse || 0;
     else if (m.type === "maison") maison += m.montant;
   });
   return { encaisse: encaisse, depense: depense, maison: maison, gain: encaisse - depense, vendu: vendu, aCredit: aCredit };
@@ -142,6 +155,43 @@ function clientsQuiDoivent() {
   return Array.from(parCle.values())
     .filter(function (c) { return c.du > 0; })
     .sort(function (a, b) { return b.du - a.du; });
+}
+
+// Fournisseurs à qui je dois de l'argent, du plus gros au plus petit.
+function fournisseursQueJeDois() {
+  const parCle = new Map();
+  donnees.mouvements.slice().sort(function (a, b) { return a.t - b.t; }).forEach(function (m) {
+    if (m.type !== "fdette" && m.type !== "fpaye") return;
+    const cle = idFournisseurDe(m);
+    if (!cle) return;
+    const fiche = ficheFournisseur(cle, m.client);
+    const f = parCle.get(cle) || { cle: cle, nom: fiche.nom, tel: fiche.tel, du: 0, depuis: 0, historique: [] };
+    if (m.type === "fpaye") {
+      f.du -= m.montant;
+      f.historique.push({ t: m.t, texte: "J'ai payé", montant: -m.montant });
+    } else {
+      const reste = m.montant - (m.verse || 0);
+      if (reste <= 0) return;
+      if (f.du <= 0) f.depuis = m.t;
+      f.du += reste;
+      f.historique.push({ t: m.t, texte: m.note || "Marchandise à crédit", montant: reste });
+    }
+    if (f.du <= 0) { f.du = 0; f.depuis = 0; }
+    parCle.set(cle, f);
+  });
+  return Array.from(parCle.values())
+    .filter(function (f) { return f.du > 0; })
+    .sort(function (a, b) { return b.du - a.du; });
+}
+
+function listeFournisseurs() {
+  const vus = new Map();
+  donnees.mouvements.slice().sort(function (a, b) { return b.t - a.t; }).forEach(function (m) {
+    if (m.type !== "fdette" && m.type !== "fpaye") return;
+    const id = idFournisseurDe(m);
+    if (id && !vus.has(id)) vus.set(id, ficheFournisseur(id, m.client));
+  });
+  return Array.from(vus.values());
 }
 
 // Tous les clients connus, les plus récents d'abord : { id, nom, tel }.
@@ -185,6 +235,9 @@ function afficherJour() {
   $("maison").textContent = franc(t.maison);
   $("vendu").hidden = t.aCredit === 0;
   $("vendu").textContent = "Vendu aujourd'hui : " + franc(t.vendu) + ", dont " + franc(t.aCredit) + " à crédit";
+  const reste = t.gain - t.maison;
+  $("reste-boutique").hidden = t.maison === 0;
+  $("reste-boutique").textContent = "Reste pour la boutique : " + (reste < 0 ? "− " : "") + franc(Math.abs(reste));
 
   const lignes = donnees.mouvements
     .filter(function (m) { return cleJour(m.t) === aujourdhui; })
@@ -196,7 +249,9 @@ function afficherJour() {
 
 function ligneHtml(m) {
   const heure = new Date(m.t).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-  const qui = m.client ? " · " + echapper(ficheClient(idClientDe(m), m.client).nom) : "";
+  const estFournisseur = m.type === "fdette" || m.type === "fpaye";
+  const nomQui = !m.client ? "" : estFournisseur ? ficheFournisseur(idFournisseurDe(m), m.client).nom : ficheClient(idClientDe(m), m.client).nom;
+  const qui = nomQui ? " · " + echapper(nomQui) : "";
   let type = m.type, montants;
   if (m.type === "vente" || m.type === "credit") {
     const recu = m.type === "vente" ? encaisseDe(m) : 0;
@@ -204,6 +259,10 @@ function ligneHtml(m) {
     if (recu === 0) type = "credit";
     montants = (recu > 0 ? '<span class="m-entre">+ ' + franc(recu) + '</span>' : "") +
       (credit > 0 ? '<span class="m-credit">' + franc(credit) + ' à crédit</span>' : "");
+  } else if (m.type === "fdette") {
+    const verse = m.verse || 0, reste = m.montant - verse;
+    montants = (verse > 0 ? '<span class="m-sort">− ' + franc(verse) + '</span>' : "") +
+      (reste > 0 ? '<span class="m-credit">' + franc(reste) + ' à payer</span>' : "");
   } else {
     const signe = m.type === "paye" ? "+ " : (m.type === "depense" || m.type === "fpaye" || m.type === "maison") ? "− " : "";
     montants = '<span>' + signe + franc(m.montant) + '</span>';
@@ -226,41 +285,65 @@ function afficherCredits() {
   });
   $("credits-clients").hidden = coteCredits !== "clients";
   $("credits-fournisseurs").hidden = coteCredits !== "fournisseurs";
-
   const clients = clientsQuiDoivent();
+  const fournisseurs = fournisseursQueJeDois();
+  document.querySelector('[data-cote="clients"]').textContent = "On me doit" + (clients.length ? " (" + clients.length + ")" : "");
+  document.querySelector('[data-cote="fournisseurs"]').textContent = "Je dois" + (fournisseurs.length ? " (" + fournisseurs.length + ")" : "");
+
   if (!clients.length) {
-    $("credits-clients").innerHTML =
-      '<div class="vide"><img src="icones/canari-tranquille.webp" width="96" height="114" alt="">' +
-      '<p>Personne ne te doit d\'argent.<br>Quand un client prend à crédit, appuie sur <strong>Crédit</strong>.</p></div>';
-    return;
+    $("credits-clients").innerHTML = videHtml("canari-tranquille",
+      "Personne ne te doit d'argent.<br>Quand un client prend à crédit, appuie sur <strong>Crédit</strong>.");
+  } else {
+    $("credits-clients").innerHTML = totalHtml("Tes clients te doivent", clients, "client", "total-credits") +
+      '<ul class="clients">' + clients.map(function (c) { return carteHtml(c, "client"); }).join("") + '</ul>';
   }
-  const total = clients.reduce(function (s, c) { return s + c.du; }, 0);
-  $("credits-clients").innerHTML =
-    '<div class="total-credits"><span>Tes clients te doivent</span><strong>' + franc(total) + '</strong>' +
-    '<small>' + clients.length + ' client' + (clients.length > 1 ? 's' : '') + '</small></div>' +
-    '<ul class="clients">' + clients.map(function (c) {
-      const notes = c.historique.filter(function (h) { return h.montant > 0 && h.texte !== "Achat à crédit"; })
-        .map(function (h) { return h.texte; });
-      const derniers = notes.filter(function (t, i) { return notes.lastIndexOf(t) === i; }).slice(-2).join(", ");
-      return '<li class="client">' +
-        '<div class="client-haut"><b>' + echapper(c.nom) + '</b><strong>' + franc(c.du) + '</strong></div>' +
-        '<p class="client-info">' + (c.tel ? '<a class="client-tel" href="tel:' + c.tel + '">' +
-          '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>' +
-          afficherTel(c.tel) + '</a>' : '<span class="sans-tel">Pas de numéro</span>') + '</p>' +
-        '<p class="client-info">Doit depuis ' + ilYA(c.depuis).replace("il y a ", "") + (derniers ? ' · ' + echapper(derniers) : '') + '</p>' +
-        '<details class="historique"><summary>Voir l\'historique</summary><ul>' +
-        c.historique.slice().reverse().map(function (h) {
-          return '<li><span>' + dateCourte(h.t) + ' · ' + echapper(h.texte) + '</span><span class="' + (h.montant < 0 ? 'm-entre' : 'm-credit') + '">' +
-            (h.montant < 0 ? '− ' : '+ ') + franc(Math.abs(h.montant)) + '</span></li>';
-        }).join("") + '</ul></details>' +
-        '<div class="client-boutons">' +
-        '<button type="button" class="bouton bouton-fiche" data-fiche="' + echapper(c.cle) + '">' +
-        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16zM13 7l4 4"/></svg>Modifier</button>' +
-        '<button type="button" class="bouton bouton-paye" data-paye="' + echapper(c.cle) + '">' +
-        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>Il a payé</button>' +
-        '</div>' +
-        '</li>';
-    }).join("") + '</ul>';
+
+  if (!fournisseurs.length) {
+    $("credits-fournisseurs").innerHTML = videHtml("canari-yeux-fermes",
+      "Tu ne dois rien à tes fournisseurs.<br>Quand tu prends de la marchandise à crédit, appuie sur <strong>Dette fournisseur</strong>.");
+  } else {
+    $("credits-fournisseurs").innerHTML = totalHtml("Tu dois à tes fournisseurs", fournisseurs, "fournisseur", "total-credits total-dettes") +
+      '<ul class="clients">' + fournisseurs.map(function (f) { return carteHtml(f, "fournisseur"); }).join("") + '</ul>';
+  }
+}
+
+function videHtml(image, texte) {
+  return '<div class="vide"><img src="icones/' + image + '.webp" width="96" height="114" alt=""><p>' + texte + '</p></div>';
+}
+function totalHtml(titre, liste, mot, classe) {
+  const total = liste.reduce(function (s, c) { return s + c.du; }, 0);
+  return '<div class="' + classe + '"><span>' + titre + '</span><strong>' + franc(total) + '</strong>' +
+    '<small>' + liste.length + ' ' + mot + (liste.length > 1 ? 's' : '') + '</small></div>';
+}
+
+// Carte d'un client (« On me doit ») ou d'un fournisseur (« Je dois »).
+function carteHtml(c, sorte) {
+  const client = sorte === "client";
+  const parDefaut = client ? "Achat à crédit" : "Marchandise à crédit";
+  const notes = c.historique.filter(function (h) { return h.montant > 0 && h.texte !== parDefaut; })
+    .map(function (h) { return h.texte; });
+  const derniers = notes.filter(function (t, i) { return notes.lastIndexOf(t) === i; }).slice(-2).join(", ");
+  const tel = c.tel ? '<a class="client-tel" href="tel:' + c.tel + '">' +
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>' +
+      afficherTel(c.tel) + '</a>'
+    : client ? '<span class="sans-tel">Pas de numéro</span>' : '';
+  return '<li class="client' + (client ? '' : ' fournisseur') + '">' +
+    '<div class="client-haut"><b>' + echapper(c.nom) + '</b><strong>' + franc(c.du) + '</strong></div>' +
+    (tel ? '<p class="client-info">' + tel + '</p>' : '') +
+    '<p class="client-info">' + (client ? 'Doit depuis ' : 'Depuis ') + ilYA(c.depuis).replace("il y a ", "") + (derniers ? ' · ' + echapper(derniers) : '') + '</p>' +
+    '<details class="historique"><summary>Voir l\'historique</summary><ul>' +
+    c.historique.slice().reverse().map(function (h) {
+      const paye = h.montant < 0;
+      return '<li><span>' + dateCourte(h.t) + ' · ' + echapper(h.texte) + '</span><span class="' + (paye ? (client ? 'm-entre' : 'm-sort') : 'm-credit') + '">' +
+        (paye ? '− ' : '+ ') + franc(Math.abs(h.montant)) + '</span></li>';
+    }).join("") + '</ul></details>' +
+    '<div class="client-boutons">' +
+    '<button type="button" class="bouton bouton-fiche" data-fiche="' + echapper(c.cle) + '" data-sorte="' + sorte + '">' +
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16zM13 7l4 4"/></svg>Modifier</button>' +
+    '<button type="button" class="bouton ' + (client ? 'bouton-paye' : 'bouton-fpaye') + '" data-paye="' + echapper(c.cle) + '" data-sorte="' + sorte + '">' +
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>' + (client ? 'Il a payé' : 'J\'ai payé') + '</button>' +
+    '</div>' +
+    '</li>';
 }
 
 function montrer(id) {
@@ -299,12 +382,15 @@ const MODES = {
   vente: { titre: "Nouvelle vente", couleur: "var(--entre)", montant: "Prix total", note: "Qu'as-tu vendu ? (facultatif)", exemple: "ex. 2 pains, 1 savon", paiement: true },
   credit: { titre: "Vente à crédit", couleur: "var(--credit)", montant: "Prix total", note: "Qu'a-t-il pris ? (facultatif)", exemple: "ex. huile 1 L", paiement: true },
   depense: { titre: "Nouvelle dépense", couleur: "var(--sort)", montant: "Combien ?", note: "Pour quoi ? (facultatif)", exemple: "ex. marchandise, transport" },
-  paye: { titre: "Remboursement", couleur: "var(--entre)", montant: "Combien il te donne ?", note: "Note (facultatif)", exemple: "ex. paiement partiel" }
+  paye: { titre: "Remboursement", couleur: "var(--entre)", montant: "Combien il te donne ?", note: "Note (facultatif)", exemple: "ex. paiement partiel" },
+  maison: { titre: "Pris pour la maison", couleur: "var(--maison)", montant: "Combien ?", note: "Pour quoi ? (facultatif)", exemple: "ex. popote, école, transport" },
+  fdette: { titre: "Dette fournisseur", couleur: "var(--credit)", montant: "Prix total de la marchandise", note: "Qu'as-tu pris ? (facultatif)", exemple: "ex. 10 cartons de lait", fournisseur: true, rapides: [5000, 10000, 25000, 50000] },
+  fpaye: { titre: "Paiement", couleur: "var(--sort)", montant: "Combien tu lui donnes ?", note: "Note (facultatif)", exemple: "ex. deuxième versement" }
 };
 const RAPIDES = [500, 1000, 2000, 5000];
 let modeSaisie = "vente";
 let paiementPartiel = false;
-let clientRembourse = null; // client choisi quand on note un remboursement
+let clientRembourse = null; // client (ou fournisseur) choisi quand on note un paiement
 
 function ouvrirSaisie(mode, client) {
   modeSaisie = mode;
@@ -320,10 +406,12 @@ function ouvrirSaisie(mode, client) {
   $("client").value = "";
   $("tel").value = "";
   $("client-reconnu").hidden = true;
+  $("fournisseur").value = "";
+  $("tel-f").value = "";
   $("note").value = "";
   $("erreur").hidden = true;
 
-  let rapides = RAPIDES.map(function (v) {
+  let rapides = (M.rapides || RAPIDES).map(function (v) {
     return '<button type="button" class="rapide" data-rapide="' + v + '">' + franc(v) + '</button>';
   }).join("");
   if (client) rapides = '<button type="button" class="rapide rapide-tout" data-rapide="' + client.du + '">Tout : ' + franc(client.du) + '</button>' + rapides;
@@ -331,6 +419,9 @@ function ouvrirSaisie(mode, client) {
   $("rapides").classList.toggle("avec-tout", !!client);
 
   $("bloc-paiement").hidden = !M.paiement;
+  $("bloc-fournisseur").hidden = !M.fournisseur;
+  $("donne-etiquette").textContent = M.fournisseur ? "Combien tu as déjà donné ? (facultatif)" : "Combien il a donné ?";
+  if (M.fournisseur) afficherSuggestionsF();
   choisirPaiement(mode === "credit");
   $("message").hidden = true;
   $("fond-saisie").hidden = false;
@@ -346,7 +437,7 @@ function choisirPaiement(partiel) {
   });
   const M = MODES[modeSaisie];
   const avecClient = M.paiement && partiel;
-  $("bloc-donne").hidden = !avecClient;
+  $("bloc-donne").hidden = !avecClient && !M.fournisseur;
   $("bloc-client").hidden = !avecClient;
   if (avecClient) afficherSuggestions();
   majReste();
@@ -356,8 +447,9 @@ function majReste() {
   const total = lireMontant($("montant").value);
   const donne = lireMontant($("donne").value);
   if (!total) { $("reste").textContent = ""; return; }
-  if (donne > total) { $("reste").textContent = "Il a donné plus que le prix."; return; }
-  $("reste").textContent = "Reste à crédit : " + franc(total - donne);
+  const fournisseur = MODES[modeSaisie].fournisseur;
+  if (donne > total) { $("reste").textContent = fournisseur ? "Tu as donné plus que le prix." : "Il a donné plus que le prix."; return; }
+  $("reste").textContent = (fournisseur ? "Reste à payer : " : "Reste à crédit : ") + franc(total - donne);
 }
 
 // Propose les clients déjà connus qui correspondent à ce qui est tapé (nom ou numéro).
@@ -387,6 +479,18 @@ function reconnaitreClient() {
   }
 }
 
+// Fournisseurs déjà connus qui correspondent au nom tapé.
+function afficherSuggestionsF() {
+  const tape = $("fournisseur").value.trim().toLowerCase();
+  const liste = listeFournisseurs().filter(function (f) {
+    return f.nom.toLowerCase() !== tape && (!tape || f.nom.toLowerCase().indexOf(tape) !== -1);
+  }).slice(0, 6);
+  $("suggestions-f").innerHTML = liste.map(function (f) {
+    return '<button type="button" class="suggestion" data-fournisseur="' + echapper(f.id) + '">' +
+      '<b>' + echapper(f.nom) + '</b>' + (f.tel ? '<small>' + afficherTel(f.tel) + '</small>' : '') + '</button>';
+  }).join("");
+}
+
 function fermerSaisie() {
   $("saisie").hidden = true;
   $("fond-saisie").hidden = true;
@@ -412,6 +516,15 @@ $("suggestions").addEventListener("click", function (e) {
   $("client").value = c.nom;
   reconnaitreClient();
   afficherSuggestions();
+});
+$("fournisseur").addEventListener("input", function () { $("erreur").hidden = true; afficherSuggestionsF(); });
+$("suggestions-f").addEventListener("click", function (e) {
+  const b = e.target.closest("[data-fournisseur]");
+  if (!b) return;
+  const f = ficheFournisseur(b.dataset.fournisseur);
+  $("fournisseur").value = f.nom;
+  $("tel-f").value = f.tel ? afficherTel(f.tel) : "";
+  afficherSuggestionsF();
 });
 $("rapides").addEventListener("click", function (e) {
   const b = e.target.closest("[data-rapide]");
@@ -473,6 +586,29 @@ $("saisie").addEventListener("submit", function (e) {
       texte = "Vente de " + franc(montant) + " notée.";
       joyeux = true;
     }
+  } else if (modeSaisie === "fdette") {
+    const verse = lireMontant($("donne").value);
+    const nom = $("fournisseur").value.trim().replace(/\s+/g, " ");
+    const tel = normaliserTel($("tel-f").value);
+    if (verse > montant) return erreur("Tu as donné plus que le prix. Vérifie les montants.", $("donne"));
+    if (!nom) return erreur("Écris le nom du fournisseur.", $("fournisseur"));
+    if (tel && tel.length < 8) return erreur("Ce numéro semble incomplet.", $("tel-f"));
+    const id = cleFournisseur(nom);
+    const fiche = donnees.fournisseurs[id] || { nom: nom, tel: "" };
+    if (tel) fiche.tel = tel;
+    donnees.fournisseurs[id] = fiche;
+    mouvement = { id: nouvelId(), type: "fdette", montant: montant, verse: verse, note: note, client: fiche.nom, fournisseurId: id, t: Date.now() };
+    donnees.mouvements.push(mouvement);
+    const f = fournisseursQueJeDois().find(function (x) { return x.cle === id; });
+    texte = f ? "Noté. Tu dois maintenant " + franc(f.du) + " à " + fiche.nom + "." : "Noté. Tu as tout payé à " + fiche.nom + ".";
+  } else if (modeSaisie === "fpaye") {
+    const f = clientRembourse;
+    if (montant > f.du) return erreur("Tu ne dois que " + franc(f.du) + " à " + f.nom + ".", $("montant"));
+    mouvement = { id: nouvelId(), type: "fpaye", montant: montant, note: note, client: f.nom, fournisseurId: f.cle, t: Date.now() };
+    donnees.mouvements.push(mouvement);
+    const reste = f.du - montant;
+    texte = reste > 0 ? "Noté. Tu dois encore " + franc(reste) + " à " + f.nom + "." : "Tu ne dois plus rien à " + f.nom + ". Bravo !";
+    joyeux = reste <= 0;
   } else if (modeSaisie === "paye") {
     const c = clientRembourse;
     if (montant > c.du) return erreur(c.nom + " ne te doit que " + franc(c.du) + ".", $("montant"));
@@ -487,7 +623,7 @@ $("saisie").addEventListener("submit", function (e) {
   } else {
     mouvement = { id: nouvelId(), type: modeSaisie, montant: montant, note: note, client: "", t: Date.now() };
     donnees.mouvements.push(mouvement);
-    texte = NOMS[modeSaisie] + " de " + franc(montant) + " notée.";
+    texte = modeSaisie === "maison" ? franc(montant) + " pris pour la maison, c'est noté." : NOMS[modeSaisie] + " de " + franc(montant) + " notée.";
   }
 
   sauver();
@@ -525,24 +661,24 @@ $("onglets").addEventListener("click", function (e) {
 $("vue-credits").addEventListener("click", function (e) {
   const cote = e.target.closest("[data-cote]");
   if (cote) { coteCredits = cote.dataset.cote; afficherCredits(); return; }
-  const fiche = e.target.closest("[data-fiche]");
-  if (fiche) {
-    const c = clientsQuiDoivent().find(function (x) { return x.cle === fiche.dataset.fiche; });
-    if (c) ouvrirFiche(c);
-    return;
-  }
-  const paye = e.target.closest("[data-paye]");
-  if (paye) {
-    const c = clientsQuiDoivent().find(function (x) { return x.cle === paye.dataset.paye; });
-    if (c) ouvrirSaisie("paye", c);
-  }
+  const b = e.target.closest("[data-fiche], [data-paye]");
+  if (!b) return;
+  const client = b.dataset.sorte === "client";
+  const liste = client ? clientsQuiDoivent() : fournisseursQueJeDois();
+  const c = liste.find(function (x) { return x.cle === (b.dataset.fiche || b.dataset.paye); });
+  if (!c) return;
+  if (b.dataset.fiche) ouvrirFiche(c, b.dataset.sorte);
+  else ouvrirSaisie(client ? "paye" : "fpaye", c);
 });
 
-/* ---------- Fiche client (corriger nom ou numéro) ---------- */
+/* ---------- Fiche client ou fournisseur (corriger nom ou numéro) ---------- */
 
-let clientFiche = null;
-function ouvrirFiche(c) {
+let clientFiche = null, sorteFiche = "client";
+function ouvrirFiche(c, sorte) {
   clientFiche = c;
+  sorteFiche = sorte || "client";
+  $("fiche-titre").textContent = sorteFiche === "client" ? "Fiche du client" : "Fiche du fournisseur";
+  $("fiche-tel-etiquette").textContent = sorteFiche === "client" ? "Numéro de téléphone" : "Numéro de téléphone (facultatif)";
   $("fiche-tel").value = c.tel ? afficherTel(c.tel) : "";
   $("fiche-nom").value = c.nom;
   $("fiche-erreur").hidden = true;
@@ -562,6 +698,7 @@ $("fiche").addEventListener("submit", function (e) {
   const tel = normaliserTel($("fiche-tel").value);
   const nom = $("fiche-nom").value.trim().replace(/\s+/g, " ");
   const oups = function (t, champ) { $("fiche-erreur").textContent = t; $("fiche-erreur").hidden = false; champ.focus(); };
+  if (sorteFiche === "fournisseur") return enregistrerFicheFournisseur(ancien, nom, tel, oups);
   if (tel.length < 8) return oups("Écris le numéro du client (au moins 8 chiffres).", $("fiche-tel"));
   if (!nom) return oups("Écris le nom du client.", $("fiche-nom"));
   if (tel !== ancien && donnees.clients[tel]) {
@@ -585,6 +722,24 @@ $("fiche").addEventListener("submit", function (e) {
   afficher();
   message("Fiche de " + nom + " enregistrée.");
 });
+
+function enregistrerFicheFournisseur(ancien, nom, tel, oups) {
+  if (!nom) return oups("Écris le nom du fournisseur.", $("fiche-nom"));
+  if (tel && tel.length < 8) return oups("Ce numéro semble incomplet.", $("fiche-tel"));
+  const id = cleFournisseur(nom);
+  if (id !== ancien && donnees.fournisseurs[id]) {
+    return oups("Tu as déjà un fournisseur qui s'appelle " + donnees.fournisseurs[id].nom + ".", $("fiche-nom"));
+  }
+  delete donnees.fournisseurs[ancien];
+  donnees.fournisseurs[id] = { nom: nom, tel: tel };
+  donnees.mouvements.forEach(function (m) {
+    if ((m.type === "fdette" || m.type === "fpaye") && idFournisseurDe(m) === ancien) { m.fournisseurId = id; m.client = nom; }
+  });
+  sauver();
+  fermerFiche();
+  afficher();
+  message("Fiche de " + nom + " enregistrée.");
+}
 
 /* ---------- Démarrage ---------- */
 

@@ -47,6 +47,7 @@
         <div class="chiffre maison"><span>Maison</span><strong id="maison">0 F</strong></div>
       </div>
       <p class="vendu" id="vendu" hidden></p>
+      <p class="reste-boutique" id="reste-boutique" hidden></p>
     </div>
 
     <div class="gros-boutons">
@@ -61,10 +62,10 @@
       </button>
     </div>
     <div class="petits-boutons">
-      <button class="bouton secondaire maison" type="button" data-bientot>
+      <button class="bouton secondaire maison" type="button" data-saisie="maison">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11 12 4l8 7v9H4z"/></svg>Pris pour la maison
       </button>
-      <button class="bouton secondaire fournisseur" type="button" data-bientot>
+      <button class="bouton secondaire fournisseur" type="button" data-saisie="fdette">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.5"/><circle cx="17" cy="17.5" r="1.5"/></svg>Dette fournisseur
       </button>
     </div>
@@ -85,13 +86,8 @@
       <button type="button" class="choix" data-cote="fournisseurs" aria-pressed="false">Je dois</button>
     </div>
     <div id="credits-clients"></div>
-    <div id="credits-fournisseurs" hidden>
-      <div class="vide">
-        <img src="icones/canari-pensif.webp" width="96" height="114" alt="">
-        <p>Bientôt, tu pourras noter ici ce que tu dois à tes fournisseurs.</p>
-      </div>
+    <div id="credits-fournisseurs" hidden></div>
     </div>
-  </div>
 </section>
 
 <!-- Barre des onglets -->
@@ -122,7 +118,7 @@
   </div>
 
   <div id="bloc-donne">
-    <label class="champ-etiquette" for="donne">Combien il a donné ?</label>
+    <label class="champ-etiquette" for="donne" id="donne-etiquette">Combien il a donné ?</label>
     <div class="montant-boite petite">
       <input id="donne" class="montant" inputmode="numeric" placeholder="0" enterkeyhint="done">
       <span class="montant-f">F</span>
@@ -140,6 +136,14 @@
     <input id="client" class="note" placeholder="ex. Maman Awa" enterkeyhint="done" autocapitalize="words">
   </div>
 
+  <div id="bloc-fournisseur">
+    <label class="champ-etiquette" for="fournisseur">Nom du fournisseur</label>
+    <input id="fournisseur" class="note" placeholder="ex. Grossiste Diallo" enterkeyhint="next" autocapitalize="words">
+    <div class="suggestions" id="suggestions-f"></div>
+    <label class="champ-etiquette" for="tel-f">Son numéro (facultatif)</label>
+    <input id="tel-f" class="note" type="tel" inputmode="tel" placeholder="ex. 07 00 00 00 00" enterkeyhint="done">
+  </div>
+
   <label class="champ-etiquette" for="note" id="note-etiquette">Quoi ? (facultatif)</label>
   <input id="note" class="note" enterkeyhint="done">
 
@@ -154,8 +158,8 @@
 
 <!-- Fiche client : corriger le nom ou le numéro -->
 <form class="saisie" id="fiche" hidden novalidate autocomplete="off" style="--couleur-saisie: var(--credit)">
-  <h2 class="saisie-titre">Fiche du client</h2>
-  <label class="champ-etiquette" for="fiche-tel">Numéro de téléphone</label>
+  <h2 class="saisie-titre" id="fiche-titre">Fiche du client</h2>
+  <label class="champ-etiquette" for="fiche-tel" id="fiche-tel-etiquette">Numéro de téléphone</label>
   <input id="fiche-tel" class="note" type="tel" inputmode="tel" placeholder="ex. 07 00 00 00 00">
   <label class="champ-etiquette" for="fiche-nom">Nom</label>
   <input id="fiche-nom" class="note" autocapitalize="words">

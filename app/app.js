@@ -46,7 +46,8 @@ function completerDonnees() {
   if (!donnees.boutique) donnees.boutique = {};  // nom, tel, adresse, merci, logo
   if (!donnees.produits) donnees.produits = {};  // voir boutique.js
   if (!donnees.compteurs) donnees.compteurs = { facture: 0, recu: 0 };
-  if (!donnees.charges) donnees.charges = [];   // charges fixes et taxes, voir charges.js
+  if (!donnees.charges) donnees.charges = [];
+  if (!donnees.intrants) donnees.intrants = {}; // ingrédients et matières, voir intrants.js   // charges fixes et taxes, voir charges.js
 }
 
 function sauver() {
@@ -143,6 +144,11 @@ function coutParMarge(prixVente) {
 }
 // Prix de revient d'un produit : son prix d'achat, ou déduit de la marge habituelle.
 function coutProduit(p) {
+  // Fabrication ou service : la fiche de coût, au prix moyen actuel des intrants.
+  if (p.fiche && (p.type === "fabrication" || p.type === "service")) {
+    const c = coutUnitaireFiche(p.fiche);
+    if (c > 0) return c;
+  }
   return typeof p.cout === "number" ? p.cout : coutParMarge(p.prix);
 }
 // Prix de revient d'une vente.
@@ -312,7 +318,7 @@ function statutRelance(c) {
 
 const NOMS = {
   vente: "Vente", depense: "Dépense", credit: "Vente à crédit", paye: "Remboursement",
-  maison: "Pris pour la maison", fdette: "Dette fournisseur", fpaye: "Payé au fournisseur", stock: "Stock"
+  maison: "Pris pour la maison", fdette: "Dette fournisseur", fpaye: "Payé au fournisseur", stock: "Stock", intrant: "Intrant"
 };
 
 let onglet = "jour";
@@ -381,6 +387,10 @@ function ligneHtml(m) {
     const verse = m.verse || 0, reste = m.montant - verse;
     montants = (verse > 0 ? '<span class="m-sort">− ' + franc(verse) + '</span>' : "") +
       (reste > 0 ? '<span class="m-credit">' + franc(reste) + ' à payer</span>' : "");
+  } else if (m.type === "intrant") {
+    const i = donnees.intrants[m.intrantId];
+    montants = '<span class="m-stock">' + (m.quantite > 0 ? "+" : "−") + " " + qteTexte(Math.abs(m.quantite), i ? i.unite : "unite") + '</span>' +
+      (m.qteAchat ? '<span class="m-stock petit">' + qteTexte(m.qteAchat, m.uniteAchat) + '</span>' : '');
   } else if (m.type === "stock") {
     montants = '<span class="m-stock">' + (m.quantite > 0 ? "+" : "−") + " " + qteTexte(Math.abs(m.quantite), uniteDe(donnees.produits[m.produitId])) + '</span>' +
       (m.qteAchat ? '<span class="m-stock petit">' + qteTexte(m.qteAchat, m.uniteAchat) + '</span>' : '');
@@ -389,7 +399,8 @@ function ligneHtml(m) {
     montants = '<span>' + signe + franc(m.montant) + '</span>';
   }
   const RAISONS = { depart: "Stock de départ", arrivage: "Arrivage", correction: "Stock corrigé", production: "Fabriqué" };
-  const nomType = m.type === "stock" ? (RAISONS[m.raison] || "Stock")
+  const nomType = m.type === "intrant" ? ({ achat: "Achat d'intrant", correction: "Intrant corrigé", depart: "Intrant : stock de départ" }[m.raison] || "Intrant")
+    : m.type === "stock" ? (RAISONS[m.raison] || "Stock")
     : estMarchandise(m) ? "Achat de marchandise"
     : m.type === "depense" && m.categorie === "charge" ? "Charge fixe payée"
     : m.type === "depense" && m.categorie === "impot" ? "Impôt ou taxe payé"
@@ -506,10 +517,11 @@ function afficherBilan(t) {
       (clients.length > 1 ? ", dont " + echapper(clients[0].nom) + " " + franc(clients[0].du) : "") + ".");
   }
   if (aRelancer) phrases.push(fort(aRelancer + " client" + (aRelancer > 1 ? "s" : "") + " à relancer."));
-  const racheter = produitsARacheter();
+  const racheter = produitsARacheter().concat(intrantsARacheter());
   if (racheter.length) {
-    phrases.push(racheter.length === 1 ? "Pense à racheter " + echapper(racheter[0].nom) + "."
-      : "Pense à racheter " + racheter.length + " produits.");
+    phrases.push("Pense à racheter " + (racheter.length <= 3
+      ? racheter.map(function (x) { return echapper(x.nom); }).join(", ").replace(/, ([^,]*)$/, " et $1")
+      : racheter.length + " articles (produits ou intrants)") + ".");
   }
   if (fournisseurs.length) {
     const total = fournisseurs.reduce(function (s, f) { return s + f.du; }, 0);
@@ -953,7 +965,15 @@ $("saisie").addEventListener("submit", function (e) {
     if (!tel) delete mouvement.clientId;
     if (lignes) {
       // Le prix de revient de chaque produit est gardé tel qu'il était le jour de la vente.
-      lignes.forEach(function (l) { l.cout = coutProduit(donnees.produits[l.produitId]); });
+      lignes.forEach(function (l) {
+        const produit = donnees.produits[l.produitId];
+        l.cout = coutProduit(produit);
+        // Un service vendu consomme ses intrants (ex. mèches pour une coiffure).
+        if (typeDe(produit) === "service") {
+          const conso = consommationPour(produit, l.qte);
+          if (conso.length) l.consommation = conso;
+        }
+      });
       mouvement.lignes = lignes;
     } else {
       mouvement.cout = coutTape ? lireMontant($("cout-vente").value) : coutParMarge(montant);
@@ -1388,6 +1408,7 @@ $("date-du-jour").textContent = dateTexte.charAt(0).toUpperCase() + dateTexte.sl
 
 initCharges();
 initFiches();
+initIntrants();
 initBoutique();
 initFacture();
 

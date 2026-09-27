@@ -35,8 +35,9 @@ const MODELES_FICHES = {
 
 /* ---------- Calculs ---------- */
 
+// Une ligne reliée à un intrant du stock prend son prix moyen (sauf prix changé à la main).
 function coutLigne(l) {
-  return (l.qte || 0) * (l.prix || 0);
+  return (l.qte || 0) * (l.prixManuel ? (l.prix || 0) : prixLigne(l));
 }
 function totalFiche(fiche) {
   return (fiche.lignes || []).reduce(function (s, l) { return s + coutLigne(l); }, 0);
@@ -73,8 +74,14 @@ function ligneFicheHtml(l) {
       '<span class="lf-fois">×</span>' +
       '<input class="note lf-prix" inputmode="numeric" placeholder="Prix" value="' + (l.prix ? nombre(l.prix) : "") + '" aria-label="Prix unitaire">' +
     '</div>' +
-    '<p class="lf-cout">' + (cout ? "= " + franc(cout) : "Prix de 1 " + nomUnite(l.unite, 1)) + '</p>' +
+    '<p class="lf-cout">' + texteCoutLigne(l) + '</p>' +
     '</li>';
+}
+
+function texteCoutLigne(l) {
+  const cout = coutLigne(l);
+  const stock = l.intrantId && donnees.intrants[l.intrantId] && !l.prixManuel ? " · prix moyen du stock" : "";
+  return cout ? "= " + franc(Math.round(cout)) + stock : "Prix de 1 " + nomUnite(l.unite, 1);
 }
 
 function afficherFicheForm() {
@@ -98,9 +105,12 @@ function lireFicheForm() {
     l.nom = li.querySelector(".lf-nom").value.trim();
     l.qte = lireQte(li.querySelector(".lf-qte").value) || 0;
     l.unite = li.querySelector(".lf-unite").value;
-    l.prix = lireMontant(li.querySelector(".lf-prix").value);
-    const cout = coutLigne(l);
-    li.querySelector(".lf-cout").textContent = cout ? "= " + franc(cout) : "Prix de 1 " + nomUnite(l.unite, 1);
+    const prix = lireMontant(li.querySelector(".lf-prix").value);
+    // Prix changé à la main sur une ligne reliée au stock : il remplacera le prix de l'intrant.
+    const i = l.intrantId && donnees.intrants[l.intrantId];
+    if (i && typeof i.cout === "number" && prix !== Math.round(i.cout)) l.prixManuel = true;
+    l.prix = prix;
+    li.querySelector(".lf-cout").textContent = texteCoutLigne(l);
   });
   const r = lireQte($("fiche-rendement").value);
   ficheEnCours.rendement = typeProduit === "fabrication" ? (r > 0 ? r : 0) : 1;
@@ -140,7 +150,13 @@ function choisirType(t) {
 
 function chargerFicheForm(p) {
   ficheEnCours = p && p.fiche ? JSON.parse(JSON.stringify(p.fiche)) : { lignes: [], rendement: 1 };
-  ficheEnCours.lignes.forEach(function (l) { if (!l.id) l.id = nouvelId(); });
+  ficheEnCours.lignes.forEach(function (l) {
+    if (!l.id) l.id = nouvelId();
+    // Afficher le prix moyen actuel de l'intrant relié.
+    const i = l.intrantId && donnees.intrants[l.intrantId];
+    if (i && typeof i.cout === "number") l.prix = Math.round(i.cout);
+    delete l.prixManuel;
+  });
   $("fiche-rendement").value = ficheEnCours.rendement > 0 && typeDe(p) === "fabrication" ? String(ficheEnCours.rendement).replace(".", ",") : "";
 }
 
@@ -176,7 +192,8 @@ function ficheTableHtml(p) {
   } else {
     const f = p.fiche || { lignes: [], rendement: 1 };
     lignes = f.lignes.map(function (l) {
-      return '<tr><td>' + echapper(l.nom || "—") + '<small>' + franc(l.prix) + parUnite(l.unite) + '</small></td><td>' + qteTexte(l.qte, l.unite) + '</td><td>' + franc(Math.round(coutLigne(l))) + '</td></tr>';
+      const stock = l.intrantId && donnees.intrants[l.intrantId];
+      return '<tr><td>' + echapper(l.nom || "—") + '<small>' + franc(Math.round(prixLigne(l))) + parUnite(l.unite) + (stock ? " (prix moyen)" : "") + '</small></td><td>' + qteTexte(l.qte, l.unite) + '</td><td>' + franc(Math.round(coutLigne(l))) + '</td></tr>';
     }).join("");
     pied = '<tr class="sous-total"><td colspan="2">' + (t === "fabrication" ? "Total de la fournée" : "Total d'une prestation") + '</td><td>' + franc(Math.round(totalFiche(f))) + '</td></tr>' +
       (t === "fabrication" ? '<tr><td colspan="2">÷ nombre obtenu</td><td>' + qteTexte(f.rendement, u) + '</td></tr>' : '');

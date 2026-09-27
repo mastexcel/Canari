@@ -125,7 +125,14 @@
   </div>
 
   <!-- Onglet Stock -->
-  <div id="vue-stock" class="vue" hidden></div>
+  <div id="vue-stock" class="vue" hidden>
+    <div class="deux-choix" role="group" aria-label="Produits ou intrants">
+      <button type="button" class="choix" data-vue-stock="produits" aria-pressed="true">Produits</button>
+      <button type="button" class="choix" data-vue-stock="intrants" aria-pressed="false">Intrants</button>
+    </div>
+    <div id="stock-produits"></div>
+    <div id="stock-intrants" hidden></div>
+  </div>
 </section>
 
 <!-- Écran Réglages -->
@@ -430,6 +437,44 @@
   <button type="button" class="petit-modifier supprimer" id="produit-supprimer" hidden>Supprimer ce produit</button>
 </form>
 
+<!-- Intrant : ajouter ou modifier -->
+<form class="saisie" id="intrant-form" hidden novalidate autocomplete="off" style="--couleur-saisie: var(--vert-foret)">
+  <h2 class="saisie-titre" id="intrant-titre">Nouvel intrant</h2>
+  <label class="champ-etiquette" for="intrant-nom">Nom (ingrédient, matière, emballage…)</label>
+  <input id="intrant-nom" class="note" placeholder="ex. Farine" autocapitalize="sentences">
+  <label class="champ-etiquette" for="intrant-unite">Tu le comptes en…</label>
+  <select id="intrant-unite" class="note"></select>
+  <p class="champ-etiquette">Tu l'achètes…</p>
+  <div class="deux-choix" id="intrant-achat-facon" role="group" aria-label="Unité d'achat">
+    <button type="button" class="choix" data-intrant-achat="meme" aria-pressed="true" id="intrant-achat-meme">Pareil</button>
+    <button type="button" class="choix" data-intrant-achat="autre" aria-pressed="false">En sac, carton…</button>
+  </div>
+  <div id="bloc-intrant-achat" hidden>
+    <label class="champ-etiquette" for="intrant-unite-achat">Tu l'achètes en…</label>
+    <select id="intrant-unite-achat" class="note"></select>
+    <label class="champ-etiquette" for="intrant-contenance" id="intrant-contenance-etiquette">Combien dans un sac ?</label>
+    <input id="intrant-contenance" class="note quantite" inputmode="decimal" placeholder="ex. 50">
+  </div>
+  <label class="champ-etiquette" for="intrant-prix" id="intrant-prix-etiquette">Prix d'achat</label>
+  <div class="montant-boite petite">
+    <input id="intrant-prix" class="montant" inputmode="numeric" placeholder="0">
+    <span class="montant-f">F</span>
+  </div>
+  <p class="aide conversion" id="intrant-conversion"></p>
+  <label class="champ-etiquette" for="intrant-stock" id="intrant-stock-etiquette">Combien tu en as maintenant ?</label>
+  <input id="intrant-stock" class="note quantite" inputmode="decimal" placeholder="0">
+  <label class="champ-etiquette" for="intrant-seuil" id="intrant-seuil-etiquette">Me prévenir quand il en reste</label>
+  <input id="intrant-seuil" class="note quantite" inputmode="decimal" placeholder="0">
+  <p class="erreur" id="intrant-erreur" hidden></p>
+  <div class="saisie-boutons">
+    <button type="button" class="bouton bouton-annuler" id="intrant-annuler">Annuler</button>
+    <button type="submit" class="bouton bouton-ok">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>Enregistrer
+    </button>
+  </div>
+  <button type="button" class="petit-modifier supprimer" id="intrant-supprimer" hidden>Supprimer cet intrant</button>
+</form>
+
 <!-- Arrivage de marchandise -->
 <form class="saisie" id="arrivage-form" hidden novalidate autocomplete="off" style="--couleur-saisie: var(--vert-foret)">
   <h2 class="saisie-titre" id="arrivage-titre">Arrivage</h2>
@@ -441,6 +486,7 @@
     <button type="button" class="bouton pas" data-pas="1" aria-label="Un de plus">+</button>
   </div>
   <p class="aide conversion" id="arrivage-conversion"></p>
+  <div id="arrivage-conso"></div>
   <div id="arrivage-achat">
   <label class="champ-etiquette" for="arrivage-prix" id="arrivage-prix-etiquette">Prix d'achat cette fois</label>
   <div class="montant-boite petite">
@@ -552,6 +598,7 @@
 
 <script src="charges.js"></script>
 <script src="fiches.js"></script>
+<script src="intrants.js"></script>
 <script src="boutique.js"></script>
 <script src="facture.js"></script>
 <script src="app.js"></script>

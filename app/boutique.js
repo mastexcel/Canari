@@ -23,7 +23,7 @@ function nomUnite(u, n) {
 // Quantité lisible : « 2,5 kg », « 3 sacs », « 1 unité ».
 function qteTexte(n, u) {
   const q = Math.round(n * 1000) / 1000;
-  return q.toLocaleString("fr-FR", { maximumFractionDigits: 3 }).replace(/[\u00a0\u202f]/g, " ") + "\u00a0" + nomUnite(u || "unite", q);
+  return q.toLocaleString("fr-FR", { maximumFractionDigits: 3 }).replace(/[\u00a0\u202f]/g, " ").replace("-", "− ") + "\u00a0" + nomUnite(u || "unite", q);
 }
 // Lit une quantité tapée, avec virgule ou point : « 1,5 » → 1.5.
 function lireQte(texte) {
@@ -70,11 +70,13 @@ function produitsARacheter() {
 function afficherStock() {
   const produits = listeProduits();
   const bas = produits.filter(aRacheter);
-  $("nb-stock").hidden = bas.length === 0;
-  $("nb-stock").textContent = bas.length;
+  const aRacheterTout = bas.length + intrantsARacheter().length;
+  $("nb-stock").hidden = aRacheterTout === 0;
+  $("nb-stock").textContent = aRacheterTout;
+  afficherVueStock();
 
   if (!produits.length) {
-    $("vue-stock").innerHTML =
+    $("stock-produits").innerHTML =
       '<div class="vide"><img src="icones/canari-pensif.webp" width="96" height="114" alt="">' +
       '<p>Ajoute les produits que tu vends avec leur prix.<br>Tes ventes iront plus vite, tes factures seront détaillées et Canari comptera ton stock.</p></div>' +
       '<button type="button" class="bouton bouton-sauver" data-nouveau-produit>' +
@@ -87,7 +89,7 @@ function afficherStock() {
   }, 0);
   const ordre = bas.concat(produits.filter(function (p) { return !aRacheter(p); }));
 
-  $("vue-stock").innerHTML =
+  $("stock-produits").innerHTML =
     '<div class="carte-gain carte-stock">' +
       '<p class="etiquette">Valeur de ton stock (prix d\'achat)</p>' +
       '<p class="gros-chiffre">' + franc(valeur) + '</p>' +
@@ -260,6 +262,7 @@ function enregistrerProduit(e) {
     if (probleme) return oups(probleme, $("fiche-ajouter"));
     p.type = typeProduit;
     p.fiche = JSON.parse(JSON.stringify(ficheEnCours));
+    lierIntrants(p.fiche);
     p.cout = Math.round(coutUnitaireFiche(p.fiche) * 100) / 100;
     delete p.uniteAchat; delete p.contenance; delete p.prixAchatLot;
   } else if (achatAutre) {
@@ -334,11 +337,13 @@ function majArrivage() {
   const prix = lireMontant($("arrivage-prix").value);
   const u = uniteDe(p);
   $("arrivage-conversion").textContent = p.uniteAchat ? "= " + qteTexte(n * p.contenance, u) + " ajoutés au stock" : "";
+  if (!intrantAchete && typeDe(p) === "fabrication") $("arrivage-conso").innerHTML = consommationHtml(consommationPour(p, n));
   $("arrivage-total").textContent = prix && n ? "Total : " + franc(Math.round(n * prix)) +
     (arrivagePaye ? ", noté comme dépense de marchandise." : "") : "";
 }
 
 function ouvrirArrivage(id) {
+  intrantAchete = null;
   produitArrivage = donnees.produits[id];
   $("arrivage-titre").textContent = "Arrivage : " + produitArrivage.nom;
   const u = uniteDe(produitArrivage);
@@ -355,16 +360,19 @@ function ouvrirArrivage(id) {
   $("arrivage-prix").value = typeof prixConnu === "number" ? nombre(Math.round(prixConnu)) : "";
   $("arrivage-quantite").value = "1";
   choisirArrivagePaye(false);
+  $("arrivage-conso").innerHTML = "";
   if (fabrique) {
     $("arrivage-etiquette").textContent = "Combien en as-tu fabriqué" + (u === "unite" ? " ?" : " (en " + nomUnite(u, 2) + ") ?");
     $("arrivage-prix").value = "";
     if (produitArrivage.fiche && produitArrivage.fiche.rendement > 0) $("arrivage-quantite").value = String(produitArrivage.fiche.rendement).replace(".", ",");
+    majArrivage();
   }
   $("arrivage-erreur").hidden = true;
   ouvrirFeuille("arrivage-form");
 }
 function enregistrerArrivage(e) {
   e.preventDefault();
+  if (intrantAchete) return enregistrerAchatIntrant();
   const n = lireQte($("arrivage-quantite").value);
   if (!(n > 0)) {
     $("arrivage-erreur").textContent = "Écris combien tu en as reçu.";
@@ -387,6 +395,11 @@ function enregistrerArrivage(e) {
     note: p.nom, montant: 0, client: "", t: Date.now()
   };
   if (p.uniteAchat) { arrivage.qteAchat = n; arrivage.uniteAchat = p.uniteAchat; }
+  // Une fabrication consomme les intrants de la recette.
+  if (typeDe(p) === "fabrication") {
+    const conso = consommationPour(p, qte);
+    if (conso.length) arrivage.consommation = conso;
+  }
   donnees.mouvements.push(arrivage);
   if (arrivagePaye && prix) {
     donnees.mouvements.push({

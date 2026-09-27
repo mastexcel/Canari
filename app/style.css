@@ -1351,3 +1351,24 @@ input.qte {
 .matrice .marge.perte td { color: var(--sort); }
 .alerte-marge { margin: 10px 0 0; padding: 10px 12px; border-radius: 12px; background: #F6DDD6; color: #8E2F1E; font-weight: 600; }
 .alerte-marge.faible { background: #F4E6CC; color: #7A4F0C; }
+
+/* ---------- Intrants ---------- */
+#stock-produits, #stock-intrants { margin-top: 14px; }
+#bloc-intrant-achat { display: flex; flex-direction: column; gap: 8px; }
+#bloc-intrant-achat[hidden] { display: none; }
+.produit.intrant { border-left-color: var(--credit); }
+.t-intrant .pastille { background: var(--credit); }
+.conso { list-style: none; margin: 0; padding: 0; background: #fff; border: 2px solid var(--bord); border-radius: 14px; }
+.conso li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--bord);
+}
+.conso li:last-child { border-bottom: 0; }
+.conso li b { font-family: "Fredoka", system-ui, sans-serif; font-size: 17px; text-align: right; }
+.conso li small { grid-column: 1 / -1; font-size: 13px; color: #6B5646; }
+.conso li.manque { background: #FBEDE9; }
+.conso li.manque small, .conso li.manque b { color: var(--sort); font-weight: 600; }
+#arrivage-conso { display: flex; flex-direction: column; gap: 8px; }

@@ -166,6 +166,15 @@ Demande du propriétaire : recevoir l'argent par Wave, Orange Money, MTN MoMo, M
 - Aucun logo d'opérateur, seulement les noms. Code : `app/paiements.js`.
 - Plus tard (décision d'entreprise du propriétaire) : paiement automatique par lien, avec confirmation, via un agrégateur de paiement ivoirien ou les API des opérateurs ; nécessite un serveur.
 
+## Contacts du téléphone (fait)
+
+Demande du propriétaire : le client enregistré dans Canari doit aussi apparaître dans les contacts du téléphone. Une page web installée ne peut pas écrire directement dans les contacts d'Android : Canari prépare une **fiche contact (.vcf)** que le téléphone ouvre dans l'appli Contacts, déjà remplie (nom, numéro en +225, note « Client de [boutique] (Canari) ») ; il reste à appuyer sur « Enregistrer ».
+- Après une vente qui crée un **nouveau** client : bouton « Contacts » dans le message du bas, à côté de « Facture ».
+- Fiche d'un client ou d'un fournisseur (« Modifier ») : « Ajouter aux contacts du téléphone ».
+- Réglages → **Contacts du téléphone** : tous les clients en un seul fichier.
+- Dans l'autre sens, « Choisir dans mes contacts » (saisie d'une vente à crédit) remplit le nom et le numéro depuis le répertoire, si le téléphone le permet (Chrome sur Android) ; le bouton est caché sinon.
+- Quand l'appli sera sur le Play Store (étape 8), l'écriture directe dans les contacts pourra être ajoutée. Code : `app/contacts.js`.
+
 ## Hors version 1 (plus tard)
 
 Compte en ligne et synchronisation, plusieurs vendeurs par boutique, paiement mobile automatique dans l'appli (voir ci-dessus), abonnement payant, autres langues (dioula, baoulé), autres pays.

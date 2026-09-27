@@ -786,8 +786,12 @@ function montrer(id) {
 
 /* ---------- Message en bas de l'écran ---------- */
 
-let minuterieMessage, actionAnnuler = null;
-function message(texte, annuler, joyeux, libelle) {
+let minuterieMessage, actionAnnuler = null, actionAutre = null;
+function message(texte, annuler, joyeux, libelle, autre) {
+  actionAutre = autre ? autre.action : null;
+  $("message-autre").hidden = !autre;
+  $("message").classList.toggle("deux-boutons", !!autre);
+  if (autre) $("message-autre").textContent = autre.libelle;
   $("message-texte").textContent = texte;
   $("message-image").hidden = !joyeux;
   actionAnnuler = annuler || null;
@@ -798,8 +802,13 @@ function message(texte, annuler, joyeux, libelle) {
   minuterieMessage = setTimeout(function () {
     $("message").hidden = true;
     actionAnnuler = null;
-  }, annuler ? 6000 : 3500);
+    actionAutre = null;
+  }, autre ? 9000 : annuler ? 6000 : 3500);
 }
+$("message-autre").addEventListener("click", function () {
+  if (actionAutre) actionAutre();
+  actionAutre = null;
+});
 $("message-annuler").addEventListener("click", function () {
   if (actionAnnuler) actionAnnuler();
   actionAnnuler = null;
@@ -1072,7 +1081,7 @@ $("saisie").addEventListener("submit", function (e) {
   if (!montant) return erreur("Écris un montant, par exemple 1 500.", $("montant"));
 
   const note = $("note").value.trim();
-  let mouvement, texte, joyeux = false;
+  let mouvement, texte, joyeux = false, nouveauClient = null;
 
   if (M.paiement) {
     let encaisse = montant, client = "", tel = "";
@@ -1092,7 +1101,7 @@ $("saisie").addEventListener("submit", function (e) {
     if (tel) {
       // Le numéro identifie le client. Un client déjà connu garde sa fiche.
       if (donnees.clients[tel]) client = donnees.clients[tel].nom;
-      else donnees.clients[tel] = { tel: tel, nom: client, depuis: Date.now() };
+      else nouveauClient = donnees.clients[tel] = { tel: tel, nom: client, depuis: Date.now() };
     }
     mouvement = { id: nouvelId(), type: "vente", montant: montant, encaisse: encaisse, note: note, client: client, clientId: tel, t: Date.now() };
     if (!tel) delete mouvement.clientId;
@@ -1175,7 +1184,9 @@ $("saisie").addEventListener("submit", function (e) {
   if (mouvement.type === "vente" || mouvement.type === "paye") {
     // Proposer tout de suite la facture (ou le reçu) à envoyer au client.
     const m = mouvement;
-    message(texte, function () { ouvrirDocument(m); }, joyeux, m.type === "paye" ? "Reçu" : "Facture");
+    // Un nouveau client : proposer aussi de l'ajouter aux contacts du téléphone.
+    const autre = nouveauClient ? { libelle: "Contacts", action: function () { ajouterAuxContacts([nouveauClient]); } } : null;
+    message(texte, function () { ouvrirDocument(m); }, joyeux, m.type === "paye" ? "Reçu" : "Facture", autre);
   } else {
     message(texte, null, joyeux);
   }
@@ -1592,6 +1603,7 @@ chargerDonnees().then(function (d) {
   initIntrants();
   initBoutique();
   initFacture();
+  initContacts();
   montrer(lire(CLE_DEJA_VU) ? "principal" : "accueil");
 });
 

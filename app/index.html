@@ -189,6 +189,14 @@
   </form>
 
   <section class="carte-reglage">
+    <h2>Contacts du téléphone</h2>
+    <p class="aide">Mets tous tes clients (nom et numéro) dans les contacts de ton téléphone. Tu les retrouveras aussi dans WhatsApp.</p>
+    <button type="button" class="bouton bouton-sauver" id="contacts-tous">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="8" r="4"/><path d="M2 21a8 8 0 0 1 16 0M19 8v6M16 11h6"/></svg>Ajouter mes clients aux contacts
+    </button>
+  </section>
+
+  <section class="carte-reglage">
     <h2>Charges et taxes</h2>
     <p class="aide" id="resume-charges"></p>
     <button type="button" class="bouton bouton-sauver" id="ouvrir-charges">
@@ -342,6 +350,9 @@
   </div>
 
   <div id="bloc-client">
+    <button type="button" class="bouton bouton-annuler bouton-contact" id="choisir-contact" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Choisir dans mes contacts
+    </button>
     <p class="champ-etiquette" id="quel-client">Client déjà connu ?</p>
     <div class="suggestions" id="suggestions"></div>
     <label class="champ-etiquette" for="tel">Son numéro de téléphone</label>
@@ -619,6 +630,9 @@
   <input id="fiche-tel" class="note" type="tel" inputmode="tel" placeholder="ex. 07 00 00 00 00">
   <label class="champ-etiquette" for="fiche-nom">Nom</label>
   <input id="fiche-nom" class="note" autocapitalize="words">
+  <button type="button" class="bouton bouton-annuler bouton-contact" id="fiche-contacts">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="8" r="4"/><path d="M2 21a8 8 0 0 1 16 0M19 8v6M16 11h6"/></svg>Ajouter aux contacts du téléphone
+  </button>
   <p class="erreur" id="fiche-erreur" hidden></p>
   <div class="saisie-boutons">
     <button type="button" class="bouton bouton-annuler" id="fiche-annuler">Annuler</button>
@@ -631,6 +645,7 @@
 <div id="message" class="message" role="status" hidden>
   <img id="message-image" src="icones/canari-joyeux.webp" width="40" height="40" alt="" hidden>
   <span id="message-texte"></span>
+  <button type="button" id="message-autre" hidden>Contacts</button>
   <button type="button" id="message-annuler" hidden>Annuler</button>
 </div>
 
@@ -640,6 +655,7 @@
 <script src="intrants.js"></script>
 <script src="boutique.js"></script>
 <script src="facture.js"></script>
+<script src="contacts.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

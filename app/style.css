@@ -1394,3 +1394,8 @@ input.qte {
 #arrivage-moyen { display: flex; flex-direction: column; gap: 8px; }
 #arrivage-moyen[hidden] { display: none; }
 #choix-moyen-achat .suggestion[aria-pressed="true"] { border-color: var(--entre); background: #EAF4EE; }
+.bouton-contact { width: 100%; margin: 4px 0 8px; }
+.message #message-autre { background: var(--sable); }
+.message.deux-boutons { flex-wrap: wrap; }
+.message.deux-boutons #message-texte { flex: 1 1 calc(100% - 60px); }
+.message.deux-boutons button { flex: 1; }

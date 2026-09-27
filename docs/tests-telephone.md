@@ -53,6 +53,8 @@ Téléphone testé : ______________________  Version d'Android : ________  Date 
 
 28. ☐ Canari prend **peu de place** : Paramètres Android → Applications → Chrome → Stockage (noter : ____ Mo).
 29. ☐ Pas de message « impossible d'enregistrer » après plusieurs jours d'utilisation.
+30. ☐ Vente à crédit à un nouveau client → « Contacts » → ouvrir le fichier téléchargé → le client apparaît dans les contacts (et dans WhatsApp).
+31. ☐ « Choisir dans mes contacts » remplit bien le nom et le numéro.
 
 ---
 

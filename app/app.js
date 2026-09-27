@@ -46,6 +46,7 @@ function completerDonnees() {
   if (!donnees.boutique) donnees.boutique = {};  // nom, tel, adresse, merci, logo
   if (!donnees.produits) donnees.produits = {};  // voir boutique.js
   if (!donnees.compteurs) donnees.compteurs = { facture: 0, recu: 0 };
+  if (!donnees.charges) donnees.charges = [];   // charges fixes et taxes, voir charges.js
 }
 
 function sauver() {
@@ -160,6 +161,11 @@ function coutDe(m) {
 function estMarchandise(m) {
   return m.type === "depense" && m.categorie === "marchandise";
 }
+// Marchandise, charge fixe prévue ou impôt prévu : sortent de la caisse, mais sont
+// déjà comptés ailleurs dans le bénéfice (prix de revient, part des charges du jour).
+function horsBenefice(m) {
+  return m.type === "depense" && (m.categorie === "marchandise" || m.categorie === "charge" || m.categorie === "impot");
+}
 
 function totauxDuJour(jour) {
   let encaisse = 0, sorti = 0, depenses = 0, maison = 0, vendu = 0, aCredit = 0, cout = 0;
@@ -174,15 +180,19 @@ function totauxDuJour(jour) {
     else if (m.type === "paye") encaisse += m.montant;
     else if (m.type === "depense") {
       sorti += m.montant;
-      if (!estMarchandise(m)) depenses += m.montant;
+      if (!horsBenefice(m)) depenses += m.montant;
     }
     else if (m.type === "fpaye") sorti += m.montant;
     else if (m.type === "fdette") sorti += m.verse || 0;
     else if (m.type === "maison") maison += m.montant;
   });
+  const part = partDuJour(vendu);
+  const margeBrute = vendu - cout;
   return {
     vendu: vendu, aCredit: aCredit, cout: cout, depenses: depenses,
-    benefice: vendu - cout - depenses,
+    margeBrute: margeBrute, partCharges: part.charges, partImpots: part.impots,
+    chargesEtTaxes: depenses + part.charges + part.impots,
+    benefice: margeBrute - depenses - part.charges - part.impots, // bénéfice net
     encaisse: encaisse, sorti: sorti, maison: maison,
     caisse: encaisse - sorti - maison
   };
@@ -314,6 +324,7 @@ function afficher() {
   afficherCredits();
   afficherRelances();
   afficherSemaine();
+  if (!$("vue-mois").hidden) afficherMois();
   afficherStock();
   document.querySelectorAll(".vue").forEach(function (v) { v.hidden = v.id !== "vue-" + onglet; });
   document.querySelectorAll("[data-onglet]").forEach(function (b) {
@@ -326,18 +337,23 @@ function afficherJour() {
   const aujourdhui = cleJour(Date.now());
   const t = totauxDuJour(aujourdhui);
   const signe = function (n) { return (n < 0 ? "− " : "") + franc(Math.abs(n)); };
-  $("gain").textContent = signe(t.benefice);
-  $("gain").classList.toggle("negatif", t.benefice < 0);
-  $("ventes").textContent = franc(t.vendu);
-  $("cout").textContent = franc(t.cout);
-  $("depense").textContent = franc(t.depenses);
+  $("gain").textContent = franc(t.vendu);
+  $("marge").textContent = signe(t.margeBrute);
+  $("charges-jour").textContent = franc(t.chargesEtTaxes);
+  $("net").textContent = signe(t.benefice);
+  $("case-net").className = "chiffre " + (t.benefice < 0 ? "sort" : "entre");
+  const seuil = seuilDuJour();
+  $("seuil").hidden = !seuil || t.vendu >= seuil;
+  $("seuil").innerHTML = '<span>Pour couvrir tes charges, vends au moins</span><b>' + franc(seuil) + '</b>' +
+    '<small>Encore ' + franc(Math.max(0, seuil - t.vendu)) + ' à vendre aujourd\'hui.</small>';
+  $("rappel-parametrage").hidden = !!donnees.boutique.parametre || !$("rappel-sauvegarde").hidden;
   const bouge = t.encaisse || t.sorti || t.maison;
   $("caisse").hidden = !bouge;
   $("caisse").innerHTML = '<span>Argent en caisse</span><b>' + (t.caisse > 0 ? "+ " : "") + signe(t.caisse) + '</b>' +
     '<small>entré ' + franc(t.encaisse) + ' · sorti ' + franc(t.sorti + t.maison) + '</small>';
   const reste = t.benefice - t.maison;
   $("reste-boutique").hidden = t.maison === 0;
-  $("reste-boutique").innerHTML = '<span>Pris pour la maison ' + franc(t.maison) + '</span><b>Reste pour la boutique ' + signe(reste) + '</b>';
+  $("reste-boutique").innerHTML = '<span>Pris pour la maison ' + franc(t.maison) + '</span><b>Reste du bénéfice net ' + signe(reste) + '</b>';
 
   afficherBilan(t);
 
@@ -374,6 +390,8 @@ function ligneHtml(m) {
   const RAISONS = { depart: "Stock de départ", arrivage: "Arrivage", correction: "Stock corrigé" };
   const nomType = m.type === "stock" ? (RAISONS[m.raison] || "Stock")
     : estMarchandise(m) ? "Achat de marchandise"
+    : m.type === "depense" && m.categorie === "charge" ? "Charge fixe payée"
+    : m.type === "depense" && m.categorie === "impot" ? "Impôt ou taxe payé"
     : type === "credit" ? "Vente à crédit" : m.type === "vente" && creditDe(m) > 0 ? "Vente, pas tout payé" : NOMS[m.type];
   const produits = m.lignes && m.lignes.length
     ? m.lignes.map(function (l) { return l.qte + " × " + l.nom; }).join(", ") : "";
@@ -467,17 +485,19 @@ function afficherBilan(t) {
     phrases.push("Aujourd'hui tu as vendu " + franc(t.vendu) +
       (t.aCredit ? " (dont " + franc(t.aCredit) + " à crédit)" : "") + ".");
   }
+  if (t.vendu) phrases.push("Ta marge brute est de " + franc(t.margeBrute) + ".");
   if (t.vendu || t.depenses) {
+    const apres = t.partCharges + t.partImpots ? "Après tes charges et taxes du jour, ton bénéfice net est d'environ " : "Ton bénéfice net est de ";
     phrases.push(t.benefice >= 0
-      ? "Ton bénéfice est de " + fort(franc(t.benefice)) + "."
-      : "Tu es en perte de " + fort(franc(-t.benefice)) + " aujourd'hui.");
+      ? apres + fort(franc(t.benefice)) + "."
+      : "Après tes charges et taxes du jour, tu es en perte d'environ " + fort(franc(-t.benefice)) + ".");
   } else if (!t.encaisse && !t.sorti && !t.maison) {
     phrases.push("Rien de noté aujourd'hui pour l'instant.");
   }
   if (t.maison) {
     const reste = t.benefice - t.maison;
     phrases.push("Tu as pris " + franc(t.maison) + " pour la maison, il reste donc " +
-      fort((reste < 0 ? "− " : "") + franc(Math.abs(reste))) + " de bénéfice pour la boutique.");
+      fort((reste < 0 ? "− " : "") + franc(Math.abs(reste))) + " de bénéfice net pour la boutique.");
   }
   if (clients.length) {
     const total = clients.reduce(function (s, c) { return s + c.du; }, 0);
@@ -534,24 +554,26 @@ function afficherSemaine() {
   const rien = jours.every(function (j) { return !j.totaux.encaisse && !j.totaux.sorti && !j.totaux.maison && !j.totaux.vendu; });
 
   if (rien) {
-    $("vue-semaine").innerHTML = videHtml("canari-tranquille",
+    $("vue-7jours").innerHTML = videHtml("canari-tranquille",
       "Rien de noté ces 7 derniers jours.<br>Ton bilan de la semaine apparaîtra ici.");
     return;
   }
 
-  $("vue-semaine").innerHTML =
+  const marge = somme("margeBrute");
+  $("vue-7jours").innerHTML =
     '<div class="carte-gain carte-semaine">' +
-      '<p class="etiquette">Bénéfice des 7 derniers jours</p>' +
-      '<p class="gros-chiffre' + (gain < 0 ? ' negatif' : '') + '">' + signe(gain) + '</p>' +
+      '<p class="etiquette">Ventes des 7 derniers jours</p>' +
+      '<p class="gros-chiffre">' + franc(vendu) + '</p>' +
       '<div class="trois-chiffres deux">' +
-        '<div class="chiffre maison"><span>Pris pour la maison</span><strong>' + franc(maison) + '</strong></div>' +
-        '<div class="chiffre entre"><span>Reste pour la boutique</span><strong' + (reste < 0 ? ' class="m-sort"' : '') + '>' + signe(reste) + '</strong></div>' +
+        '<div class="chiffre revient"><span>Marge brute</span><strong>' + signe(marge) + '</strong></div>' +
+        '<div class="chiffre ' + (gain < 0 ? 'sort' : 'entre') + '"><span>Bénéfice net</span><strong' + (gain < 0 ? ' class="m-sort"' : '') + '>' + signe(gain) + '</strong></div>' +
       '</div>' +
-      '<p class="vendu">Vendu sur 7 jours : ' + franc(vendu) + (aCredit ? ', dont ' + franc(aCredit) + ' à crédit' : '') + '</p>' +
+      (aCredit ? '<p class="vendu">Dont ' + franc(aCredit) + ' vendus à crédit</p>' : '') +
+      (maison ? '<p class="vendu">Pris pour la maison ' + franc(maison) + ' · reste ' + signe(reste) + '</p>' : '') +
       '<p class="vendu">Argent en caisse sur 7 jours : ' + signe(caisse) + '</p>' +
     '</div>' +
-    '<h2 class="titre-liste">Bénéfice de chaque jour</h2>' +
-    '<ul class="barres" aria-label="Bénéfice de chaque jour">' + jours.map(function (j) {
+    '<h2 class="titre-liste">Bénéfice net de chaque jour</h2>' +
+    '<ul class="barres" aria-label="Bénéfice net de chaque jour">' + jours.map(function (j) {
       const g = j.totaux.benefice;
       const largeur = g === 0 ? 0 : Math.max(3, Math.round(Math.abs(g) / plusGrand * 100));
       const nom = j.aujourdhui ? "Auj." : j.date.toLocaleDateString("fr-FR", { weekday: "short" }).replace(".", "");
@@ -686,7 +708,12 @@ function ouvrirSaisie(mode, client) {
   $("cout-vente").value = "";
   $("cout-saisie").hidden = true;
   $("bloc-categorie").hidden = mode !== "depense";
-  if (mode === "depense") choisirCategorie(lire("canari.categorieDepense") === "marchandise" ? "marchandise" : "autre");
+  if (mode === "depense") {
+    const avecCharges = aDesCharges();
+    document.querySelectorAll('[data-categorie="charge"], [data-categorie="impot"]').forEach(function (b) { b.hidden = !avecCharges; });
+    const derniere = lire("canari.categorieDepense");
+    choisirCategorie(derniere === "marchandise" || (avecCharges && (derniere === "charge" || derniere === "impot")) ? derniere : "autre");
+  }
   majCout();
   $("bloc-paiement").hidden = !M.paiement;
   $("bloc-fournisseur").hidden = !M.fournisseur;
@@ -746,9 +773,13 @@ function choisirCategorie(c) {
   document.querySelectorAll("[data-categorie]").forEach(function (b) {
     b.setAttribute("aria-pressed", String(b.dataset.categorie === c));
   });
-  $("categorie-aide").textContent = c === "marchandise"
-    ? "Ne baisse pas ton bénéfice : il est compté quand tu revends (prix de revient). Ça sort quand même de la caisse."
-    : "Transport, loyer, électricité, sachets… Baisse ton bénéfice.";
+  $("categorie-aide").textContent = {
+    marchandise: "Ne baisse pas ton bénéfice : il est compté quand tu revends (prix de revient). Ça sort quand même de la caisse.",
+    charge: "Déjà comptée chaque jour dans tes charges : ne baisse pas ton bénéfice une 2ᵉ fois. Ça sort de la caisse.",
+    impot: "Déjà compté chaque jour dans tes taxes : ne baisse pas ton bénéfice une 2ᵉ fois. Ça sort de la caisse.",
+    autre: "Dépense imprévue (réparation, sachets, transport…). Baisse ton bénéfice."
+  }[c];
+  afficherChoixCharge(c);
 }
 
 function majReste() {
@@ -975,7 +1006,10 @@ $("saisie").addEventListener("submit", function (e) {
     joyeux = true;
   } else {
     mouvement = { id: nouvelId(), type: modeSaisie, montant: montant, note: note, client: "", t: Date.now() };
-    if (modeSaisie === "depense") mouvement.categorie = categorieDepense;
+    if (modeSaisie === "depense") {
+      mouvement.categorie = categorieDepense;
+      if ((categorieDepense === "charge" || categorieDepense === "impot") && chargeChoisie) mouvement.chargeId = chargeChoisie;
+    }
     donnees.mouvements.push(mouvement);
     texte = modeSaisie === "maison" ? franc(montant) + " pris pour la maison, c'est noté." : NOMS[modeSaisie] + " de " + franc(montant) + " notée.";
   }
@@ -1240,6 +1274,11 @@ function afficherRappelSauvegarde() {
 
 function afficherReglages() {
   remplirFormBoutique();
+  const parJour = Math.round((fixeMensuel("charge") + fixeMensuel("impot")) / joursTravail());
+  const taux = tauxVentes("charge") + tauxVentes("impot");
+  $("resume-charges").textContent = aDesCharges()
+    ? "Environ " + franc(parJour) + " par jour de travail" + (taux ? " + " + taux + " % des ventes" : "") + " (" + joursTravail() + " jours par mois)."
+    : "Aucune charge enregistrée. Ajoute ton loyer, tes salaires et tes taxes pour voir ton bénéfice net.";
   const j = joursDepuisSauvegarde();
   $("derniere-sauvegarde").textContent = j === null ? "Aucune sauvegarde pour l'instant."
     : "Dernière sauvegarde : " + ilYA(Number(lire(CLE_DERNIERE_SAUVEGARDE))) + ".";
@@ -1346,12 +1385,13 @@ if (navigator.storage && navigator.storage.persist) {
 const dateTexte = new Date().toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" });
 $("date-du-jour").textContent = dateTexte.charAt(0).toUpperCase() + dateTexte.slice(1);
 
+initCharges();
 initBoutique();
 initFacture();
 
 $("commencer").addEventListener("click", function () {
   ecrire(CLE_DEJA_VU, "oui");
-  montrer("principal");
+  ouvrirParametrage(0, "principal");
 });
 
 document.querySelectorAll("[data-saisie]").forEach(function (b) {

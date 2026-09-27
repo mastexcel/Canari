@@ -1132,3 +1132,139 @@ button.ligne-texte {
 #cout-saisie, #bloc-categorie { display: flex; flex-direction: column; gap: 8px; }
 #bloc-categorie .choix { font-size: 15px; line-height: 1.15; padding: 4px; }
 .produit .aide { font-size: 14px; }
+
+/* ---------- Questionnaire de départ ---------- */
+.parametrage { display: flex; flex-direction: column; padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+.param-entete { display: flex; align-items: center; gap: 10px; }
+.param-progres { flex: 1; display: flex; gap: 6px; }
+.param-progres span { flex: 1; height: 8px; border-radius: 4px; background: var(--bord); }
+.param-progres span.fait { background: var(--entre); }
+.param-progres span.actuel { background: var(--or); }
+.param-corps { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+.param-corps > img { align-self: center; width: 110px; height: auto; }
+.param-corps .titre-ecran { text-align: center; }
+#param-contenu { display: flex; flex-direction: column; gap: 10px; }
+#param-contenu p { margin: 0; }
+#param-contenu .seuil { background: #FBEBC4; border: 2px solid var(--or); border-radius: 14px; padding: 12px 14px; }
+.param-boutons {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  background: var(--sable);
+  border-top: 2px solid var(--bord);
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+}
+.param-boutons .bouton[hidden] { display: none; }
+.param-boutons #param-retour { flex: 1; }
+.param-boutons #param-suivant { flex: 1.5; }
+.choix-cartes { display: flex; flex-direction: column; gap: 10px; }
+.choix-carte {
+  font: inherit;
+  text-align: left;
+  min-height: 64px;
+  padding: 10px 14px 10px 52px;
+  border: 2px solid var(--bord);
+  border-radius: 16px;
+  background: #fff;
+  color: var(--brun);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  cursor: pointer;
+}
+.choix-carte::before {
+  content: "";
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  width: 24px;
+  height: 24px;
+  margin-top: -12px;
+  border: 2px solid var(--bord);
+  border-radius: 7px;
+  background: #fff;
+}
+.choix-carte[aria-pressed="true"] { border-color: var(--entre); background: #EAF4EE; }
+.choix-carte[aria-pressed="true"]::before {
+  background: var(--entre) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m5 12 5 5 9-10' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 18px no-repeat;
+  border-color: var(--entre);
+}
+.choix-carte b { font-size: 18px; font-weight: 600; }
+.choix-carte small { color: #6B5646; font-size: 14px; }
+.lignes-charges { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.ligne-charge {
+  background: #fff;
+  border: 2px solid var(--bord);
+  border-radius: 14px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.lc-haut, .lc-bas { display: flex; gap: 6px; align-items: center; }
+.lc-haut .lc-nom { flex: 1; min-width: 0; font-weight: 600; border-color: transparent; padding: 6px 8px; min-height: 44px; }
+.lc-bas .lc-montant { flex: 1; min-width: 0; font-family: "Fredoka", system-ui, sans-serif; font-size: 20px; min-height: 48px; }
+.lc-bas select { min-height: 48px; padding: 6px 8px; font-size: 15px; max-width: 45%; }
+.lc-f { font-family: "Fredoka", system-ui, sans-serif; font-size: 20px; color: #8A7564; }
+
+/* ---------- Rappels et seuil ---------- */
+.rappel-parametrage { background: #EAF4EE; border-color: var(--entre); padding-left: 8px; }
+.rappel-parametrage img { flex-shrink: 0; height: auto; }
+.rappel-parametrage .retirer { width: 40px; height: 40px; }
+.seuil-carte { background: rgba(242, 178, 51, .22); }
+.seuil-carte b { color: var(--or); }
+
+/* ---------- Dépenses : 4 sortes ---------- */
+.quatre-choix {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  background: #fff;
+  border: 2px solid var(--bord);
+  border-radius: 16px;
+  padding: 4px;
+}
+.quatre-choix .choix { font-size: 15px; line-height: 1.15; padding: 4px 6px; min-height: 52px; }
+.saisie .quatre-choix .choix[aria-pressed="true"] { background: var(--couleur-saisie, var(--entre)); color: #fff; }
+#bloc-charge-payee { display: flex; flex-direction: column; gap: 8px; }
+#bloc-charge-payee[hidden] { display: none; }
+.suggestion[aria-pressed="true"] { border-color: var(--sort); background: #F6DDD6; }
+
+/* ---------- Bilan : 7 jours / mois ---------- */
+#vue-7jours, #vue-mois { margin-top: 14px; }
+.mois-nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+.mois-nav .titre-ecran { font-size: 22px; text-align: center; }
+.mois-nav button:disabled { opacity: .35; cursor: default; }
+.cascade {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 4px 14px;
+  background: var(--carte);
+  border: 2px solid var(--bord);
+  border-radius: var(--arrondi);
+}
+.cascade-ligne {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--bord);
+}
+.cascade-ligne:last-child { border-bottom: 0; }
+.cascade-ligne span { display: flex; flex-direction: column; }
+.cascade-ligne small { font-size: 13px; color: #6B5646; }
+.cascade-ligne b { font-family: "Fredoka", system-ui, sans-serif; font-size: 19px; white-space: nowrap; }
+.cascade-ligne.moins span, .cascade-ligne.moins b { color: #6B5646; font-weight: 400; }
+.cascade-ligne.total span { font-weight: 600; }
+.cascade-ligne.net b { font-size: 24px; color: var(--entre); }
+.cascade-ligne.net.perte b { color: var(--sort); }
+.cascade-ligne.maison b { color: var(--maison); }
+.cascade-ligne.a-payer small { color: var(--sort); font-weight: 600; }
+.invitation { align-items: stretch; }

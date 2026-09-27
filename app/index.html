@@ -39,6 +39,14 @@
     </button>
   </header>
 
+  <div class="rappel-sauvegarde rappel-parametrage" id="rappel-parametrage" hidden>
+    <img src="icones/canari-clin-doeil.webp" width="44" height="52" alt="">
+    <span>Calcule ton vrai bénéfice net : 6 petites questions.</span>
+    <button type="button" class="bouton" id="rappel-parametrage-bouton">Commencer</button>
+    <button type="button" class="retirer" id="rappel-parametrage-fermer" aria-label="Plus tard">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+  </div>
+
   <div class="rappel-sauvegarde" id="rappel-sauvegarde" hidden>
     <span id="rappel-texte"></span>
     <button type="button" class="bouton" id="rappel-bouton">Sauvegarder</button>
@@ -47,13 +55,14 @@
   <!-- Onglet Jour -->
   <div id="vue-jour" class="vue">
     <div class="carte-gain">
-      <p class="etiquette">Bénéfice du jour</p>
+      <p class="etiquette">Ventes du jour</p>
       <p class="gros-chiffre" id="gain">0 F</p>
       <div class="trois-chiffres">
-        <div class="chiffre entre"><span>Ventes</span><strong id="ventes">0 F</strong></div>
-        <div class="chiffre revient"><span>Prix de revient</span><strong id="cout">0 F</strong></div>
-        <div class="chiffre sort"><span>Dépenses</span><strong id="depense">0 F</strong></div>
+        <div class="chiffre revient"><span>Marge brute</span><strong id="marge">0 F</strong></div>
+        <div class="chiffre sort"><span>Charges et taxes</span><strong id="charges-jour">0 F</strong></div>
+        <div class="chiffre entre" id="case-net"><span>Bénéfice net</span><strong id="net">0 F</strong></div>
       </div>
+      <p class="ligne-carte seuil-carte" id="seuil" hidden></p>
       <p class="ligne-carte" id="caisse" hidden></p>
       <p class="ligne-carte maison-carte" id="reste-boutique" hidden></p>
     </div>
@@ -106,7 +115,14 @@
   <div id="vue-relances" class="vue" hidden></div>
 
   <!-- Onglet Semaine -->
-  <div id="vue-semaine" class="vue" hidden></div>
+  <div id="vue-semaine" class="vue" hidden>
+    <div class="deux-choix" role="group" aria-label="Période du bilan">
+      <button type="button" class="choix" data-bilan="semaine" aria-pressed="true">7 derniers jours</button>
+      <button type="button" class="choix" data-bilan="mois" aria-pressed="false">Mois</button>
+    </div>
+    <div id="vue-7jours"></div>
+    <div id="vue-mois" hidden></div>
+  </div>
 
   <!-- Onglet Stock -->
   <div id="vue-stock" class="vue" hidden></div>
@@ -151,6 +167,17 @@
   </form>
 
   <section class="carte-reglage">
+    <h2>Charges et taxes</h2>
+    <p class="aide" id="resume-charges"></p>
+    <button type="button" class="bouton bouton-sauver" id="ouvrir-charges">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16zM13 7l4 4"/></svg>Mes charges et taxes
+    </button>
+    <button type="button" class="bouton bouton-annuler" id="ouvrir-parametrage">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4v6h6M20 20v-6h-6M5 15a7 7 0 0 0 12 3M19 9A7 7 0 0 0 7 6"/></svg>Refaire le questionnaire
+    </button>
+  </section>
+
+  <section class="carte-reglage">
     <div class="reglage-haut">
       <img src="icones/canari-tranquille.webp" width="64" height="76" alt="">
       <div>
@@ -183,6 +210,25 @@
   <p class="aide version">canari · Garde chaque franc. · Zéro publicité.</p>
 </section>
 
+<!-- Questionnaire de départ -->
+<section id="parametrage" class="ecran parametrage" hidden>
+  <header class="param-entete">
+    <div class="param-progres" id="param-progres"></div>
+    <button type="button" class="retirer" id="param-quitter" aria-label="Quitter le questionnaire">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+  </header>
+  <div class="param-corps">
+    <img id="param-image" src="icones/mascotte-canari-3d.webp" width="120" height="150" alt="">
+    <h1 class="titre-ecran" id="param-titre"></h1>
+    <div id="param-contenu"></div>
+  </div>
+  <div class="param-boutons">
+    <button type="button" class="bouton bouton-annuler" id="param-retour">Retour</button>
+    <button type="button" class="petit-modifier" id="param-passer">Passer</button>
+    <button type="button" class="bouton bouton-sauver" id="param-suivant">Suivant</button>
+  </div>
+</section>
+
 <!-- Barre des onglets -->
 <nav class="onglets" id="onglets" hidden>
   <button type="button" class="onglet" data-onglet="jour" aria-current="page">
@@ -198,7 +244,7 @@
     </span>Relances
   </button>
   <button type="button" class="onglet" data-onglet="semaine">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V11M12 20V5M19 20v-6M3 20h18"/></svg>Semaine
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V11M12 20V5M19 20v-6M3 20h18"/></svg>Bilan
   </button>
   <button type="button" class="onglet" data-onglet="stock">
     <span class="onglet-icone">
@@ -246,11 +292,17 @@
 
   <div id="bloc-categorie">
     <p class="champ-etiquette">C'est pour quoi ?</p>
-    <div class="deux-choix" role="group" aria-label="Type de dépense">
+    <div class="quatre-choix" role="group" aria-label="Type de dépense">
       <button type="button" class="choix" data-categorie="marchandise" aria-pressed="false">Marchandise à revendre</button>
+      <button type="button" class="choix" data-categorie="charge" aria-pressed="false">Charge fixe (loyer, salaire…)</button>
+      <button type="button" class="choix" data-categorie="impot" aria-pressed="false">Impôt ou taxe</button>
       <button type="button" class="choix" data-categorie="autre" aria-pressed="true">Autre dépense</button>
     </div>
     <p class="aide" id="categorie-aide"></p>
+    <div id="bloc-charge-payee" hidden>
+      <p class="champ-etiquette">Laquelle ?</p>
+      <div class="suggestions" id="choix-charge-payee"></div>
+    </div>
   </div>
 
   <div id="bloc-paiement" class="deux-choix" role="group" aria-label="Le client a-t-il tout payé ?">
@@ -427,6 +479,7 @@
   <button type="button" id="message-annuler" hidden>Annuler</button>
 </div>
 
+<script src="charges.js"></script>
 <script src="boutique.js"></script>
 <script src="facture.js"></script>
 <script src="app.js"></script>

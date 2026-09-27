@@ -141,7 +141,7 @@ function afficherMois() {
   const aujourdhui = new Date();
   const ref = moisAffiche || { annee: aujourdhui.getFullYear(), mois: aujourdhui.getMonth() };
   const t = bilanDuMois(ref.annee, ref.mois);
-  const nomMois = new Date(ref.annee, ref.mois, 1).toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
+  const nomMois = new Date(ref.annee, ref.mois, 1).toLocaleDateString(LOCALE, { month: "long", year: "numeric" });
   const signe = function (n) { return (n < 0 ? "− " : "") + franc(Math.abs(n)); };
   const pct = function (n) { return t.vendu ? " (" + Math.round(n / t.vendu * 100) + " %)" : ""; };
   const ligne = function (libelle, valeur, classe) {

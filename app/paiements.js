@@ -35,7 +35,7 @@ function lignesPaiement() {
   const r = reglagesPaiement();
   return moyensMobilesActifs().map(function (k) {
     const c = r[k];
-    return MOYENS[k] + (c.tel ? " : " + afficherTel(c.tel) : "") + (c.lien ? " (" + c.lien + ")" : "");
+    return tr(MOYENS[k] + (c.tel ? " : " + afficherTel(c.tel) : "") + (c.lien ? " (" + c.lien + ")" : ""));
   });
 }
 

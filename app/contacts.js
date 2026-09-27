@@ -22,7 +22,7 @@ function vcard(c) {
     "N:;" + nettoyerVcard(c.nom) + ";;;",
     "FN:" + nettoyerVcard(c.nom),
     "TEL;TYPE=CELL:" + numeroInternational(c.tel),
-    "NOTE:" + nettoyerVcard((c.role || "Client") + (b.nom ? " de " + b.nom : "") + " (Canari)"),
+    "NOTE:" + nettoyerVcard(tr((c.role || "Client") + (b.nom ? " de " + b.nom : "") + " (Canari)")),
     "END:VCARD"
   ].join("\r\n");
 }
@@ -33,7 +33,7 @@ function ajouterAuxContacts(clients) {
   if (!liste.length) { message("Aucun client avec un numéro pour l'instant."); return; }
   const nom = liste.length === 1
     ? "contact-" + liste[0].nom.toLowerCase().replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "") + ".vcf"
-    : "clients-canari.vcf";
+    : tr("clients-canari.vcf");
   const fichier = new File([liste.map(vcard).join("\r\n") + "\r\n"], nom, { type: "text/vcard" });
   const lien = document.createElement("a");
   lien.href = URL.createObjectURL(fichier);

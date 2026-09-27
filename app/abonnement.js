@@ -102,7 +102,7 @@ function etatAbonnement() {
 function abonnementActif() { return etatAbonnement().actif; }
 
 function dateFin(t) {
-  return new Date(t).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+  return new Date(t).toLocaleDateString(LOCALE, { day: "numeric", month: "long", year: "numeric" });
 }
 function texteEtat(e) {
   if (e.paye) return "Abonnement actif jusqu'au " + dateFin(e.fin) + " (" + joursTexte(e.reste) + ").";
@@ -203,10 +203,10 @@ function choisirFormule(id) {
   });
   $("abo-montant").textContent = franc(f.prix);
   const b = donnees.boutique;
-  const texte = "Bonjour Canari, je veux l'abonnement " + f.nom + " (" + franc(f.prix) + ").\n" +
-    "Mon numéro Canari : " + idAffiche(donnees.abonnement.id) + "\n" +
-    (b.nom ? "Boutique : " + b.nom + "\n" : "") +
-    "J'ai payé par (QR Djamo, Wave, Orange Money, MTN, Moov ou carte Visa) : ";
+  const texte = tr("Bonjour Canari, je veux l'abonnement " + f.nom + " (" + franc(f.prix) + ").") + "\n" +
+    tr("Mon numéro Canari : " + idAffiche(donnees.abonnement.id)) + "\n" +
+    (b.nom ? tr("Boutique : " + b.nom) + "\n" : "") +
+    tr("J'ai payé par (QR Djamo, Wave, Orange Money, MTN, Moov ou carte Visa) : ");
   $("abo-demande").href = "https://wa.me/" + numeroWhatsApp(RECEPTION.whatsapp) + "?text=" + encodeURIComponent(texte);
 }
 function validerCode() {

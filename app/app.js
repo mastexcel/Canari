@@ -161,7 +161,7 @@ const ilYA = function (t) {
   return j <= 0 ? "aujourd'hui" : j === 1 ? "hier" : "il y a " + j + " jours";
 };
 const dateCourte = function (t) {
-  return new Date(t).toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+  return new Date(t).toLocaleDateString(LOCALE, { day: "numeric", month: "short" });
 };
 const nouvelId = function () { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); };
 const echapper = function (s) {
@@ -391,7 +391,7 @@ function suiviDe(cle) {
   return s;
 }
 const dateLongue = function (cle) {
-  return new Date(cle + "T12:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+  return new Date(cle + "T12:00:00").toLocaleDateString(LOCALE, { weekday: "long", day: "numeric", month: "long" });
 };
 
 // Classement d'un client pour les relances (mêmes règles que le prototype) :
@@ -490,7 +490,7 @@ function afficherJour() {
 }
 
 function ligneHtml(m) {
-  const heure = new Date(m.t).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  const heure = new Date(m.t).toLocaleTimeString(LOCALE, { hour: "2-digit", minute: "2-digit" });
   const estFournisseur = m.type === "fdette" || m.type === "fpaye";
   const nomQui = !m.client ? "" : estFournisseur ? ficheFournisseur(idFournisseurDe(m), m.client).nom : ficheClient(idClientDe(m), m.client).nom;
   const qui = (nomQui ? " · " + echapper(nomQui) : "") + (m.moyen && MOYENS[m.moyen] ? " · " + MOYENS[m.moyen] : "");
@@ -611,6 +611,10 @@ function afficherBilan(t) {
   const phrases = [];
   const fort = function (x) { return "<strong>" + x + "</strong>"; };
 
+  if (LANGUE === "en") {
+    $("bilan-texte").setAttribute("translate", "no"); // déjà écrit en anglais
+    bilanAnglais(t, clients, fournisseurs, aRelancer, phrases, fort);
+  } else {
   if (t.vendu) {
     phrases.push("Aujourd'hui tu as vendu " + franc(t.vendu) +
       (t.aCredit ? " (dont " + franc(t.aCredit) + " à crédit)" : "") + ".");
@@ -645,6 +649,7 @@ function afficherBilan(t) {
     const total = fournisseurs.reduce(function (s, f) { return s + f.du; }, 0);
     phrases.push("Tu dois " + franc(total) + " à tes fournisseurs.");
   }
+  }
   $("bilan-texte").innerHTML = phrases.join(" ");
 
   // Humeur du Petit Canari : grand sourire les très bons jours.
@@ -657,6 +662,44 @@ function afficherBilan(t) {
   else if (t.benefice < 0) humeur = "canari-pensif";
   const image = "icones/" + humeur + ".webp";
   if ($("bilan-image").getAttribute("src") !== image) $("bilan-image").setAttribute("src", image);
+}
+
+// Le même bilan, écrit directement en anglais (les phrases françaises sont faites de morceaux).
+function bilanAnglais(t, clients, fournisseurs, aRelancer, phrases, fort) {
+  if (t.vendu) {
+    phrases.push("Today you sold " + franc(t.vendu) +
+      (t.aCredit ? " (including " + franc(t.aCredit) + " on credit)" : "") + ".");
+    phrases.push("Your gross margin is " + franc(t.margeBrute) + ".");
+  }
+  if (t.vendu || t.depenses) {
+    const apres = t.partCharges + t.partImpots ? "After today's costs and taxes, your net profit is about " : "Your net profit is ";
+    phrases.push(t.benefice >= 0
+      ? apres + fort(franc(t.benefice)) + "."
+      : "After today's costs and taxes, you made a loss of about " + fort(franc(-t.benefice)) + ".");
+  } else if (!t.encaisse && !t.sorti && !t.maison) {
+    phrases.push("Nothing recorded today yet.");
+  }
+  if (t.maison) {
+    const reste = t.benefice - t.maison;
+    phrases.push("You took " + franc(t.maison) + " for home, so " +
+      fort((reste < 0 ? "− " : "") + franc(Math.abs(reste))) + " of net profit is left for the shop.");
+  }
+  if (clients.length) {
+    const total = clients.reduce(function (s, c) { return s + c.du; }, 0);
+    phrases.push("Your customers owe you " + franc(total) +
+      (clients.length > 1 ? ", including " + echapper(clients[0].nom) + " " + franc(clients[0].du) : "") + ".");
+  }
+  if (aRelancer) phrases.push(fort(aRelancer + " customer" + (aRelancer > 1 ? "s" : "") + " to remind."));
+  const racheter = produitsARacheter().concat(intrantsARacheter());
+  if (racheter.length) {
+    phrases.push("Remember to restock " + (racheter.length <= 3
+      ? racheter.map(function (x) { return echapper(x.nom); }).join(", ").replace(/, ([^,]*)$/, " and $1")
+      : racheter.length + " items (products or supplies)") + ".");
+  }
+  if (fournisseurs.length) {
+    const total = fournisseurs.reduce(function (s, f) { return s + f.du; }, 0);
+    phrases.push("You owe " + franc(total) + " to your suppliers.");
+  }
 }
 
 /* ---------- Onglet Semaine ---------- */
@@ -707,7 +750,7 @@ function afficherSemaine() {
     '<ul class="barres" aria-label="Bénéfice net de chaque jour">' + jours.map(function (j) {
       const g = j.totaux.benefice;
       const largeur = g === 0 ? 0 : Math.max(3, Math.round(Math.abs(g) / plusGrand * 100));
-      const nom = j.aujourdhui ? "Auj." : j.date.toLocaleDateString("fr-FR", { weekday: "short" }).replace(".", "");
+      const nom = j.aujourdhui ? "Auj." : j.date.toLocaleDateString(LOCALE, { weekday: "short" }).replace(".", "");
       return '<li class="barre' + (g < 0 ? ' negative' : '') + (j.aujourdhui ? ' aujourdhui' : '') + '">' +
         '<span class="barre-jour"><b>' + nom.charAt(0).toUpperCase() + nom.slice(1) + '</b><small>' + j.date.getDate() + '</small></span>' +
         '<span class="barre-piste"><span class="barre-remplie" style="width:' + largeur + '%"></span></span>' +
@@ -1258,6 +1301,9 @@ function numeroWhatsApp(tel) {
 // Ajoute « Tu peux payer par Wave au 07… » aux relances, si la boutique a des comptes mobiles.
 function messageRelance(c, ton) {
   const paiement = lignesPaiement();
+  if (LANGUE === "en") {
+    return messageRelanceBase(c, ton) + (paiement.length ? "\nYou can also pay by " + paiement.join(", ").replace(/ : /g, ": ") + "." : "");
+  }
   return messageRelanceBase(c, ton) + (paiement.length ? "\nTu peux aussi payer par " + paiement.join(", ") + "." : "");
 }
 function messageRelanceBase(c, ton) {
@@ -1266,7 +1312,21 @@ function messageRelanceBase(c, ton) {
   const duree = j <= 0 ? "aujourd'hui" : j === 1 ? "hier" : j + " jours";
   const limite = new Date();
   limite.setDate(limite.getDate() + 3);
-  const dateLimite = limite.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+  const dateLimite = limite.toLocaleDateString(LOCALE, { weekday: "long", day: "numeric", month: "long" });
+  if (LANGUE === "en") {
+    // Les mêmes messages en anglais (3 tons : gentil, ferme, dernier rappel).
+    const depuis = j <= 0 ? "today" : j === 1 ? "yesterday" : j + " days";
+    if (ton === "ferme") {
+      return "Hello " + c.nom + ", I am coming back to you about the " + montant + " FCFA you have owed the shop " +
+        (j <= 1 ? "since " + depuis : "for " + depuis) + ". Can you come and pay this week? Tell me which day suits you. Thank you.";
+    }
+    if (ton === "dernier") {
+      return "Hello " + c.nom + ", this is my last reminder about the " + montant + " FCFA owed to the shop. Please pay by " +
+        dateLimite + ". Without payment, I will not be able to give you credit any more. Thank you for understanding.";
+    }
+    return "Hello " + c.nom + ", I hope you are well. A small reminder from the shop: " + montant +
+      " FCFA is still to be paid. You can come whenever it suits you. Thank you very much!";
+  }
   if (ton === "ferme") {
     return "Bonjour " + c.nom + ", je reviens vers toi pour les " + montant + " FCFA que tu dois à la boutique depuis " + duree +
       ". Peux-tu passer régler cette semaine ? Dis-moi le jour qui t'arrange. Merci.";
@@ -1462,7 +1522,7 @@ function afficherReglages() {
 
 function fichierSauvegarde() {
   const contenu = JSON.stringify({ app: "canari", version: 1, date: new Date().toISOString(), donnees: donnees });
-  const nom = "canari-sauvegarde-" + cleJour(Date.now()) + ".json";
+  const nom = tr("canari-sauvegarde") + "-" + cleJour(Date.now()) + ".json";
   return new File([contenu], nom, { type: "application/json" });
 }
 function sauvegardeFaite() {
@@ -1485,7 +1545,7 @@ function telechargerSauvegarde() {
 function partagerSauvegarde() {
   const fichier = fichierSauvegarde();
   if (navigator.canShare && navigator.canShare({ files: [fichier] })) {
-    navigator.share({ files: [fichier], title: "Sauvegarde Canari" }).then(function () {
+    navigator.share({ files: [fichier], title: tr("Sauvegarde Canari") }).then(function () {
       sauvegardeFaite();
       message("Sauvegarde envoyée. Garde bien ce fichier !", null, true);
     }).catch(function (err) {
@@ -1507,9 +1567,9 @@ function restaurer(fichier) {
       message("Ce fichier n'est pas une sauvegarde Canari.");
       return;
     }
-    const quand = contenu.date ? new Date(contenu.date).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }) : "?";
-    const ok = window.confirm("Récupérer la sauvegarde du " + quand + " (" + d.mouvements.length + " lignes) ?\n\n" +
-      "Ce qui est noté sur ce téléphone sera remplacé.");
+    const quand = contenu.date ? new Date(contenu.date).toLocaleDateString(LOCALE, { day: "numeric", month: "long", year: "numeric" }) : "?";
+    const ok = window.confirm(tr("Récupérer la sauvegarde du " + quand + " (" + d.mouvements.length + " lignes) ?") + "\n\n" +
+      tr("Ce qui est noté sur ce téléphone sera remplacé."));
     if (!ok) return;
     garderAvantRestauration(donnees);
     const abonnement = donnees.abonnement;
@@ -1552,7 +1612,7 @@ function lireAvantRestauration() {
   try { return Promise.resolve(JSON.parse(lire(CLE_AVANT_RESTAURATION + ".copie"))); } catch (e) { return Promise.resolve(null); }
 }
 $("annuler-restauration").addEventListener("click", function () {
-  if (!window.confirm("Revenir aux chiffres d'avant la récupération ?")) return;
+  if (!window.confirm(tr("Revenir aux chiffres d'avant la récupération ?"))) return;
   lireAvantRestauration().then(function (avant) {
     if (!avant || !Array.isArray(avant.mouvements)) { message("La copie d'avant n'est plus disponible."); return; }
     const abonnement = donnees.abonnement;
@@ -1576,7 +1636,7 @@ if (navigator.storage && navigator.storage.persist) {
 
 /* ---------- Démarrage ---------- */
 
-const dateTexte = new Date().toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" });
+const dateTexte = new Date().toLocaleDateString(LOCALE, { weekday: "short", day: "numeric", month: "short" });
 $("date-du-jour").textContent = dateTexte.charAt(0).toUpperCase() + dateTexte.slice(1);
 
 
@@ -1600,6 +1660,11 @@ document.addEventListener("visibilitychange", function () {
 });
 
 // Démarrage : on lit les données, puis on met tout en route.
+initLangue();
+document.querySelectorAll("[data-langue]").forEach(function (b) {
+  b.setAttribute("aria-pressed", String(b.dataset.langue === LANGUE));
+  b.addEventListener("click", function () { if (b.dataset.langue !== LANGUE) choisirLangue(b.dataset.langue); });
+});
 chargerDonnees().then(function (d) {
   if (d) donnees = d;
   completerDonnees();
@@ -1611,6 +1676,7 @@ chargerDonnees().then(function (d) {
   initFacture();
   initContacts();
   initAbonnement();
+  initVoix();
   montrer(lire(CLE_DEJA_VU) ? "principal" : "accueil");
 });
 

@@ -22,6 +22,10 @@
     <p class="slogan">Garde chaque franc.</p>
     <p class="accueil-texte">Ton carnet de caisse sur le téléphone. Ventes, dépenses, crédits : tout est noté, même sans internet.</p>
   </div>
+  <div class="choix-langue" translate="no">
+    <button type="button" data-langue="fr">Français</button>
+    <button type="button" data-langue="en">English</button>
+  </div>
   <button id="commencer" class="bouton bouton-principal" type="button">
     Commencer
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13m-5-6 6 6-6 6"/></svg>
@@ -93,9 +97,16 @@
       </button>
     </div>
 
+    <button type="button" class="bouton bouton-voix" id="voix-parler" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>Parler
+    </button>
+
     <div class="bilan" id="bilan">
       <img id="bilan-image" src="icones/canari-tranquille.webp" width="64" height="76" alt="">
       <p id="bilan-texte"></p>
+      <button type="button" class="bouton-ecouter" id="voix-bilan" aria-label="Lire à voix haute" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg>Écouter
+      </button>
     </div>
 
     <h2 class="titre-liste" id="titre-liste" hidden>Aujourd'hui</h2>
@@ -149,6 +160,14 @@
     </button>
     <h1 class="titre-ecran">Réglages</h1>
   </header>
+
+  <section class="carte-reglage">
+    <h2>Langue</h2>
+    <div class="choix-langue" translate="no">
+      <button type="button" data-langue="fr">Français</button>
+      <button type="button" data-langue="en">English</button>
+    </div>
+  </section>
 
   <section class="carte-reglage">
     <h2>Mon abonnement</h2>
@@ -702,6 +721,24 @@
   </div>
 </form>
 
+<!-- Commande vocale : Canari écoute -->
+<div class="voix-ecoute" id="voix-ecoute" role="dialog" aria-label="Commande vocale" hidden>
+  <div class="voix-micro"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></div>
+  <p class="voix-titre">Je t'écoute…</p>
+  <p class="voix-entendu" id="voix-entendu"></p>
+  <p class="aide">Dis par exemple :</p>
+  <ul class="voix-exemples">
+    <li>« Vente 2 000 »</li>
+    <li>« Crédit Koffi 5 000 »</li>
+    <li>« Koffi a payé 2 000 »</li>
+    <li>« Dépense transport 500 »</li>
+    <li>« Maison 1 000 »</li>
+    <li>« Combien j'ai gagné ? »</li>
+    <li>« Qui me doit ? »</li>
+  </ul>
+  <button type="button" class="bouton bouton-annuler" id="voix-arreter">Arrêter</button>
+</div>
+
 <div id="message" class="message" role="status" hidden>
   <img id="message-image" src="icones/canari-joyeux.webp" width="40" height="40" alt="" hidden>
   <span id="message-texte"></span>
@@ -709,6 +746,11 @@
   <button type="button" id="message-annuler" hidden>Annuler</button>
 </div>
 
+<script src="i18n.js"></script>
+<script src="langues/en-principal.js"></script>
+<script src="langues/en-boutique.js"></script>
+<script src="langues/en-extras.js"></script>
+<script src="voix.js"></script>
 <script src="paiements.js"></script>
 <script src="charges.js"></script>
 <script src="fiches.js"></script>

@@ -55,6 +55,10 @@ Téléphone testé : ______________________  Version d'Android : ________  Date 
 29. ☐ Pas de message « impossible d'enregistrer » après plusieurs jours d'utilisation.
 30. ☐ Vente à crédit à un nouveau client → « Contacts » → ouvrir le fichier téléchargé → le client apparaît dans les contacts (et dans WhatsApp).
 31. ☐ « Choisir dans mes contacts » remplit bien le nom et le numéro.
+32. ☐ Réglages → Langue → English : tout l'écran passe en anglais ; retour en français.
+33. ☐ « Parler » puis « Vente deux mille » : la vente de 2 000 F s'ouvre et Canari le dit à voix haute.
+34. ☐ « Crédit Koffi cinq mille », « Koffi a payé mille », « Combien j'ai gagné ? » (avec internet).
+35. ☐ « Écouter » lit le bilan du jour, même sans internet.
 
 ---
 

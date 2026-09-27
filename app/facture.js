@@ -40,7 +40,8 @@ function soldeAvant(paiement) {
 
 function dateHeure(t) {
   const d = new Date(t);
-  return d.toLocaleDateString("fr-FR") + " à " + d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  // « à » et « N° » n'ont pas deux lettres de suite : tr() ne les traduirait pas.
+  return d.toLocaleDateString(LOCALE) + (LANGUE === "en" ? " at " : " à ") + d.toLocaleTimeString(LOCALE, { hour: "2-digit", minute: "2-digit" });
 }
 
 /* ---------- Dessin ---------- */
@@ -114,39 +115,39 @@ function dessinerDocument(doc) {
       }
       const b = donnees.boutique;
       ctx.font = fredoka(44);
-      const nomLignes = couper(ctx, b.nom || "Ma boutique", L - xTexte - marge);
+      const nomLignes = couper(ctx, b.nom || tr("Ma boutique"), L - xTexte - marge);
       let yt = y + 44;
       nomLignes.forEach(function (l) { texte(l, xTexte, yt, fredoka(44), C.vert); yt += 50; });
-      if (b.tel) { texte("Tél. " + afficherTel(b.tel), xTexte, yt, rubik(26), C.doux); yt += 36; }
+      if (b.tel) { texte(tr("Tél. " + afficherTel(b.tel)), xTexte, yt, rubik(26), C.doux); yt += 36; }
       if (b.adresse) {
         ctx.font = rubik(26);
         couper(ctx, b.adresse, L - xTexte - marge).forEach(function (l) { texte(l, xTexte, yt, rubik(26), C.doux); yt += 34; });
       }
       // Numéros officiels de l'entreprise.
-      if (b.rccm) { texte("RCCM : " + b.rccm, xTexte, yt, rubik(22), C.doux); yt += 30; }
-      if (b.dfe) { texte("DFE / NCC : " + b.dfe, xTexte, yt, rubik(22), C.doux); yt += 30; }
+      if (b.rccm) { texte(tr("RCCM : " + b.rccm), xTexte, yt, rubik(22), C.doux); yt += 30; }
+      if (b.dfe) { texte(tr("DFE / NCC : " + b.dfe), xTexte, yt, rubik(22), C.doux); yt += 30; }
       y = Math.max(yt, logo ? y + 140 : yt) + 18;
       trait(y, C.ligne, 3);
       y += 62;
 
       // Titre, numéro et date
       texte(doc.titre, marge, y, fredoka(40), C.texte);
-      texte("N° " + doc.numero, L - marge, y - 4, rubik(26, 600), C.texte, "right");
+      texte((LANGUE === "en" ? "No. " : "N° ") + doc.numero, L - marge, y - 4, rubik(26, 600), C.texte, "right");
       y += 38;
       texte(dateHeure(doc.t), L - marge, y, rubik(24), C.doux, "right");
-      if (doc.client) texte("Client : " + doc.client, marge, y, rubik(28, 600), C.texte);
+      if (doc.client) texte(tr("Client : " + doc.client), marge, y, rubik(28, 600), C.texte);
       y += 34;
-      if (doc.telClient) { texte("Tél. " + afficherTel(doc.telClient), marge, y, rubik(24), C.doux); y += 34; }
+      if (doc.telClient) { texte(tr("Tél. " + afficherTel(doc.telClient)), marge, y, rubik(24), C.doux); y += 34; }
       y += 20;
 
       if (doc.lignes) {
         // Tableau des produits
         const colQte = L - marge - 350, colPu = L - marge - 170, colTot = L - marge;
         if (vraiment) { ctx.fillStyle = C.sable; ctx.fillRect(marge, y, L - 2 * marge, 52); }
-        texte("Désignation", marge + 16, y + 34, rubik(22, 600), C.doux);
-        texte("Qté", colQte, y + 34, rubik(22, 600), C.doux, "right");
-        texte("Prix", colPu, y + 34, rubik(22, 600), C.doux, "right");
-        texte("Total", colTot - 16, y + 34, rubik(22, 600), C.doux, "right");
+        texte(tr("Désignation"), marge + 16, y + 34, rubik(22, 600), C.doux);
+        texte(tr("Qté"), colQte, y + 34, rubik(22, 600), C.doux, "right");
+        texte(tr("Prix"), colPu, y + 34, rubik(22, 600), C.doux, "right");
+        texte(tr("Total"), colTot - 16, y + 34, rubik(22, 600), C.doux, "right");
         y += 52;
         doc.lignes.forEach(function (l) {
           ctx.font = rubik(26);
@@ -154,21 +155,21 @@ function dessinerDocument(doc) {
           const qte = !l.unite || l.unite === "unite" ? String(l.qte).replace(".", ",") : qteTexte(l.qte, l.unite);
           const h = Math.max(60, 26 + morceaux.length * 32);
           morceaux.forEach(function (m, i) { texte(m, marge + 16, y + 40 + i * 32, rubik(26), C.texte); });
-          texte(qte, colQte, y + 40, rubik(26), C.texte, "right");
-          texte(nombre(l.prix) + (l.unite && l.unite !== "unite" ? "/" + nomUnite(l.unite, 1) : ""), colPu, y + 40, rubik(l.unite && l.unite !== "unite" ? 22 : 26), C.texte, "right");
+          texte(tr(qte), colQte, y + 40, rubik(26), C.texte, "right");
+          texte(tr(nombre(l.prix) + (l.unite && l.unite !== "unite" ? "/" + nomUnite(l.unite, 1) : "")), colPu, y + 40, rubik(l.unite && l.unite !== "unite" ? 22 : 26), C.texte, "right");
           texte(nombre(Math.round(l.prix * l.qte)), colTot - 16, y + 40, rubik(26, 600), C.texte, "right");
           y += h;
           trait(y, C.ligne, 2);
         });
         y += 56;
-        texte("TOTAL", L - marge - 300, y, fredoka(34), C.texte, "right");
+        texte(tr("TOTAL"), L - marge - 300, y, fredoka(34), C.texte, "right");
         texte(franc(doc.total), L - marge, y, fredoka(40), C.vert, "right");
         y += 50;
         if (doc.reste > 0) {
-          texte("Payé", L - marge - 300, y, rubik(28), C.doux, "right");
+          texte(tr("Payé"), L - marge - 300, y, rubik(28), C.doux, "right");
           texte(franc(doc.paye), L - marge, y, rubik(28, 600), C.entre, "right");
           y += 44;
-          texte("Reste à payer", L - marge - 300, y, rubik(28, 600), C.rouge, "right");
+          texte(tr("Reste à payer"), L - marge - 300, y, rubik(28, 600), C.rouge, "right");
           texte(franc(doc.reste), L - marge, y, fredoka(34), C.rouge, "right");
           y += 30;
         }
@@ -180,12 +181,12 @@ function dessinerDocument(doc) {
           y += grand ? 64 : 50;
         };
         y += 10;
-        rangee("Montant dû avant ce paiement", franc(doc.avant), C.texte);
-        rangee("Payé aujourd'hui", franc(doc.paye), C.entre, true);
+        rangee(tr("Montant dû avant ce paiement"), franc(doc.avant), C.texte);
+        rangee(tr("Payé aujourd'hui"), franc(doc.paye), C.entre, true);
         trait(y - 30, C.ligne, 2);
         y += 10;
-        if (doc.reste > 0) rangee("Reste à payer", franc(doc.reste), C.rouge, true);
-        else rangee("Reste à payer", "0 F", C.entre, true);
+        if (doc.reste > 0) rangee(tr("Reste à payer"), franc(doc.reste), C.rouge, true);
+        else rangee(tr("Reste à payer"), "0 F", C.entre, true);
       }
 
       // Tampon « PAYÉ » quand tout est réglé
@@ -199,7 +200,7 @@ function dessinerDocument(doc) {
         ctx.font = fredoka(48);
         ctx.fillStyle = C.entre;
         ctx.textAlign = "center";
-        ctx.fillText("PAYÉ", 0, 12);
+        ctx.fillText(tr("PAYÉ"), 0, 12);
         ctx.restore();
       }
 
@@ -207,7 +208,7 @@ function dessinerDocument(doc) {
       const paiement = lignesPaiement();
       if (paiement.length) {
         y += 50;
-        texte(doc.reste > 0 ? "Pour payer le reste :" : "Paiement accepté :", marge, y, rubik(24, 600), C.texte);
+        texte(tr(doc.reste > 0 ? "Pour payer le reste :" : "Paiement accepté :"), marge, y, rubik(24, 600), C.texte);
         paiement.forEach(function (l) {
           ctx.font = rubik(24);
           couper(ctx, l, L - 2 * marge).forEach(function (morceau) { y += 34; texte(morceau, marge, y, rubik(24), C.doux); });
@@ -217,7 +218,7 @@ function dessinerDocument(doc) {
       y += 60;
       trait(y, C.ligne, 3);
       y += 56;
-      texte(b.merci || "Merci et à bientôt !", L / 2, y, fredoka(32, 600), C.vert, "center");
+      texte(b.merci || tr("Merci et à bientôt !"), L / 2, y, fredoka(32, 600), C.vert, "center");
       y += 50;
       return y;
     }
@@ -234,10 +235,10 @@ function dessinerDocument(doc) {
 function documentVente(m) {
   const fiche = m.clientId || m.client ? ficheClient(idClientDe(m), m.client) : null;
   const lignes = m.lignes && m.lignes.length ? m.lignes
-    : [{ nom: m.note || "Articles divers", qte: 1, prix: m.montant }];
+    : [{ nom: m.note || tr("Articles divers"), qte: 1, prix: m.montant }];
   const paye = m.type === "vente" ? encaisseDe(m) : 0;
   return {
-    titre: "FACTURE", numero: numeroDocument("F-", assurerNumero(m)), t: m.t,
+    titre: tr("FACTURE"), numero: numeroDocument("F-", assurerNumero(m)), t: m.t,
     client: fiche && fiche.nom, telClient: fiche && fiche.tel,
     lignes: lignes, total: m.montant, paye: paye, reste: m.montant - paye
   };
@@ -247,7 +248,7 @@ function documentRecu(m) {
   const avant = soldeAvant(m);
   const reste = Math.max(0, avant - m.montant);
   return {
-    titre: reste > 0 ? "REÇU D'ACOMPTE" : "REÇU DE PAIEMENT", numero: numeroDocument("R-", assurerNumero(m)), t: m.t,
+    titre: tr(reste > 0 ? "REÇU D'ACOMPTE" : "REÇU DE PAIEMENT"), numero: numeroDocument("R-", assurerNumero(m)), t: m.t,
     client: fiche.nom, telClient: fiche.tel,
     avant: avant, paye: m.montant, reste: reste
   };
@@ -262,7 +263,7 @@ function ouvrirDocument(m) {
     : "Astuce : ajoute le nom et le logo de ta boutique dans Réglages ⚙.";
   ouvrirFeuille("facture-apercu");
   dessinerDocument(doc).then(function (toile) {
-    documentEnCours = { toile: toile, nom: (m.type === "paye" ? "recu-" : "facture-") + doc.numero + ".png" };
+    documentEnCours = { toile: toile, nom: tr(m.type === "paye" ? "recu-" : "facture-") + doc.numero + ".png" };
     $("facture-image").src = toile.toDataURL("image/png");
   });
 }

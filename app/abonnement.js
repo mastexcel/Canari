@@ -27,7 +27,7 @@ const FORMULES = [
 // Comptes de Canari (le propriétaire) qui reçoivent les abonnements, tous sur son
 // compte entreprise Djamo. À remplir avant le lancement.
 const RECEPTION = {
-  whatsapp: "",   // numéro WhatsApp qui reçoit les demandes et envoie les codes
+  whatsapp: "0584374848",   // numéro WhatsApp du propriétaire : reçoit les demandes, envoie les codes
   djamo: {
     // QR code du compte entreprise Djamo du propriétaire. L'image est générée à
     // partir du lien ci-dessous (niveau de correction H, mascotte au centre).
@@ -213,7 +213,9 @@ function choisirFormule(id) {
   const texte = tr("Bonjour Canari, je veux l'abonnement " + f.nom + " (" + francCFA(f.prix) + ").") + "\n" +
     tr("Mon numéro Canari : " + idAffiche(donnees.abonnement.id)) + "\n" +
     (b.nom ? tr("Boutique : " + b.nom) + "\n" : "") +
-    tr("J'ai payé par (QR Djamo, Wave, Orange Money, MTN, Moov ou carte Visa) : ");
+    tr(RECEPTION.carte
+      ? "J'ai payé par (QR Djamo, Wave, Orange Money, MTN, Moov ou carte Visa) : "
+      : "J'ai payé par (QR Djamo, Wave, Orange Money, MTN ou Moov) : ");
   $("abo-demande").href = "https://wa.me/" + numeroWhatsApp(RECEPTION.whatsapp) + "?text=" + encodeURIComponent(texte);
 }
 function validerCode() {

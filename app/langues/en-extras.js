@@ -68,7 +68,8 @@ Object.assign(EN, {
   "Ce code a déjà été utilisé sur ce téléphone.": "This code was already used on this phone.",
   "Les abonnements ne sont pas encore ouverts. Réessaie après la prochaine mise à jour.": "Subscriptions are not open yet. Try again after the next update.",
   "Ce code n'est pas valable. Vérifie que tu l'as copié en entier.": "This code is not valid. Check that you copied all of it.",
-  "J'ai payé par (QR Djamo, Wave, Orange Money, MTN, Moov ou carte Visa) :": "I paid with (Djamo QR, Wave, Orange Money, MTN, Moov or Visa card):"
+  "J'ai payé par (QR Djamo, Wave, Orange Money, MTN, Moov ou carte Visa) :": "I paid with (Djamo QR, Wave, Orange Money, MTN, Moov or Visa card):",
+  "J'ai payé par (QR Djamo, Wave, Orange Money, MTN ou Moov) :": "I paid with (Djamo QR, Wave, Orange Money, MTN or Moov):"
 });
 
 // Unités sur les factures (« 2,5 kg », « 3 sacs », « 600/kg »).

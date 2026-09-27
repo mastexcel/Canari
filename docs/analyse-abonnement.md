@@ -46,6 +46,7 @@ Limites connues : quelqu'un de très habile peut remettre son essai à zéro en 
 
 ## Moyens de paiement choisis par le propriétaire
 
+- **Wave** (le plus courant en Côte d'Ivoire) : bouton « Payer avec Wave » vers le lien marchand du propriétaire, plus un QR code scannable **dans l'application Wave**. Le lien vient du QR marchand fourni par Wave ; Canari le ré-encode à ses couleurs, sans le logo Wave.
 - **Lien de paiement Djamo** (`https://pay.djamo.com/hq91c`), mis en avant par le bouton « Payer maintenant » : la page s'ouvre et le client y choisit Wave, Orange Money, MTN MoMo, Moov Money ou Djamo.
 - **QR code du même lien**, proposé ensuite pour un autre téléphone. **Important** : ce QR contient une adresse web, ce n'est pas un QR marchand d'opérateur. Il se scanne avec **l'appareil photo** du téléphone ; le scanner intégré à Wave ou Orange Money le refuse, car chacun ne lit que ses propres QR codes. Pour un QR scannable directement dans Wave, il faudrait un QR marchand fourni par Wave Business.
 - **Carte Visa : pas disponible pour l'instant.** La page de paiement Djamo du propriétaire (`https://pay.djamo.com/hq91c`) ne propose que le mobile money. Le bouton reste caché dans l'appli. À demander à Djamo : « pouvez-vous m'activer un lien de paiement qui accepte les cartes Visa ? »

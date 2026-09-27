@@ -28,6 +28,12 @@ const FORMULES = [
 // compte entreprise Djamo. À remplir avant le lancement.
 const RECEPTION = {
   whatsapp: "0584374848",   // numéro WhatsApp du propriétaire : reçoit les demandes, envoie les codes
+  // Wave : lien marchand du propriétaire (extrait de son QR code Wave). Il ouvre
+  // directement l'application Wave, et son QR est scannable dans Wave.
+  wave: {
+    lien: "https://pay.wave.com/m/M_ci_b-BzcCIujDTv/c/ci/?src=d",
+    qr: "icones/qr-wave.png"
+  },
   djamo: {
     // QR code du compte entreprise Djamo du propriétaire. L'image est générée à
     // partir du lien ci-dessous (niveau de correction H, mascotte au centre).
@@ -185,13 +191,18 @@ function ouvrirAbonnement(raison) {
       '<b>' + f.nom + '</b><span class="abo-prix">' + francCFA(f.prix) + '</span><small>' + f.detail() + '</small></button>';
   }).join("");
   choisirFormule(formuleChoisie);
-  // QR code Djamo : se scanne avec Djamo, Wave, Orange Money, MTN MoMo ou Moov Money.
-  const d = RECEPTION.djamo;
-  $("abo-djamo").hidden = !d.qr && !d.lien;
-  $("abo-qr-bloc").hidden = !d.qr;
-  if (d.qr) { $("abo-qr").src = d.qr; $("abo-qr-enregistrer").href = d.qr; }
+  // Deux chemins de paiement : Wave (le plus courant) et la page Djamo pour les autres.
+  const w = RECEPTION.wave, d = RECEPTION.djamo;
+  $("abo-wave-lien").hidden = !w.lien;
+  if (w.lien) $("abo-wave-lien").href = w.lien;
   $("abo-djamo-lien").hidden = !d.lien;
   if (d.lien) $("abo-djamo-lien").href = d.lien;
+  $("abo-djamo").hidden = !w.lien && !d.lien && !d.qr && !w.qr;
+  $("abo-qr-bloc").hidden = !d.qr && !w.qr;
+  $("abo-qr-wave").hidden = !w.qr;
+  if (w.qr) { $("abo-qr-wave-image").src = w.qr; $("abo-qr-wave-enregistrer").href = w.qr; }
+  $("abo-qr-autres").hidden = !d.qr;
+  if (d.qr) { $("abo-qr").src = d.qr; $("abo-qr-enregistrer").href = d.qr; }
   $("abo-carte").hidden = !RECEPTION.carte;
   if (RECEPTION.carte) $("abo-carte").href = RECEPTION.carte;
   const comptes = RECEPTION.comptes.filter(function (c) { return c.tel || c.lien; });

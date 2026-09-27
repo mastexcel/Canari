@@ -2001,3 +2001,10 @@ body {
 .ligne-texte small, .client-info, .barre-jour small { letter-spacing: .1px; }
 .etat { letter-spacing: .1px; font-weight: 600; }
 .abo-qr-bloc { margin-top: 6px; padding-top: 12px; border-top: 1px solid var(--bord); }
+.abo-qr-duo { display: flex; gap: 12px; }
+.abo-qr-duo > div { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.abo-qr-duo > div[hidden] { display: none; }
+.abo-qr-duo .abo-qr { width: 100%; height: auto; aspect-ratio: 1; }
+.abo-qr-nom { margin: 0; font-weight: 600; color: var(--olive-800); }
+.abo-qr-duo .bouton { min-height: 44px; font-size: 15px; }
+.abo-qr-duo .bouton svg { width: 20px; height: 20px; }

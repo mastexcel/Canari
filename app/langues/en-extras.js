@@ -70,9 +70,14 @@ Object.assign(EN, {
   "Ce code n'est pas valable. Vérifie que tu l'as copié en entier.": "This code is not valid. Check that you copied all of it.",
   "J'ai payé par (Wave, Orange Money, MTN, Moov, Djamo ou carte Visa) :": "I paid with (Wave, Orange Money, MTN, Moov, Djamo or Visa card):",
   "J'ai payé par (Wave, Orange Money, MTN, Moov ou Djamo) :": "I paid with (Wave, Orange Money, MTN, Moov or Djamo):",
-  "Payer maintenant": "Pay now",
-  "La page de paiement s'ouvre : tu choisis là-bas Wave, Orange Money, MTN MoMo, Moov Money ou Djamo.": "The payment page opens: there you choose Wave, Orange Money, MTN MoMo, Moov Money or Djamo.",
-  "Ou fais scanner ce QR code par un autre téléphone": "Or have another phone scan this QR code",
+  "Payer avec Wave": "Pay with Wave",
+  "Orange Money, MTN, Moov ou Djamo": "Orange Money, MTN, Moov or Djamo",
+  "Touche le moyen que tu utilises : l'application de paiement s'ouvre avec le compte de Canari déjà rempli.": "Tap the method you use: the payment app opens with Canari's account already filled in.",
+  "Ou fais scanner un QR code par un autre téléphone": "Or have another phone scan a QR code",
+  "QR code de paiement Wave de Canari": "Canari's Wave payment QR code",
+  "Autres moyens": "Other methods",
+  "Enregistrer": "Save",
+  "Le QR Wave se scanne dans l'application Wave. Celui des autres moyens s'ouvre avec l'appareil photo du téléphone.": "The Wave QR is scanned inside the Wave app. The other one opens with the phone's camera.",
   "QR code qui ouvre la page de paiement de Canari": "QR code that opens Canari's payment page",
   "Scanne-le avec l'appareil photo du téléphone. Le scanner de Wave ou d'Orange Money ne marche pas ici : il ne lit que les QR codes de son propre service. Le QR ouvre la page de paiement, et le moyen de paiement se choisit là-bas.": "Scan it with the phone's camera. The Wave or Orange Money scanner will not work here: it only reads its own service's QR codes. The QR opens the payment page, and the payment method is chosen there."
 });

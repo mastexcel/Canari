@@ -1,0 +1,250 @@
+@font-face {
+  font-family: "Fredoka";
+  src: url("polices/fredoka.woff2") format("woff2");
+  font-weight: 300 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Rubik";
+  src: url("polices/rubik.woff2") format("woff2");
+  font-weight: 300 900;
+  font-display: swap;
+}
+
+:root {
+  /* Identité Canari */
+  --vert-foret: #174A3F;
+  --terre-cuite: #C8643A;
+  --terre-claire: #E08A5F;
+  --or: #F2B233;
+  --sable: #F6EEE3;
+  --brun: #2A1A12;
+  /* Couleurs de sens */
+  --entre: #1E7A4F;
+  --sort: #B8412B;
+  --credit: #9A6512;
+  --maison: #4B4FA8;
+
+  --carte: #FFFFFF;
+  --bord: #E6D9C6;
+  --arrondi: 18px;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--sable);
+  color: var(--brun);
+  font-family: "Rubik", system-ui, sans-serif;
+  font-size: 17px;
+  line-height: 1.4;
+  -webkit-tap-highlight-color: transparent;
+}
+[hidden] { display: none !important; }
+
+.ecran {
+  min-height: 100vh;
+  min-height: 100dvh;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 16px 16px calc(24px + env(safe-area-inset-bottom));
+}
+
+.logo {
+  font-family: "Fredoka", system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin: 0;
+}
+
+/* ---------- Accueil ---------- */
+.accueil {
+  background: var(--vert-foret);
+  color: var(--sable);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  max-width: none;
+}
+.accueil-centre {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
+}
+.accueil-mascotte {
+  width: 180px;
+  height: 180px;
+  border-radius: 40px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .3);
+  margin-bottom: 12px;
+}
+.accueil .logo { font-size: 56px; line-height: 1; }
+.slogan {
+  font-family: "Fredoka", system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 22px;
+  color: var(--or);
+  margin: 0;
+}
+.accueil-texte {
+  max-width: 320px;
+  margin: 16px 0 0;
+  opacity: .92;
+}
+
+/* ---------- Boutons ---------- */
+.bouton {
+  font: inherit;
+  font-weight: 600;
+  border: 0;
+  border-radius: 14px;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  width: 100%;
+  transition: transform .08s;
+}
+.bouton:active { transform: scale(.97); }
+.bouton svg {
+  width: 26px;
+  height: 26px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+.bouton-principal {
+  background: var(--terre-cuite);
+  color: #fff;
+  font-family: "Fredoka", system-ui, sans-serif;
+  font-size: 22px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* ---------- Écran principal ---------- */
+.entete {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.entete img { border-radius: 10px; }
+.logo-petit { font-size: 28px; color: var(--vert-foret); }
+.date {
+  margin-left: auto;
+  font-size: 15px;
+  color: #6B5646;
+}
+
+.carte-gain {
+  background: var(--vert-foret);
+  color: var(--sable);
+  border-radius: var(--arrondi);
+  padding: 18px 16px 16px;
+  text-align: center;
+}
+.etiquette { margin: 0; font-size: 16px; opacity: .9; }
+.gros-chiffre {
+  font-family: "Fredoka", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 54px;
+  line-height: 1.1;
+  margin: 2px 0 14px;
+  color: var(--or);
+}
+.trois-chiffres {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.chiffre {
+  background: var(--sable);
+  color: var(--brun);
+  border-radius: 12px;
+  padding: 8px 4px;
+  display: flex;
+  flex-direction: column;
+  border-top: 5px solid;
+}
+.chiffre span { font-size: 14px; }
+.chiffre strong {
+  font-family: "Fredoka", system-ui, sans-serif;
+  font-size: 20px;
+}
+.chiffre.entre { border-color: var(--entre); }
+.chiffre.entre strong { color: var(--entre); }
+.chiffre.sort { border-color: var(--sort); }
+.chiffre.sort strong { color: var(--sort); }
+.chiffre.maison { border-color: var(--maison); }
+.chiffre.maison strong { color: var(--maison); }
+
+.gros-boutons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 16px;
+}
+.action {
+  flex-direction: column;
+  gap: 4px;
+  min-height: 88px;
+  color: #fff;
+  font-family: "Fredoka", system-ui, sans-serif;
+  font-size: 20px;
+}
+.action svg { width: 32px; height: 32px; stroke-width: 3; }
+.action.vente { background: var(--entre); }
+.action.depense { background: var(--sort); }
+.action.credit { background: var(--credit); }
+
+.petits-boutons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+.secondaire {
+  background: var(--carte);
+  border: 2px solid var(--bord);
+  font-size: 15px;
+  min-height: 52px;
+  padding: 6px 8px;
+  line-height: 1.15;
+}
+.secondaire svg { width: 22px; height: 22px; }
+.secondaire.maison { color: var(--maison); }
+.secondaire.fournisseur { color: var(--credit); }
+
+.vide {
+  text-align: center;
+  margin-top: 28px;
+  color: #5A4636;
+}
+.vide img { border-radius: 22px; opacity: .95; }
+.vide p { margin: 10px 0 0; }
+
+/* ---------- Message bref ---------- */
+.message {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  max-width: 488px;
+  margin: 0 auto;
+  background: var(--brun);
+  color: var(--sable);
+  border-radius: 14px;
+  padding: 14px 16px;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .25);
+}

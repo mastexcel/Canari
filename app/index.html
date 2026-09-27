@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>canari</title>
+<meta name="description" content="Canari, le carnet de caisse de ta boutique. Garde chaque franc.">
+<meta name="theme-color" content="#174A3F">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icones/icone-192.png">
+<link rel="apple-touch-icon" href="icones/icone-180.png">
+<link rel="preload" href="polices/fredoka.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Écran d'accueil (première ouverture) -->
+<section id="accueil" class="ecran accueil" hidden>
+  <div class="accueil-centre">
+    <img class="accueil-mascotte" src="icones/canari-joyeux.webp" width="180" height="180" alt="Petit Canari, la jarre souriante">
+    <h1 class="logo">canari</h1>
+    <p class="slogan">Garde chaque franc.</p>
+    <p class="accueil-texte">Ton carnet de caisse sur le téléphone. Ventes, dépenses, crédits : tout est noté, même sans internet.</p>
+  </div>
+  <button id="commencer" class="bouton bouton-principal" type="button">
+    Commencer
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13m-5-6 6 6-6 6"/></svg>
+  </button>
+</section>
+
+<!-- Écran principal (aperçu de l'étape 1) -->
+<section id="principal" class="ecran principal" hidden>
+  <header class="entete">
+    <img src="icones/icone-192.png" width="40" height="40" alt="">
+    <span class="logo logo-petit">canari</span>
+    <span id="date-du-jour" class="date"></span>
+  </header>
+
+  <div class="carte-gain">
+    <p class="etiquette">Gain du jour</p>
+    <p class="gros-chiffre" id="gain">0 F</p>
+    <div class="trois-chiffres">
+      <div class="chiffre entre"><span>Encaissé</span><strong>0 F</strong></div>
+      <div class="chiffre sort"><span>Dépensé</span><strong>0 F</strong></div>
+      <div class="chiffre maison"><span>Maison</span><strong>0 F</strong></div>
+    </div>
+  </div>
+
+  <div class="gros-boutons">
+    <button class="bouton action vente" type="button" data-bientot>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Vente
+    </button>
+    <button class="bouton action depense" type="button" data-bientot>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg>Dépense
+    </button>
+    <button class="bouton action credit" type="button" data-bientot>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v10H4zM4 11h16"/></svg>Crédit
+    </button>
+  </div>
+  <div class="petits-boutons">
+    <button class="bouton secondaire maison" type="button" data-bientot>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11 12 4l8 7v9H4z"/></svg>Pris pour la maison
+    </button>
+    <button class="bouton secondaire fournisseur" type="button" data-bientot>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.5"/><circle cx="17" cy="17.5" r="1.5"/></svg>Dette fournisseur
+    </button>
+  </div>
+
+  <div class="vide">
+    <img src="icones/canari-joyeux.webp" width="96" height="96" alt="">
+    <p>Rien de noté aujourd'hui.<br>Appuie sur <strong>Vente</strong> quand un client paie.</p>
+  </div>
+</section>
+
+<div id="message" class="message" role="status" hidden></div>
+
+<script src="app.js"></script>
+</body>
+</html>

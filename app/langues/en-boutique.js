@@ -34,7 +34,7 @@
     const n = parseFloat(m[2].replace(/ /g, "").replace(",", "."));
     const u = chercherUnite(m[3]);
     const mot = u ? (Math.abs(n) === 1 ? u[2] : u[3]) : m[3];
-    return m[1] + nombreEn(m[2]) + " " + mot + m[4];
+    return m[1] + nombreEn(m[2]) + "\u00a0" + mot + m[4];
   }
   const MOTS = UNITES_EN.reduce(function (l, u) { return l.concat([u[1], u[0]]); }, [])
     .filter(function (x, i, l) { return l.indexOf(x) === i; })
@@ -241,8 +241,8 @@
     [/^Une fournée \(un lot\) donne combien de (.+) \?$/, function (m, u) { return "How many " + uniteEn(u, true) + " does one batch make?"; }],
     [/^= (.+ F) · prix moyen du stock$/, "= $1 · average stock price"],
     [/^÷ (.+) = coût de revient$/, function (m, q) { return "÷ " + qteEn(q) + " = cost price"; }],
-    [/^(.+ F) \/ (\S+) \(prix moyen\)$/, function (m, f, u) { return f + " / " + uniteEn(u, false) + " (average price)"; }],
-    [/^(.+ F) \(prix moyen\)$/, "$1 (average price)"],
+    [/^(\d[\d ]* F) \/ (\S+) \(prix moyen\)$/, function (m, f, u) { return f + " / " + uniteEn(u, false) + " (average price)"; }],
+    [/^(\d[\d ]* F) \(prix moyen\)$/, "$1 (average price)"],
     [/^Achat d'un (.+)$/, function (m, u) { return "Buying one " + uniteEn(u, false); }],
     [/^Prix d'achat moyen \/ (.+)$/, function (m, u) { return "Average purchase price / " + uniteEn(u, false); }],
     [/^Coût de revient \/ (.+)$/, function (m, u) { return "Cost price / " + uniteEn(u, false); }],
@@ -275,8 +275,8 @@
     /* ---- boutique.js ---- */
     motif("^Il n'en reste que (" + QG + ")$", function (m, q) { return "Only " + qteEn(q) + " left"; }),
     motif("^(" + QG + ") en stock$", function (m, q) { return qteEn(q) + " in stock"; }),
-    [/^(.+ F) \/ (\S+) ·$/, function (m, f, u) { return f + " / " + uniteEn(u, false) + " ·"; }],
-    [/^(.+ F) \/ (\S+)$/, function (m, f, u) { return f + " / " + uniteEn(u, false); }],
+    [/^(\d[\d ]* F) \/ (\S+) ·$/, function (m, f, u) { return f + " / " + uniteEn(u, false) + " ·"; }],
+    [/^(\d[\d ]* F) \/ (\S+)$/, function (m, f, u) { return f + " / " + uniteEn(u, false); }],
     [/^\/ (\S+)$/, function (m, u) { return "/ " + uniteEn(u, false); }],
     [/^perte (.+ F)$/, "loss $1"],
     // Ligne d'aide d'un produit dans l'onglet Stock.
@@ -318,6 +318,7 @@
       return a + " leaves the cash box, " + b + " left on credit with " + fournisseurEn(qui) + ".";
     }],
     [/^Tu devras (.+ F) à (.+)\.$/, function (m, a, qui) { return "You will owe " + a + " to " + fournisseurEn(qui) + "."; }],
+    [/^Total : (.+ F)$/, "Total: $1"],
     [/^Arrivage : (.+)$/, "Delivery: $1"],
     [/^J'ai fabriqué : (.+)$/, "I made: $1"],
     [/^Combien en as-tu reçu \(en (.+)\) \?$/, function (m, u) { return "How many did you receive (in " + uniteEn(u, true) + ")?"; }],

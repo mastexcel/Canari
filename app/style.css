@@ -950,3 +950,149 @@ body {
 }
 .bouton-annuler svg { width: 22px; height: 22px; }
 .version { text-align: center; margin-top: 24px; }
+
+/* ---------- Factures depuis la liste du jour ---------- */
+button.ligne-texte {
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+.lien-document {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--vert-foret) !important;
+  font-weight: 600;
+  margin-top: 2px;
+}
+.lien-document svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linejoin: round;
+}
+.t-stock .pastille { background: #8A7564; }
+.m-stock { color: #5A4636; }
+
+/* ---------- Choisir les produits dans une vente ---------- */
+#bloc-produits { display: flex; flex-direction: column; gap: 8px; }
+#bloc-produits[hidden] { display: none; }
+#choix-vente[hidden], .rapides[hidden] { display: none; }
+.choix-produits {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: #fff;
+  border: 2px solid var(--bord);
+  border-radius: 14px;
+  max-height: 42vh;
+  overflow-y: auto;
+}
+.choix-produits .aide { padding: 12px; }
+.choix-produit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px 6px 12px;
+  border-bottom: 1px solid var(--bord);
+}
+.choix-produit:last-child { border-bottom: 0; }
+.choix-produit.choisi { background: #EAF4EE; }
+.choix-produit-nom { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.25; }
+.choix-produit-nom b { font-weight: 600; overflow-wrap: anywhere; }
+.choix-produit-nom small { font-size: 14px; color: #6B5646; }
+.choix-produit-nom small.m-sort { color: var(--sort); font-weight: 600; }
+.pas-a-pas { display: flex; align-items: center; gap: 6px; }
+.pas-a-pas .qte {
+  font-family: "Fredoka", system-ui, sans-serif;
+  font-size: 22px;
+  min-width: 28px;
+  text-align: center;
+}
+.bouton.pas {
+  width: 48px;
+  min-height: 48px;
+  font-size: 26px;
+  font-weight: 700;
+  background: #fff;
+  border: 2px solid var(--bord);
+  color: var(--brun);
+}
+.bouton.pas.plus { background: var(--entre); border-color: var(--entre); color: #fff; }
+.montant.calcule { color: var(--vert-foret); }
+
+/* ---------- Onglet Stock ---------- */
+.carte-stock .gros-chiffre { font-size: 44px; }
+.ajouter-produit { margin-top: 14px; }
+.recherche-stock { margin-top: 12px; width: 100%; }
+.produits {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.produit {
+  background: var(--carte);
+  border: 2px solid var(--bord);
+  border-left: 6px solid var(--entre);
+  border-radius: var(--arrondi);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.produit[hidden] { display: none; }
+.produit p { margin: 0; }
+.produit.bas { border-left-color: var(--sort); }
+.produit .client-haut strong { color: var(--brun); }
+.stock-quantite { font-size: 17px; }
+.stock-quantite b { font-family: "Fredoka", system-ui, sans-serif; font-size: 24px; color: var(--entre); }
+.stock-quantite.bas, .stock-quantite.bas b { color: var(--sort); font-weight: 600; }
+.stock-quantite.neutre { color: #6B5646; }
+.bouton-arrivage { background: var(--entre); color: #fff; font-size: 18px; }
+#vue-stock > .vide + .bouton { margin-top: 16px; }
+
+/* ---------- Fiche produit, arrivage ---------- */
+#bloc-quantite { display: flex; flex-direction: column; gap: 8px; }
+#bloc-quantite[hidden] { display: none; }
+.note.quantite { font-family: "Fredoka", system-ui, sans-serif; font-size: 24px; }
+#arrivage-form .pas-a-pas .note { flex: 1; text-align: center; }
+.petit-modifier.supprimer { color: var(--sort); align-self: center; }
+
+/* ---------- Ma boutique ---------- */
+.logo-boutique { display: flex; align-items: center; gap: 14px; }
+.logo-apercu {
+  width: 96px;
+  height: 96px;
+  flex-shrink: 0;
+  border: 2px dashed var(--bord);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #fff;
+  font-size: 13px;
+  color: #8A7564;
+  text-align: center;
+}
+.logo-apercu img { max-width: 100%; max-height: 100%; }
+.logo-boutons { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+
+/* ---------- Aperçu d'une facture ---------- */
+#facture-image {
+  width: 100%;
+  min-height: 200px;
+  border: 2px solid var(--bord);
+  border-radius: 12px;
+  background: #fff;
+}
+.onglet { font-size: 12px; }

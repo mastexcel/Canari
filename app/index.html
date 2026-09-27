@@ -107,6 +107,9 @@
 
   <!-- Onglet Semaine -->
   <div id="vue-semaine" class="vue" hidden></div>
+
+  <!-- Onglet Stock -->
+  <div id="vue-stock" class="vue" hidden></div>
 </section>
 
 <!-- Écran Réglages -->
@@ -117,6 +120,32 @@
     </button>
     <h1 class="titre-ecran">Réglages</h1>
   </header>
+
+  <form class="carte-reglage" id="form-boutique" novalidate autocomplete="off">
+    <h2>Ma boutique</h2>
+    <p class="aide">Ces infos apparaissent sur tes factures et tes reçus.</p>
+    <div class="logo-boutique">
+      <div class="logo-apercu" id="logo-apercu"><span>Pas de logo</span></div>
+      <div class="logo-boutons">
+        <label class="bouton bouton-annuler bouton-fichier">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM4 15l5-5 4 4 3-3 4 4"/></svg>Choisir un logo
+          <input type="file" id="logo-fichier" accept="image/*">
+        </label>
+        <button type="button" class="petit-modifier" id="logo-retirer" hidden>Retirer le logo</button>
+      </div>
+    </div>
+    <label class="champ-etiquette" for="boutique-nom">Nom de la boutique</label>
+    <input id="boutique-nom" class="note" placeholder="ex. Boutique Awa" autocapitalize="words">
+    <label class="champ-etiquette" for="boutique-tel">Téléphone de la boutique</label>
+    <input id="boutique-tel" class="note" type="tel" inputmode="tel" placeholder="ex. 07 00 00 00 00">
+    <label class="champ-etiquette" for="boutique-adresse">Adresse</label>
+    <input id="boutique-adresse" class="note" placeholder="ex. Yopougon Selmer, Abidjan">
+    <label class="champ-etiquette" for="boutique-merci">Message en bas des factures</label>
+    <input id="boutique-merci" class="note" placeholder="Merci et à bientôt !">
+    <button type="submit" class="bouton bouton-sauver">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>Enregistrer
+    </button>
+  </form>
 
   <section class="carte-reglage">
     <div class="reglage-haut">
@@ -168,12 +197,28 @@
   <button type="button" class="onglet" data-onglet="semaine">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V11M12 20V5M19 20v-6M3 20h18"/></svg>Semaine
   </button>
+  <button type="button" class="onglet" data-onglet="stock">
+    <span class="onglet-icone">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8l9-5 9 5v8l-9 5-9-5zM3 8l9 5 9-5M12 13v8"/></svg>
+      <span class="pastille-nombre" id="nb-stock" hidden></span>
+    </span>Stock
+  </button>
 </nav>
 
 <!-- Fenêtre de saisie -->
 <div class="fond-saisie" id="fond-saisie" hidden></div>
 <form class="saisie" id="saisie" hidden novalidate autocomplete="off">
   <h2 class="saisie-titre" id="saisie-titre">Nouvelle vente</h2>
+
+  <div id="choix-vente" class="deux-choix" role="group" aria-label="Comment noter la vente">
+    <button type="button" class="choix" data-facon="montant" aria-pressed="true">Par montant</button>
+    <button type="button" class="choix" data-facon="produits" aria-pressed="false">Par produits</button>
+  </div>
+
+  <div id="bloc-produits" hidden>
+    <input id="recherche-produit" class="note" type="search" placeholder="Chercher un produit" enterkeyhint="search">
+    <ul class="choix-produits" id="choix-produits"></ul>
+  </div>
 
   <label class="champ-etiquette" for="montant" id="montant-etiquette">Combien ?</label>
   <div class="montant-boite">
@@ -225,6 +270,73 @@
     </button>
   </div>
 </form>
+
+<!-- Produit : ajouter ou modifier -->
+<form class="saisie" id="produit-form" hidden novalidate autocomplete="off" style="--couleur-saisie: var(--vert-foret)">
+  <h2 class="saisie-titre" id="produit-titre">Nouveau produit</h2>
+  <label class="champ-etiquette" for="produit-nom">Nom du produit ou du service</label>
+  <input id="produit-nom" class="note" placeholder="ex. Riz 5 kg" autocapitalize="sentences">
+  <label class="champ-etiquette" for="produit-prix">Prix de vente</label>
+  <div class="montant-boite petite">
+    <input id="produit-prix" class="montant" inputmode="numeric" placeholder="0">
+    <span class="montant-f">F</span>
+  </div>
+  <p class="champ-etiquette">Compter le stock ?</p>
+  <div class="deux-choix" id="produit-suivi" role="group" aria-label="Compter le stock">
+    <button type="button" class="choix" data-suivi="oui" aria-pressed="true">Oui</button>
+    <button type="button" class="choix" data-suivi="non" aria-pressed="false">Non (service)</button>
+  </div>
+  <div id="bloc-quantite">
+    <label class="champ-etiquette" for="produit-quantite" id="produit-quantite-etiquette">Combien tu en as maintenant ?</label>
+    <input id="produit-quantite" class="note quantite" inputmode="numeric" placeholder="0">
+    <label class="champ-etiquette" for="produit-seuil">Me prévenir quand il en reste</label>
+    <input id="produit-seuil" class="note quantite" inputmode="numeric" placeholder="3">
+  </div>
+  <p class="erreur" id="produit-erreur" hidden></p>
+  <div class="saisie-boutons">
+    <button type="button" class="bouton bouton-annuler" id="produit-annuler">Annuler</button>
+    <button type="submit" class="bouton bouton-ok">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>Enregistrer
+    </button>
+  </div>
+  <button type="button" class="petit-modifier supprimer" id="produit-supprimer" hidden>Supprimer ce produit</button>
+</form>
+
+<!-- Arrivage de marchandise -->
+<form class="saisie" id="arrivage-form" hidden novalidate autocomplete="off" style="--couleur-saisie: var(--vert-foret)">
+  <h2 class="saisie-titre" id="arrivage-titre">Arrivage</h2>
+  <p class="aide" id="arrivage-actuel"></p>
+  <label class="champ-etiquette" for="arrivage-quantite">Combien en as-tu reçu ?</label>
+  <div class="pas-a-pas">
+    <button type="button" class="bouton pas" data-pas="-1" aria-label="Un de moins">−</button>
+    <input id="arrivage-quantite" class="note quantite" inputmode="numeric" value="1">
+    <button type="button" class="bouton pas" data-pas="1" aria-label="Un de plus">+</button>
+  </div>
+  <p class="aide">Pour noter ce que tu as payé, utilise « Dépense » ou « Dette fournisseur ».</p>
+  <p class="erreur" id="arrivage-erreur" hidden></p>
+  <div class="saisie-boutons">
+    <button type="button" class="bouton bouton-annuler" id="arrivage-annuler">Annuler</button>
+    <button type="submit" class="bouton bouton-ok">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>Ajouter au stock
+    </button>
+  </div>
+</form>
+
+<!-- Aperçu d'une facture ou d'un reçu -->
+<div class="saisie facture-apercu" id="facture-apercu" hidden style="--couleur-saisie: var(--vert-foret)">
+  <h2 class="saisie-titre" id="facture-titre">Facture</h2>
+  <img id="facture-image" alt="Aperçu de la facture">
+  <button type="button" class="bouton bouton-whatsapp" id="facture-partager">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.7z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1-1.5-2-1-1 1a4 4 0 0 1-2-2l1-1-1-2z"/></svg>Envoyer sur WhatsApp
+  </button>
+  <p class="aide" id="facture-aide">Choisis WhatsApp, puis le client.</p>
+  <div class="saisie-boutons deux-egaux">
+    <button type="button" class="bouton bouton-annuler" id="facture-enregistrer">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M5 21h14"/></svg>Enregistrer
+    </button>
+    <button type="button" class="bouton bouton-annuler" id="facture-fermer">Fermer</button>
+  </div>
+</div>
 
 <!-- Relancer un client -->
 <form class="saisie" id="relance" hidden novalidate autocomplete="off" style="--couleur-saisie: var(--credit)">
@@ -283,6 +395,8 @@
   <button type="button" id="message-annuler" hidden>Annuler</button>
 </div>
 
+<script src="boutique.js"></script>
+<script src="facture.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

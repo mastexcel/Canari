@@ -119,13 +119,15 @@ Calculs : gain = encaissé − dépensé ; reste pour la boutique = gain − pri
 - Pas de publicité, pas de collecte de données inutile.
 - Sauvegarde : prévoir un export des données (fichier) pour ne rien perdre si le téléphone change.
 
-## Ajouts demandés par le propriétaire (à faire après les étapes 4 à 6)
+## Ajouts demandés par le propriétaire (faits, étape 6 bis)
 
 - **Paramètres de la boutique** : nom, logo, numéro, adresse (utilisés sur les factures).
 - **Produits et services** avec leur prix.
 - **Saisie d'une vente au choix** : choisir des produits (total calculé, stock mis à jour, facture prête) OU taper juste un montant pour aller vite.
 - **Factures en image avec le logo**, partagées sur WhatsApp comme une photo : facture de vente, et **reçu d'acompte** à chaque paiement d'une partie d'un crédit (déjà payé, reste à payer).
 - **Stock simple** : quantité par produit, qui baisse à chaque vente, monte à chaque arrivée de marchandise, avec une alerte quand un produit va manquer. Permet au vendeur de faire le point sur son stock.
+
+Comment c'est fait : `app/boutique.js` (boutique, produits, stock, choix des produits dans une vente) et `app/facture.js` (factures « F-0001 » et reçus « R-0001 » dessinés en image sur le téléphone, partagés avec le menu de partage d'Android). Le stock n'est jamais tapé à la main : il se calcule à partir des lignes « stock » (départ, arrivage, correction) moins les quantités vendues, donc retirer une vente remet le produit en stock. Un reçu s'appelle « reçu d'acompte » tant qu'il reste quelque chose à payer.
 
 ## Hors version 1 (plus tard)
 

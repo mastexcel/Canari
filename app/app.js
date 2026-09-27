@@ -36,7 +36,17 @@ try {
 } catch (e) { /* données illisibles : on repart de zéro */ }
 if (!donnees.meta) donnees.meta = {};
 if (!donnees.clients) donnees.clients = {};
-if (!donnees.fournisseurs) donnees.fournisseurs = {};
+completerDonnees();
+
+// Ajoute les rubriques qui manquent (anciennes données ou sauvegarde récupérée).
+function completerDonnees() {
+  if (!donnees.meta) donnees.meta = {};
+  if (!donnees.clients) donnees.clients = {};
+  if (!donnees.fournisseurs) donnees.fournisseurs = {};
+  if (!donnees.boutique) donnees.boutique = {};  // nom, tel, adresse, merci, logo
+  if (!donnees.produits) donnees.produits = {};  // voir boutique.js
+  if (!donnees.compteurs) donnees.compteurs = { facture: 0, recu: 0 };
+}
 
 function sauver() {
   if (!ecrire(CLE_DONNEES, JSON.stringify(donnees))) {
@@ -247,7 +257,7 @@ function statutRelance(c) {
 
 const NOMS = {
   vente: "Vente", depense: "Dépense", credit: "Vente à crédit", paye: "Remboursement",
-  maison: "Pris pour la maison", fdette: "Dette fournisseur", fpaye: "Payé au fournisseur"
+  maison: "Pris pour la maison", fdette: "Dette fournisseur", fpaye: "Payé au fournisseur", stock: "Stock"
 };
 
 let onglet = "jour";
@@ -259,6 +269,7 @@ function afficher() {
   afficherCredits();
   afficherRelances();
   afficherSemaine();
+  afficherStock();
   document.querySelectorAll(".vue").forEach(function (v) { v.hidden = v.id !== "vue-" + onglet; });
   document.querySelectorAll("[data-onglet]").forEach(function (b) {
     if (b.dataset.onglet === onglet) b.setAttribute("aria-current", "page");
@@ -306,16 +317,29 @@ function ligneHtml(m) {
     const verse = m.verse || 0, reste = m.montant - verse;
     montants = (verse > 0 ? '<span class="m-sort">− ' + franc(verse) + '</span>' : "") +
       (reste > 0 ? '<span class="m-credit">' + franc(reste) + ' à payer</span>' : "");
+  } else if (m.type === "stock") {
+    montants = '<span class="m-stock">' + (m.quantite > 0 ? "+" : "−") + " " + Math.abs(m.quantite) + '</span>';
   } else {
     const signe = m.type === "paye" ? "+ " : (m.type === "depense" || m.type === "fpaye" || m.type === "maison") ? "− " : "";
     montants = '<span>' + signe + franc(m.montant) + '</span>';
   }
-  const nomType = type === "credit" ? "Vente à crédit" : m.type === "vente" && creditDe(m) > 0 ? "Vente, pas tout payé" : NOMS[m.type];
-  const titre = m.note || (m.type === "vente" && creditDe(m) > 0 ? "Vente de " + franc(m.montant) : NOMS[type]);
+  const RAISONS = { depart: "Stock de départ", arrivage: "Arrivage", correction: "Stock corrigé" };
+  const nomType = m.type === "stock" ? (RAISONS[m.raison] || "Stock")
+    : type === "credit" ? "Vente à crédit" : m.type === "vente" && creditDe(m) > 0 ? "Vente, pas tout payé" : NOMS[m.type];
+  const produits = m.lignes && m.lignes.length
+    ? m.lignes.map(function (l) { return l.qte + " × " + l.nom; }).join(", ") : "";
+  const titre = m.note || produits || (m.type === "vente" && creditDe(m) > 0 ? "Vente de " + franc(m.montant) : NOMS[type]);
+  const avecDocument = m.type === "vente" || m.type === "credit" || m.type === "paye";
+  const texte = '<b>' + echapper(titre) + '</b>' +
+    '<small>' + nomType + qui + ' · ' + heure + '</small>' +
+    (avecDocument ? '<small class="lien-document">' +
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 13h6M9 17h6"/></svg>' +
+      (m.type === "paye" ? "Reçu" : "Facture") + '</small>' : '');
   return '<li class="ligne t-' + type + '">' +
     '<span class="pastille" aria-hidden="true"></span>' +
-    '<span class="ligne-texte"><b>' + echapper(titre) + '</b>' +
-    '<small>' + nomType + qui + ' · ' + heure + '</small></span>' +
+    (avecDocument
+      ? '<button type="button" class="ligne-texte" data-document="' + m.id + '">' + texte + '</button>'
+      : '<span class="ligne-texte">' + texte + '</span>') +
     '<span class="ligne-montant">' + montants + '</span>' +
     '<button type="button" class="retirer" data-retirer="' + m.id + '" aria-label="Retirer cette ligne">' +
     '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>' +
@@ -410,6 +434,11 @@ function afficherBilan(t) {
       (clients.length > 1 ? ", dont " + echapper(clients[0].nom) + " " + franc(clients[0].du) : "") + ".");
   }
   if (aRelancer) phrases.push(fort(aRelancer + " client" + (aRelancer > 1 ? "s" : "") + " à relancer."));
+  const racheter = produitsARacheter();
+  if (racheter.length) {
+    phrases.push(racheter.length === 1 ? "Pense à racheter " + echapper(racheter[0].nom) + "."
+      : "Pense à racheter " + racheter.length + " produits.");
+  }
   if (fournisseurs.length) {
     const total = fournisseurs.reduce(function (s, f) { return s + f.du; }, 0);
     phrases.push("Tu dois " + franc(total) + " à tes fournisseurs.");
@@ -538,11 +567,12 @@ function montrer(id) {
 /* ---------- Message en bas de l'écran ---------- */
 
 let minuterieMessage, actionAnnuler = null;
-function message(texte, annuler, joyeux) {
+function message(texte, annuler, joyeux, libelle) {
   $("message-texte").textContent = texte;
   $("message-image").hidden = !joyeux;
   actionAnnuler = annuler || null;
   $("message-annuler").hidden = !annuler;
+  $("message-annuler").textContent = libelle || "Annuler";
   $("message").hidden = false;
   clearTimeout(minuterieMessage);
   minuterieMessage = setTimeout(function () {
@@ -598,6 +628,7 @@ function ouvrirSaisie(mode, client) {
   $("rapides").innerHTML = rapides;
   $("rapides").classList.toggle("avec-tout", !!client);
 
+  preparerChoixVente(mode);
   $("bloc-paiement").hidden = !M.paiement;
   $("bloc-fournisseur").hidden = !M.fournisseur;
   $("donne-etiquette").textContent = M.fournisseur ? "Combien tu as déjà donné ? (facultatif)" : "Combien il a donné ?";
@@ -671,6 +702,19 @@ function afficherSuggestionsF() {
   }).join("");
 }
 
+// Ouvre une fenêtre du bas (produit, arrivage, facture…) sur un fond sombre.
+function ouvrirFeuille(id) {
+  document.querySelectorAll(".saisie").forEach(function (f) { f.hidden = f.id !== id; });
+  $("message").hidden = true;
+  $("fond-saisie").hidden = false;
+  $(id).scrollTop = 0;
+}
+function fermerFeuilles() {
+  document.querySelectorAll(".saisie").forEach(function (f) { f.hidden = true; });
+  $("fond-saisie").hidden = true;
+  if (document.activeElement) document.activeElement.blur();
+}
+
 function fermerSaisie() {
   $("saisie").hidden = true;
   $("fond-saisie").hidden = true;
@@ -678,6 +722,7 @@ function fermerSaisie() {
 }
 
 function formaterChamp(e) {
+  if (e.target.readOnly) return;
   const chiffres = e.target.value.replace(/\D/g, "").slice(0, 9);
   e.target.value = chiffres ? nombre(Number(chiffres)) : "";
   $("erreur").hidden = true;
@@ -718,7 +763,7 @@ $("bloc-paiement").addEventListener("click", function (e) {
   if (b) choisirPaiement(b.dataset.paiement === "partiel");
 });
 $("saisie-annuler").addEventListener("click", fermerSaisie);
-$("fond-saisie").addEventListener("click", function () { fermerSaisie(); fermerFiche(); fermerRelance(); });
+$("fond-saisie").addEventListener("click", fermerFeuilles);
 
 function erreur(texte, champ) {
   $("erreur").textContent = texte;
@@ -728,10 +773,13 @@ function erreur(texte, champ) {
 
 $("saisie").addEventListener("submit", function (e) {
   e.preventDefault();
-  const montant = lireMontant($("montant").value);
+  const M = MODES[modeSaisie];
+  const parProduits = M.paiement && faconVente === "produits";
+  const lignes = parProduits ? lignesPanier() : null;
+  if (parProduits && !lignes.length) return erreur("Appuie sur + à côté des produits vendus.");
+  const montant = parProduits ? totalPanier() : lireMontant($("montant").value);
   if (!montant) return erreur("Écris un montant, par exemple 1 500.", $("montant"));
 
-  const M = MODES[modeSaisie];
   const note = $("note").value.trim();
   let mouvement, texte, joyeux = false;
 
@@ -757,6 +805,9 @@ $("saisie").addEventListener("submit", function (e) {
     }
     mouvement = { id: nouvelId(), type: "vente", montant: montant, encaisse: encaisse, note: note, client: client, clientId: tel, t: Date.now() };
     if (!tel) delete mouvement.clientId;
+    if (lignes) mouvement.lignes = lignes;
+    donnees.compteurs.facture = (donnees.compteurs.facture || 0) + 1;
+    mouvement.numero = donnees.compteurs.facture;
     donnees.mouvements.push(mouvement);
     const reste = montant - encaisse;
     if (reste > 0) {
@@ -793,6 +844,8 @@ $("saisie").addEventListener("submit", function (e) {
     const c = clientRembourse;
     if (montant > c.du) return erreur(c.nom + " ne te doit que " + franc(c.du) + ".", $("montant"));
     mouvement = { id: nouvelId(), type: "paye", montant: montant, encaisse: montant, note: note, client: c.nom, t: Date.now() };
+    donnees.compteurs.recu = (donnees.compteurs.recu || 0) + 1;
+    mouvement.numero = donnees.compteurs.recu;
     if (c.tel) mouvement.clientId = c.tel;
     donnees.mouvements.push(mouvement);
     // Quand le client rembourse, sa promesse de paiement est effacée.
@@ -809,12 +862,24 @@ $("saisie").addEventListener("submit", function (e) {
   sauver();
   fermerSaisie();
   afficher();
-  message(texte, null, joyeux);
+  if (mouvement.type === "vente" || mouvement.type === "paye") {
+    // Proposer tout de suite la facture (ou le reçu) à envoyer au client.
+    const m = mouvement;
+    message(texte, function () { ouvrirDocument(m); }, joyeux, m.type === "paye" ? "Reçu" : "Facture");
+  } else {
+    message(texte, null, joyeux);
+  }
 });
 
 /* ---------- Retirer une ligne ---------- */
 
 $("liste").addEventListener("click", function (e) {
+  const d = e.target.closest("[data-document]");
+  if (d) {
+    const m = donnees.mouvements.find(function (x) { return x.id === d.dataset.document; });
+    if (m) ouvrirDocument(m);
+    return;
+  }
   const b = e.target.closest("[data-retirer]");
   if (!b) return;
   const i = donnees.mouvements.findIndex(function (m) { return m.id === b.dataset.retirer; });
@@ -1053,6 +1118,7 @@ function afficherRappelSauvegarde() {
 }
 
 function afficherReglages() {
+  remplirFormBoutique();
   const j = joursDepuisSauvegarde();
   $("derniere-sauvegarde").textContent = j === null ? "Aucune sauvegarde pour l'instant."
     : "Dernière sauvegarde : " + ilYA(Number(lire(CLE_DERNIERE_SAUVEGARDE))) + ".";
@@ -1113,9 +1179,7 @@ function restaurer(fichier) {
     if (!ok) return;
     ecrire(CLE_AVANT_RESTAURATION, JSON.stringify(donnees));
     donnees = d;
-    if (!donnees.meta) donnees.meta = {};
-    if (!donnees.clients) donnees.clients = {};
-    if (!donnees.fournisseurs) donnees.fournisseurs = {};
+    completerDonnees();
     sauver();
     afficher();
     afficherReglages();
@@ -1160,6 +1224,9 @@ if (navigator.storage && navigator.storage.persist) {
 
 const dateTexte = new Date().toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" });
 $("date-du-jour").textContent = dateTexte.charAt(0).toUpperCase() + dateTexte.slice(1);
+
+initBoutique();
+initFacture();
 
 $("commencer").addEventListener("click", function () {
   ecrire(CLE_DEJA_VU, "oui");

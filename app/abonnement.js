@@ -40,7 +40,11 @@ const RECEPTION = {
 };
 // Clé publique de la page gerant.html (format JWK, courbe P-256). Elle ne permet
 // que de vérifier les codes, pas d'en fabriquer.
-let CLE_PUBLIQUE = null;
+let CLE_PUBLIQUE = {
+  kty: "EC", crv: "P-256",
+  x: "lrnwwI4arI86bExVtIjGKJyMuD5Mi2i42cm_2zDP07k",
+  y: "W9aVJAHZffpSpR0jPy8IKNZR9hm6iPJntPi_RL6gHMU"
+};
 const CLE_MIROIR_ABONNEMENT = "canari.abonnement";
 
 /* ---------- État de l'abonnement ---------- */

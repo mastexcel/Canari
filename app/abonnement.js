@@ -218,8 +218,8 @@ function choisirFormule(id) {
     tr("Mon numéro Canari : " + idAffiche(donnees.abonnement.id)) + "\n" +
     (b.nom ? tr("Boutique : " + b.nom) + "\n" : "") +
     tr(RECEPTION.carte
-      ? "J'ai payé par (QR Djamo, Wave, Orange Money, MTN, Moov ou carte Visa) : "
-      : "J'ai payé par (QR Djamo, Wave, Orange Money, MTN ou Moov) : ");
+      ? "J'ai payé par (Wave, Orange Money, MTN, Moov, Djamo ou carte Visa) : "
+      : "J'ai payé par (Wave, Orange Money, MTN, Moov ou Djamo) : ");
   $("abo-demande").href = "https://wa.me/" + numeroWhatsApp(RECEPTION.whatsapp) + "?text=" + encodeURIComponent(texte);
 }
 function validerCode() {

@@ -693,17 +693,18 @@
   <p class="aide">Sans publicité, et tes chiffres restent toujours à toi.</p>
   <p class="champ-etiquette">2. Paie <span id="abo-montant"></span></p>
   <div class="abo-djamo" id="abo-djamo" hidden>
-    <p class="aide"><b>Avec le QR code Djamo</b> : scanne-le avec Djamo, Wave, Orange Money, MTN MoMo ou Moov Money.</p>
+    <a class="bouton bouton-ok" id="abo-djamo-lien" target="_blank" rel="noopener" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>Payer maintenant
+    </a>
+    <p class="aide">La page de paiement s'ouvre : tu choisis là-bas Wave, Orange Money, MTN MoMo, Moov Money ou Djamo.</p>
     <div class="abo-qr-bloc" id="abo-qr-bloc" hidden>
-      <img id="abo-qr" class="abo-qr" alt="QR code de paiement Djamo de Canari" width="240" height="240">
-      <p class="aide">Tu paies avec ce téléphone ? Enregistre l'image, puis dans ton appli de paiement choisis de scanner une photo de la galerie (si ton appli le permet). Ou fais scanner l'écran par un autre téléphone.</p>
+      <p class="champ-etiquette">Ou fais scanner ce QR code par un autre téléphone</p>
+      <img id="abo-qr" class="abo-qr" alt="QR code qui ouvre la page de paiement de Canari" width="240" height="240">
+      <p class="aide">Scanne-le avec l'appareil photo du téléphone. Le scanner de Wave ou d'Orange Money ne marche pas ici : il ne lit que les QR codes de son propre service. Le QR ouvre la page de paiement, et le moyen de paiement se choisit là-bas.</p>
       <a class="bouton bouton-annuler" id="abo-qr-enregistrer" download="qr-canari-djamo.png">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m-5-5 5 5 5-5M5 20h14"/></svg>Enregistrer le QR code
       </a>
     </div>
-    <a class="bouton bouton-annuler" id="abo-djamo-lien" target="_blank" rel="noopener" hidden>
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>Ouvrir la page de paiement
-    </a>
   </div>
   <a class="bouton bouton-annuler" id="abo-carte" target="_blank" rel="noopener" hidden>
     <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>Payer par carte Visa

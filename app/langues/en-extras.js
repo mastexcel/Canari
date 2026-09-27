@@ -68,8 +68,13 @@ Object.assign(EN, {
   "Ce code a déjà été utilisé sur ce téléphone.": "This code was already used on this phone.",
   "Les abonnements ne sont pas encore ouverts. Réessaie après la prochaine mise à jour.": "Subscriptions are not open yet. Try again after the next update.",
   "Ce code n'est pas valable. Vérifie que tu l'as copié en entier.": "This code is not valid. Check that you copied all of it.",
-  "J'ai payé par (QR Djamo, Wave, Orange Money, MTN, Moov ou carte Visa) :": "I paid with (Djamo QR, Wave, Orange Money, MTN, Moov or Visa card):",
-  "J'ai payé par (QR Djamo, Wave, Orange Money, MTN ou Moov) :": "I paid with (Djamo QR, Wave, Orange Money, MTN or Moov):"
+  "J'ai payé par (Wave, Orange Money, MTN, Moov, Djamo ou carte Visa) :": "I paid with (Wave, Orange Money, MTN, Moov, Djamo or Visa card):",
+  "J'ai payé par (Wave, Orange Money, MTN, Moov ou Djamo) :": "I paid with (Wave, Orange Money, MTN, Moov or Djamo):",
+  "Payer maintenant": "Pay now",
+  "La page de paiement s'ouvre : tu choisis là-bas Wave, Orange Money, MTN MoMo, Moov Money ou Djamo.": "The payment page opens: there you choose Wave, Orange Money, MTN MoMo, Moov Money or Djamo.",
+  "Ou fais scanner ce QR code par un autre téléphone": "Or have another phone scan this QR code",
+  "QR code qui ouvre la page de paiement de Canari": "QR code that opens Canari's payment page",
+  "Scanne-le avec l'appareil photo du téléphone. Le scanner de Wave ou d'Orange Money ne marche pas ici : il ne lit que les QR codes de son propre service. Le QR ouvre la page de paiement, et le moyen de paiement se choisit là-bas.": "Scan it with the phone's camera. The Wave or Orange Money scanner will not work here: it only reads its own service's QR codes. The QR opens the payment page, and the payment method is chosen there."
 });
 
 // Unités sur les factures (« 2,5 kg », « 3 sacs », « 600/kg »).

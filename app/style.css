@@ -2000,3 +2000,4 @@ body {
 .etiquette { font-variant-numeric: normal; }
 .ligne-texte small, .client-info, .barre-jour small { letter-spacing: .1px; }
 .etat { letter-spacing: .1px; font-weight: 600; }
+.abo-qr-bloc { margin-top: 6px; padding-top: 12px; border-top: 1px solid var(--bord); }

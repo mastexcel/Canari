@@ -224,6 +224,7 @@ body {
 .secondaire.maison { color: var(--maison); }
 .secondaire.fournisseur { color: var(--credit); }
 
+.principal { padding-bottom: 96px; }
 .vide {
   text-align: center;
   margin-top: 28px;
@@ -231,6 +232,188 @@ body {
 }
 .vide img { height: auto; }
 .vide p { margin: 10px 0 0; }
+
+.gros-chiffre.negatif { color: #FF9A80; }
+
+/* ---------- Liste du jour ---------- */
+.titre-liste {
+  font-family: "Fredoka", system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 20px;
+  margin: 22px 0 8px;
+}
+.liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--carte);
+  border-radius: var(--arrondi);
+  border: 2px solid var(--bord);
+}
+.ligne {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 6px 10px 14px;
+  border-bottom: 1px solid var(--bord);
+}
+.ligne:last-child { border-bottom: 0; }
+.pastille {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.ligne-texte {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.ligne-texte b { font-weight: 500; overflow-wrap: anywhere; }
+.ligne-texte small { font-size: 14px; color: #6B5646; }
+.ligne-montant {
+  font-family: "Fredoka", system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 19px;
+  white-space: nowrap;
+}
+.retirer {
+  border: 0;
+  background: none;
+  color: #8A7564;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.retirer svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+}
+.t-vente .pastille, .t-paye .pastille { background: var(--entre); }
+.t-vente .ligne-montant, .t-paye .ligne-montant { color: var(--entre); }
+.t-depense .pastille, .t-fpaye .pastille { background: var(--sort); }
+.t-depense .ligne-montant, .t-fpaye .ligne-montant { color: var(--sort); }
+.t-credit .pastille, .t-fdette .pastille { background: var(--credit); }
+.t-credit .ligne-montant, .t-fdette .ligne-montant { color: var(--credit); }
+.t-maison .pastille { background: var(--maison); }
+.t-maison .ligne-montant { color: var(--maison); }
+
+/* ---------- Fenêtre de saisie ---------- */
+.fond-saisie {
+  position: fixed;
+  inset: 0;
+  background: rgba(42, 26, 18, .55);
+  z-index: 10;
+}
+.saisie {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 11;
+  max-width: 520px;
+  margin: 0 auto;
+  background: var(--sable);
+  border-radius: 24px 24px 0 0;
+  border-top: 8px solid var(--couleur-saisie, var(--entre));
+  padding: 18px 16px calc(18px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 100dvh;
+  overflow-y: auto;
+}
+.saisie-titre {
+  font-family: "Fredoka", system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 24px;
+  margin: 0 0 4px;
+  color: var(--couleur-saisie, var(--entre));
+}
+.champ-etiquette { font-size: 16px; font-weight: 500; }
+.montant-boite {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 3px solid var(--couleur-saisie, var(--entre));
+  border-radius: 16px;
+  padding: 0 16px;
+}
+.montant {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: none;
+  font-family: "Fredoka", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 40px;
+  color: var(--brun);
+  padding: 8px 0;
+}
+.montant-f {
+  font-family: "Fredoka", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 32px;
+  color: #8A7564;
+}
+.rapides {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.rapide {
+  font: inherit;
+  font-weight: 600;
+  font-size: 16px;
+  min-height: 48px;
+  border: 2px solid var(--bord);
+  background: #fff;
+  color: var(--brun);
+  border-radius: 12px;
+  cursor: pointer;
+}
+.rapide:active { background: var(--bord); }
+.note {
+  font: inherit;
+  font-size: 18px;
+  border: 2px solid var(--bord);
+  background: #fff;
+  border-radius: 14px;
+  padding: 12px 14px;
+  min-height: 52px;
+  color: var(--brun);
+}
+.note:focus { outline: 0; border-color: var(--couleur-saisie, var(--entre)); }
+.erreur { color: var(--sort); font-weight: 500; margin: 0; }
+.saisie-boutons {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 10px;
+  margin-top: 8px;
+}
+.bouton-annuler {
+  background: #fff;
+  border: 2px solid var(--bord);
+  color: var(--brun);
+}
+.bouton-ok {
+  background: var(--couleur-saisie, var(--entre));
+  color: #fff;
+  font-family: "Fredoka", system-ui, sans-serif;
+  font-size: 21px;
+}
 
 /* ---------- Message bref ---------- */
 .message {
@@ -243,7 +426,24 @@ body {
   background: var(--brun);
   color: var(--sable);
   border-radius: 14px;
-  padding: 14px 16px;
-  text-align: center;
+  padding: 10px 12px 10px 16px;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, .25);
+  z-index: 20;
+}
+.message img { flex-shrink: 0; border-radius: 10px; }
+.message span { flex: 1; }
+.message button {
+  font: inherit;
+  font-weight: 600;
+  background: var(--or);
+  color: var(--brun);
+  border: 0;
+  border-radius: 10px;
+  min-height: 44px;
+  padding: 0 14px;
+  cursor: pointer;
 }

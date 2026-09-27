@@ -28,7 +28,7 @@
   </button>
 </section>
 
-<!-- Écran principal (aperçu de l'étape 1) -->
+<!-- Écran principal -->
 <section id="principal" class="ecran principal" hidden>
   <header class="entete">
     <img src="icones/icone-192.png" width="40" height="40" alt="">
@@ -40,17 +40,17 @@
     <p class="etiquette">Gain du jour</p>
     <p class="gros-chiffre" id="gain">0 F</p>
     <div class="trois-chiffres">
-      <div class="chiffre entre"><span>Encaissé</span><strong>0 F</strong></div>
-      <div class="chiffre sort"><span>Dépensé</span><strong>0 F</strong></div>
-      <div class="chiffre maison"><span>Maison</span><strong>0 F</strong></div>
+      <div class="chiffre entre"><span>Encaissé</span><strong id="encaisse">0 F</strong></div>
+      <div class="chiffre sort"><span>Dépensé</span><strong id="depense">0 F</strong></div>
+      <div class="chiffre maison"><span>Maison</span><strong id="maison">0 F</strong></div>
     </div>
   </div>
 
   <div class="gros-boutons">
-    <button class="bouton action vente" type="button" data-bientot>
+    <button class="bouton action vente" type="button" data-saisie="vente">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Vente
     </button>
-    <button class="bouton action depense" type="button" data-bientot>
+    <button class="bouton action depense" type="button" data-saisie="depense">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg>Dépense
     </button>
     <button class="bouton action credit" type="button" data-bientot>
@@ -66,13 +66,41 @@
     </button>
   </div>
 
-  <div class="vide">
+  <h2 class="titre-liste" id="titre-liste" hidden>Aujourd'hui</h2>
+  <ul class="liste" id="liste"></ul>
+
+  <div class="vide" id="vide">
     <img src="icones/canari-tranquille.webp" width="96" height="114" alt="">
     <p>Rien de noté aujourd'hui.<br>Appuie sur <strong>Vente</strong> quand un client paie.</p>
   </div>
 </section>
 
-<div id="message" class="message" role="status" hidden></div>
+<!-- Fenêtre de saisie (vente, dépense…) -->
+<div class="fond-saisie" id="fond-saisie" hidden></div>
+<form class="saisie" id="saisie" hidden novalidate autocomplete="off">
+  <h2 class="saisie-titre" id="saisie-titre">Nouvelle vente</h2>
+  <label class="champ-etiquette" for="montant">Combien ?</label>
+  <div class="montant-boite">
+    <input id="montant" class="montant" inputmode="numeric" pattern="[0-9 ]*" placeholder="0" enterkeyhint="done">
+    <span class="montant-f">F</span>
+  </div>
+  <div class="rapides" id="rapides"></div>
+  <label class="champ-etiquette" for="note" id="note-etiquette">Quoi ? (facultatif)</label>
+  <input id="note" class="note" enterkeyhint="done">
+  <p class="erreur" id="erreur" hidden></p>
+  <div class="saisie-boutons">
+    <button type="button" class="bouton bouton-annuler" id="saisie-annuler">Annuler</button>
+    <button type="submit" class="bouton bouton-ok" id="saisie-ok">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>Enregistrer
+    </button>
+  </div>
+</form>
+
+<div id="message" class="message" role="status" hidden>
+  <img id="message-image" src="icones/canari-joyeux.webp" width="40" height="40" alt="" hidden>
+  <span id="message-texte"></span>
+  <button type="button" id="message-annuler" hidden>Annuler</button>
+</div>
 
 <script src="app.js"></script>
 </body>

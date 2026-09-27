@@ -1,6 +1,8 @@
 // Garde une copie de l'appli sur le téléphone pour qu'elle marche sans internet.
-// Change VERSION à chaque mise à jour pour que les téléphones prennent les nouveaux fichiers.
-const VERSION = "canari-v2";
+// L'appli s'ouvre toujours depuis la copie du téléphone (rapide, même sans internet),
+// puis la copie est mise à jour en arrière-plan quand internet est là.
+// Change VERSION quand la liste des fichiers change.
+const VERSION = "canari-v3";
 const FICHIERS = [
   "./",
   "index.html",
@@ -22,7 +24,7 @@ const FICHIERS = [
 ];
 
 self.addEventListener("install", function (e) {
-  e.waitUntil(caches.open(VERSION).then(function (c) { return c.addAll(FICHIERS); }));
+  e.waitUntil(caches.open(VERSION).then(function (c) { return c.addAll(FICHIERS.map(function (f) { return new Request(f, { cache: "reload" }); })); }));
   self.skipWaiting();
 });
 
@@ -36,10 +38,20 @@ self.addEventListener("activate", function (e) {
 });
 
 self.addEventListener("fetch", function (e) {
-  if (e.request.method !== "GET") return;
+  if (e.request.method !== "GET" || !e.request.url.startsWith(self.location.origin)) return;
   e.respondWith(
-    caches.match(e.request, { ignoreSearch: true }).then(function (r) {
-      return r || fetch(e.request);
+    caches.open(VERSION).then(function (cache) {
+      return cache.match(e.request, { ignoreSearch: true }).then(function (copie) {
+        const reseau = fetch(e.request).then(function (r) {
+          if (r && r.ok) cache.put(e.request, r.clone());
+          return r;
+        }).catch(function () { return copie; });
+        if (copie) {
+          e.waitUntil(reseau);
+          return copie;
+        }
+        return reseau;
+      });
     })
   );
 });

@@ -60,6 +60,9 @@ Téléphone testé : ______________________  Version d'Android : ________  Date 
 34. ☐ « Crédit Koffi cinq mille », « Koffi a payé mille », « Combien j'ai gagné ? » (avec internet).
 35. ☐ « Écouter » lit le bilan du jour, même sans internet.
 36. ☐ Questionnaire → Ta boutique → choisir une autre monnaie : les montants, les boutons rapides, une facture et une relance l'affichent.
+37. ☐ Dans « Vente », appuie sur « Dire » : « six mille, il a donné deux mille », puis le nom et le numéro, puis « oui ». Canari répond à chaque fois.
+38. ☐ Le haut-parleur en haut de l'écran lit l'onglet affiché (Crédits, Relances, Bilan, Stock).
+39. ☐ Réglages → Voix → « Canari lit ses messages » : les messages du bas sont dits à voix haute.
 
 ---
 

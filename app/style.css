@@ -1441,3 +1441,23 @@ a.bouton { text-decoration: none; }
 .voix-ecoute .bouton { width: 100%; max-width: 360px; }
 .accueil .choix-langue button { background: transparent; color: var(--sable); border-color: rgba(246, 238, 227, .5); }
 .accueil .choix-langue button[aria-pressed="true"] { background: var(--or); color: var(--brun); border-color: var(--or); }
+
+/* Voix partout */
+.entete .bouton-reglages + .bouton-reglages { margin-left: 6px; }
+
+.saisie-voix { display: flex; gap: 8px; }
+.saisie-voix .bouton-ecouter { flex: 1; flex-basis: 0; }
+.saisie-voix .bouton-ecouter[hidden] { display: none; }
+#saisie-parler { background: var(--vert-foret); color: #fff; border-color: var(--vert-foret); }
+.voix-feuille { position: absolute; top: 14px; right: 12px; width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--bord); background: #fff; color: var(--vert-foret); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.saisie { position: fixed; }
+.saisie > .saisie-titre { padding-right: 56px; }
+.voix-feuille svg, #voix-param svg, #voix-ecran svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.bouton-ecouter-accueil { width: 100%; max-width: 360px; margin: 0 auto 12px; background: transparent; color: var(--sable); border-color: rgba(246, 238, 227, .5); }
+.voix-ecoute.compact { inset: auto 0 auto 0; top: 0; flex-direction: row; justify-content: flex-start; gap: 12px; padding: 10px 14px; background: var(--vert-foret); color: #fff; box-shadow: 0 4px 16px rgba(0, 0, 0, .25); text-align: left; }
+.voix-ecoute.compact .voix-micro { width: 48px; height: 48px; flex: none; background: #fff; }
+.voix-ecoute.compact .voix-micro svg { width: 26px; height: 26px; stroke: var(--vert-foret); }
+.voix-ecoute.compact .voix-titre { font-size: 20px; color: #fff; }
+.voix-ecoute.compact .voix-entendu { font-size: 15px; flex: 1; min-width: 0; }
+.voix-ecoute.compact .aide, .voix-ecoute.compact .voix-exemples { display: none; }
+.voix-ecoute.compact .bouton { width: auto; min-height: 44px; padding: 0 14px; flex: none; }

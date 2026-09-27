@@ -22,6 +22,9 @@
     <p class="slogan">Garde chaque franc.</p>
     <p class="accueil-texte">Ton carnet de caisse sur le téléphone. Ventes, dépenses, crédits : tout est noté, même sans internet.</p>
   </div>
+  <button type="button" class="bouton-ecouter bouton-ecouter-accueil voix-lire" id="voix-accueil">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg>Écouter
+  </button>
   <div class="choix-langue" translate="no">
     <button type="button" data-langue="fr">Français</button>
     <button type="button" data-langue="en">English</button>
@@ -38,6 +41,9 @@
     <img src="icones/icone-192.png" width="40" height="40" alt="">
     <span class="logo logo-petit">canari</span>
     <span id="date-du-jour" class="date"></span>
+    <button type="button" class="bouton-reglages voix-lire" id="voix-ecran" aria-label="Lire cet écran à voix haute">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg>
+    </button>
     <button type="button" class="bouton-reglages" id="ouvrir-reglages" aria-label="Réglages et sauvegarde">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
     </button>
@@ -170,6 +176,15 @@
   </section>
 
   <section class="carte-reglage">
+    <h2>Voix</h2>
+    <p class="aide">Pour ceux qui lisent ou écrivent peu : appuie sur « Parler » ou « Dire » et parle, Canari remplit et te répond.</p>
+    <div class="choix-cartes">
+      <button type="button" class="choix-carte" data-pref-voix="lecture" aria-pressed="false"><b>Canari lit ses messages à voix haute</b><small>Chaque message en bas de l'écran est dit à voix haute.</small></button>
+      <button type="button" class="choix-carte" data-pref-voix="lent" aria-pressed="false"><b>Parler plus lentement</b><small>Canari parle moins vite.</small></button>
+    </div>
+  </section>
+
+  <section class="carte-reglage">
     <h2>Mon abonnement</h2>
     <p class="aide" id="reglage-abo-etat"></p>
     <p class="aide">Ton numéro Canari : <b id="reglage-abo-id"></b></p>
@@ -279,6 +294,8 @@
 <section id="parametrage" class="ecran parametrage" hidden>
   <header class="param-entete">
     <div class="param-progres" id="param-progres"></div>
+    <button type="button" class="retirer voix-lire" id="voix-param" aria-label="Lire cette question à voix haute">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg></button>
     <button type="button" class="retirer" id="param-quitter" aria-label="Quitter le questionnaire">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
   </header>
@@ -323,6 +340,14 @@
 <div class="fond-saisie" id="fond-saisie" hidden></div>
 <form class="saisie" id="saisie" hidden novalidate autocomplete="off">
   <h2 class="saisie-titre" id="saisie-titre">Nouvelle vente</h2>
+  <div class="saisie-voix">
+    <button type="button" class="bouton-ecouter" id="saisie-parler" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>Dire
+    </button>
+    <button type="button" class="bouton-ecouter voix-lire" id="saisie-ecouter">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg>Écouter
+    </button>
+  </div>
 
   <div id="choix-vente" class="deux-choix" role="group" aria-label="Comment noter la vente">
     <button type="button" class="choix" data-facon="montant" aria-pressed="true">Par montant</button>
@@ -736,6 +761,7 @@
     <li>« Maison 1 000 »</li>
     <li>« Combien j'ai gagné ? »</li>
     <li>« Qui me doit ? »</li>
+    <li>« Ouvre les relances »</li>
   </ul>
   <button type="button" class="bouton bouton-annuler" id="voix-arreter">Arrêter</button>
 </div>

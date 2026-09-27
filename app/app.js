@@ -1107,7 +1107,10 @@ $("bloc-paiement").addEventListener("click", function (e) {
   const b = e.target.closest("[data-paiement]");
   if (b) choisirPaiement(b.dataset.paiement === "partiel");
 });
-$("saisie-annuler").addEventListener("click", fermerSaisie);
+$("saisie-annuler").addEventListener("click", function () {
+  arreterVoix(); // arrête aussi une conversation vocale en cours
+  fermerSaisie();
+});
 $("fond-saisie").addEventListener("click", fermerFeuilles);
 
 function erreur(texte, champ) {

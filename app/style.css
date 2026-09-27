@@ -797,3 +797,73 @@ body {
 }
 .saisie-boutons.deux-egaux { grid-template-columns: 1fr 1fr; margin-top: 0; }
 #relance-fermer { margin-top: 6px; }
+
+/* ---------- Bilan du jour ---------- */
+.bilan {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--carte);
+  border: 2px solid var(--bord);
+  border-radius: var(--arrondi);
+  padding: 12px 14px 12px 10px;
+}
+.bilan img { flex-shrink: 0; height: auto; }
+.bilan p { margin: 0; font-size: 16px; line-height: 1.45; }
+.bilan strong { font-weight: 600; }
+
+/* ---------- Onglet Semaine ---------- */
+.trois-chiffres.deux { grid-template-columns: 1fr 1fr; }
+.carte-semaine .chiffre span { font-size: 13px; }
+.barres {
+  list-style: none;
+  margin: 0;
+  padding: 12px 14px;
+  background: var(--carte);
+  border: 2px solid var(--bord);
+  border-radius: var(--arrondi);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.barre {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+}
+.barre-jour { display: flex; flex-direction: column; line-height: 1.1; }
+.barre-jour b { font-weight: 500; font-size: 15px; }
+.barre-jour small { font-size: 13px; color: #6B5646; }
+.barre.aujourdhui .barre-jour b { font-weight: 700; color: var(--vert-foret); }
+.barre-piste {
+  height: 16px;
+  background: #F1E7DA;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.barre-remplie {
+  display: block;
+  height: 100%;
+  background: var(--entre);
+  border-radius: 0 4px 4px 0;
+}
+.barre.negative .barre-remplie { background: var(--sort); }
+.barre-valeur {
+  font-family: "Fredoka", system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 17px;
+  min-width: 86px;
+  text-align: right;
+  white-space: nowrap;
+}
+.barre.negative .barre-valeur { color: var(--sort); }
+.legende-semaine { margin-top: 10px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.puce { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.puce.entre { background: var(--entre); }
+.puce.sort { background: var(--sort); margin-left: 10px; }
+#vue-semaine .titre-liste { margin-top: 20px; }
+.onglets { gap: 4px; padding-left: 8px; padding-right: 8px; }
+.onglet { font-size: 13px; }

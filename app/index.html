@@ -70,6 +70,11 @@
       </button>
     </div>
 
+    <div class="bilan" id="bilan">
+      <img id="bilan-image" src="icones/canari-tranquille.webp" width="64" height="76" alt="">
+      <p id="bilan-texte"></p>
+    </div>
+
     <h2 class="titre-liste" id="titre-liste" hidden>Aujourd'hui</h2>
     <ul class="liste" id="liste"></ul>
 
@@ -91,6 +96,9 @@
 
   <!-- Onglet Relances -->
   <div id="vue-relances" class="vue" hidden></div>
+
+  <!-- Onglet Semaine -->
+  <div id="vue-semaine" class="vue" hidden></div>
 </section>
 
 <!-- Barre des onglets -->
@@ -106,6 +114,9 @@
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>
       <span class="pastille-nombre" id="nb-relances" hidden></span>
     </span>Relances
+  </button>
+  <button type="button" class="onglet" data-onglet="semaine">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V11M12 20V5M19 20v-6M3 20h18"/></svg>Semaine
   </button>
 </nav>
 

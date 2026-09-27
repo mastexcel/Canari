@@ -255,6 +255,7 @@ function afficher() {
   afficherJour();
   afficherCredits();
   afficherRelances();
+  afficherSemaine();
   document.querySelectorAll(".vue").forEach(function (v) { v.hidden = v.id !== "vue-" + onglet; });
   document.querySelectorAll("[data-onglet]").forEach(function (b) {
     if (b.dataset.onglet === onglet) b.setAttribute("aria-current", "page");
@@ -275,6 +276,8 @@ function afficherJour() {
   const reste = t.gain - t.maison;
   $("reste-boutique").hidden = t.maison === 0;
   $("reste-boutique").textContent = "Reste pour la boutique : " + (reste < 0 ? "− " : "") + franc(Math.abs(reste));
+
+  afficherBilan(t);
 
   const lignes = donnees.mouvements
     .filter(function (m) { return cleJour(m.t) === aujourdhui; })
@@ -373,6 +376,107 @@ function afficherRelances() {
     bloc("Promesses à venir", groupes.promesse, "") +
     bloc("Déjà relancés", groupes.attente, "Laisse-leur quelques jours avant de relancer encore.") +
     bloc("Crédits récents", groupes.recent, "Pas encore besoin de relancer.");
+}
+
+/* ---------- Bilan du jour en une phrase ---------- */
+
+function afficherBilan(t) {
+  const clients = clientsQuiDoivent();
+  const fournisseurs = fournisseursQueJeDois();
+  const aRelancer = clients.filter(function (c) { return statutRelance(c).urgent; }).length;
+  const phrases = [];
+  const fort = function (x) { return "<strong>" + x + "</strong>"; };
+
+  if (t.encaisse || t.depense) {
+    phrases.push(t.gain >= 0
+      ? "Aujourd'hui tu as gagné " + fort(franc(t.gain)) + "."
+      : "Aujourd'hui tu as dépensé " + fort(franc(-t.gain)) + " de plus que ce que tu as encaissé.");
+  } else if (t.vendu) {
+    phrases.push("Aujourd'hui tu as vendu " + fort(franc(t.vendu)) + ", tout à crédit pour l'instant.");
+  } else {
+    phrases.push("Rien de noté aujourd'hui pour l'instant.");
+  }
+  if (t.maison) {
+    const reste = t.gain - t.maison;
+    phrases.push("Tu as pris " + franc(t.maison) + " pour la maison, il reste donc " +
+      fort((reste < 0 ? "− " : "") + franc(Math.abs(reste))) + " pour la boutique.");
+  }
+  if (clients.length) {
+    const total = clients.reduce(function (s, c) { return s + c.du; }, 0);
+    phrases.push("Tes clients te doivent " + franc(total) +
+      (clients.length > 1 ? ", dont " + echapper(clients[0].nom) + " " + franc(clients[0].du) : "") + ".");
+  }
+  if (aRelancer) phrases.push(fort(aRelancer + " client" + (aRelancer > 1 ? "s" : "") + " à relancer."));
+  if (fournisseurs.length) {
+    const total = fournisseurs.reduce(function (s, f) { return s + f.du; }, 0);
+    phrases.push("Tu dois " + franc(total) + " à tes fournisseurs.");
+  }
+  $("bilan-texte").innerHTML = phrases.join(" ");
+
+  // Humeur du Petit Canari : grand sourire les très bons jours.
+  const passes = derniersJours(7).slice(0, 6).map(function (j) { return j.totaux.gain; })
+    .filter(function (g) { return g !== 0; });
+  const moyenne = passes.length ? passes.reduce(function (a, b) { return a + b; }, 0) / passes.length : 0;
+  let humeur = "canari-tranquille";
+  if (t.gain > 0 && passes.length && t.gain >= moyenne) humeur = "canari-yeux-fermes";
+  else if (t.gain > 0) humeur = "canari-joyeux";
+  else if (t.gain < 0) humeur = "canari-pensif";
+  const image = "icones/" + humeur + ".webp";
+  if ($("bilan-image").getAttribute("src") !== image) $("bilan-image").setAttribute("src", image);
+}
+
+/* ---------- Onglet Semaine ---------- */
+
+// Les 7 derniers jours, du plus ancien à aujourd'hui.
+function derniersJours(n) {
+  const jours = [];
+  for (let i = n - 1; i >= 0; i--) {
+    const d = new Date();
+    d.setHours(12, 0, 0, 0);
+    d.setDate(d.getDate() - i);
+    jours.push({ date: d, cle: cleJour(d), totaux: totauxDuJour(cleJour(d)), aujourdhui: i === 0 });
+  }
+  return jours;
+}
+
+function afficherSemaine() {
+  const jours = derniersJours(7);
+  const gains = jours.map(function (j) { return j.totaux.gain; });
+  const plusGrand = Math.max.apply(null, gains.map(Math.abs).concat([1]));
+  const somme = function (cle) { return jours.reduce(function (s, j) { return s + j.totaux[cle]; }, 0); };
+  const gain = somme("gain"), maison = somme("maison"), vendu = somme("vendu"), aCredit = somme("aCredit");
+  const reste = gain - maison;
+  const signe = function (n) { return (n < 0 ? "− " : "") + franc(Math.abs(n)); };
+  const rien = jours.every(function (j) { return !j.totaux.encaisse && !j.totaux.depense && !j.totaux.maison && !j.totaux.vendu; });
+
+  if (rien) {
+    $("vue-semaine").innerHTML = videHtml("canari-tranquille",
+      "Rien de noté ces 7 derniers jours.<br>Ton bilan de la semaine apparaîtra ici.");
+    return;
+  }
+
+  $("vue-semaine").innerHTML =
+    '<div class="carte-gain carte-semaine">' +
+      '<p class="etiquette">Gain des 7 derniers jours</p>' +
+      '<p class="gros-chiffre' + (gain < 0 ? ' negatif' : '') + '">' + signe(gain) + '</p>' +
+      '<div class="trois-chiffres deux">' +
+        '<div class="chiffre maison"><span>Pris pour la maison</span><strong>' + franc(maison) + '</strong></div>' +
+        '<div class="chiffre entre"><span>Reste pour la boutique</span><strong' + (reste < 0 ? ' class="m-sort"' : '') + '>' + signe(reste) + '</strong></div>' +
+      '</div>' +
+      (aCredit ? '<p class="vendu">Vendu sur 7 jours : ' + franc(vendu) + ', dont ' + franc(aCredit) + ' à crédit</p>' : '') +
+    '</div>' +
+    '<h2 class="titre-liste">Gain de chaque jour</h2>' +
+    '<ul class="barres" aria-label="Gain de chaque jour">' + jours.map(function (j) {
+      const g = j.totaux.gain;
+      const largeur = g === 0 ? 0 : Math.max(3, Math.round(Math.abs(g) / plusGrand * 100));
+      const nom = j.aujourdhui ? "Auj." : j.date.toLocaleDateString("fr-FR", { weekday: "short" }).replace(".", "");
+      return '<li class="barre' + (g < 0 ? ' negative' : '') + (j.aujourdhui ? ' aujourdhui' : '') + '">' +
+        '<span class="barre-jour"><b>' + nom.charAt(0).toUpperCase() + nom.slice(1) + '</b><small>' + j.date.getDate() + '</small></span>' +
+        '<span class="barre-piste"><span class="barre-remplie" style="width:' + largeur + '%"></span></span>' +
+        '<span class="barre-valeur">' + signe(g) + '</span>' +
+        '</li>';
+    }).join("") + '</ul>' +
+    '<p class="aide legende-semaine"><span class="puce entre"></span>jour gagnant <span class="puce sort"></span>jour perdant</p>';
 }
 
 function videHtml(image, texte) {

@@ -29,8 +29,10 @@ const FORMULES = [
 const RECEPTION = {
   whatsapp: "",   // numéro WhatsApp qui reçoit les demandes et envoie les codes
   djamo: {
-    qr: "",       // image du QR code Djamo (ex. "icones/qr-djamo.png") : Djamo, Wave, Orange Money, MTN, Moov
-    lien: ""      // lien de paiement contenu dans le QR code, s'il y en a un
+    // QR code du compte entreprise Djamo du propriétaire. L'image est générée à
+    // partir du lien ci-dessous (niveau de correction H, mascotte au centre).
+    qr: "icones/qr-djamo.png",
+    lien: "https://pay.djamo.com/hq91c"
   },
   carte: "",      // lien de paiement par carte Visa
   comptes: [      // autres comptes, facultatif : { nom: "Wave", tel: "07…", lien: "…" }

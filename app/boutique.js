@@ -320,14 +320,62 @@ function supprimerProduit() {
 /* ---------- Arrivage de marchandise ---------- */
 
 let produitArrivage = null;
-let arrivagePaye = false;
+// Paiement d'un achat : "tout" (comptant), "partiel" (le reste à crédit), "credit", "non".
+let arrivagePaye = "non";
 
-function choisirArrivagePaye(oui) {
-  arrivagePaye = oui;
+function choisirArrivagePaye(mode) {
+  arrivagePaye = mode;
   document.querySelectorAll("[data-arrivage-paye]").forEach(function (b) {
-    b.setAttribute("aria-pressed", String((b.dataset.arrivagePaye === "oui") === oui));
+    b.setAttribute("aria-pressed", String(b.dataset.arrivagePaye === mode));
   });
+  $("arrivage-credit").hidden = mode !== "partiel" && mode !== "credit";
+  $("arrivage-donne-bloc").hidden = mode !== "partiel";
+  if (mode === "partiel" || mode === "credit") afficherSuggestionsAchat();
   majArrivage();
+}
+
+function afficherSuggestionsAchat() {
+  const tape = $("arrivage-fournisseur").value.trim().toLowerCase();
+  $("arrivage-suggestions").innerHTML = listeFournisseurs().filter(function (f) {
+    return f.nom.toLowerCase() !== tape && (!tape || f.nom.toLowerCase().indexOf(tape) !== -1);
+  }).slice(0, 6).map(function (f) {
+    return '<button type="button" class="suggestion" data-fournisseur-achat="' + echapper(f.nom) + '"><b>' + echapper(f.nom) + '</b></button>';
+  }).join("");
+}
+
+// Vérifie le paiement d'un achat avant d'enregistrer. Rend un message d'erreur, ou "".
+function verifierPaiementAchat(total) {
+  if (arrivagePaye === "non") return "";
+  if (!total) return "Écris le prix pour noter le paiement.";
+  if (arrivagePaye === "tout") return "";
+  if (!$("arrivage-fournisseur").value.trim()) return "Écris le nom du fournisseur, pour savoir à qui tu dois.";
+  if (arrivagePaye === "partiel") {
+    const donne = lireMontant($("arrivage-donne").value);
+    if (!donne) return "Écris combien tu as donné.";
+    if (donne >= total) return "Tu as tout donné : choisis « Tout payé ».";
+  }
+  return "";
+}
+
+// Note l'argent de l'achat : dépense de marchandise, ou dette chez le fournisseur
+// (avec ce qui a déjà été donné, compté comme dépensé : voir « Dette fournisseur »).
+function noterPaiementAchat(total, libelle) {
+  const t = Date.now() + 1;
+  if (arrivagePaye === "tout") {
+    donnees.mouvements.push({ id: nouvelId(), type: "depense", categorie: "marchandise", montant: total, note: libelle, client: "", t: t });
+    return "Payé : " + franc(total) + ".";
+  }
+  if (arrivagePaye === "partiel" || arrivagePaye === "credit") {
+    const nom = $("arrivage-fournisseur").value.trim().replace(/\s+/g, " ");
+    const id = cleFournisseur(nom);
+    const fiche = donnees.fournisseurs[id] || { nom: nom, tel: "" };
+    donnees.fournisseurs[id] = fiche;
+    const verse = arrivagePaye === "partiel" ? lireMontant($("arrivage-donne").value) : 0;
+    donnees.mouvements.push({ id: nouvelId(), type: "fdette", montant: total, verse: verse, note: libelle, client: fiche.nom, fournisseurId: id, t: t });
+    const f = fournisseursQueJeDois().find(function (x) { return x.cle === id; });
+    return (verse ? "Donné : " + franc(verse) + ". " : "") + "Tu dois maintenant " + franc(f ? f.du : total - verse) + " à " + fiche.nom + ".";
+  }
+  return "";
 }
 // Affiche la conversion (2 sacs = 100 kg) et le total payé.
 function majArrivage() {
@@ -338,8 +386,15 @@ function majArrivage() {
   const u = uniteDe(p);
   $("arrivage-conversion").textContent = p.uniteAchat ? "= " + qteTexte(n * p.contenance, u) + " ajoutés au stock" : "";
   if (!intrantAchete && typeDe(p) === "fabrication") $("arrivage-conso").innerHTML = consommationHtml(consommationPour(p, n));
-  $("arrivage-total").textContent = prix && n ? "Total : " + franc(Math.round(n * prix)) +
-    (arrivagePaye ? ", noté comme dépense de marchandise." : "") : "";
+  const total = Math.round(n * prix);
+  $("arrivage-total").textContent = prix && n ? "Total : " + franc(total) : "";
+  const donne = lireMontant($("arrivage-donne").value);
+  const qui = $("arrivage-fournisseur").value.trim() || "ton fournisseur";
+  $("arrivage-paye-aide").textContent = !total || arrivagePaye === "non" ? ""
+    : arrivagePaye === "tout" ? franc(total) + " sortent de la caisse (dépense de marchandise)."
+    : arrivagePaye === "credit" ? "Tu devras " + franc(total) + " à " + qui + "."
+    : donne && donne < total ? franc(donne) + " sortent de la caisse, reste " + franc(total - donne) + " à crédit chez " + qui + "."
+    : "";
 }
 
 function ouvrirArrivage(id) {
@@ -359,7 +414,9 @@ function ouvrirArrivage(id) {
   const prixConnu = ua ? produitArrivage.prixAchatLot : produitArrivage.cout;
   $("arrivage-prix").value = typeof prixConnu === "number" ? nombre(Math.round(prixConnu)) : "";
   $("arrivage-quantite").value = "1";
-  choisirArrivagePaye(false);
+  $("arrivage-donne").value = "";
+  $("arrivage-fournisseur").value = "";
+  choisirArrivagePaye("non");
   $("arrivage-conso").innerHTML = "";
   if (fabrique) {
     $("arrivage-etiquette").textContent = "Combien en as-tu fabriqué" + (u === "unite" ? " ?" : " (en " + nomUnite(u, 2) + ") ?");
@@ -382,6 +439,12 @@ function enregistrerArrivage(e) {
   const p = produitArrivage;
   const qte = p.uniteAchat ? Math.round(n * p.contenance * 1000) / 1000 : n; // en unités de vente
   const prix = lireMontant($("arrivage-prix").value);
+  const probleme = verifierPaiementAchat(Math.round(n * prix));
+  if (probleme) {
+    $("arrivage-erreur").textContent = probleme;
+    $("arrivage-erreur").hidden = false;
+    return;
+  }
   if (prix) {
     // Prix moyen : l'ancien stock garde son prix, le nouveau arrive au nouveau prix.
     const coutNouveau = p.uniteAchat ? prix / p.contenance : prix;
@@ -401,17 +464,12 @@ function enregistrerArrivage(e) {
     if (conso.length) arrivage.consommation = conso;
   }
   donnees.mouvements.push(arrivage);
-  if (arrivagePaye && prix) {
-    donnees.mouvements.push({
-      id: nouvelId(), type: "depense", categorie: "marchandise", montant: Math.round(n * prix),
-      note: "Achat : " + qteTexte(n, p.uniteAchat || uniteDe(p)) + " de " + p.nom, client: "", t: Date.now() + 1
-    });
-  }
+  const paiement = prix ? noterPaiementAchat(Math.round(n * prix), "Achat : " + qteTexte(n, p.uniteAchat || uniteDe(p)) + " de " + p.nom) : "";
   sauver();
   fermerFeuilles();
   afficher();
   message(p.nom + " : + " + qteTexte(qte, uniteDe(p)) + (p.uniteAchat ? " (" + qteTexte(n, p.uniteAchat) + ")" : "") +
-    ". Il y en a maintenant " + qteTexte(stockDe(p.id), uniteDe(p)) + ".", null, true);
+    ". Il y en a maintenant " + qteTexte(stockDe(p.id), uniteDe(p)) + "." + (paiement ? " " + paiement : ""), null, true);
 }
 
 /* ---------- Choisir les produits pendant une vente ---------- */
@@ -665,9 +723,23 @@ function initBoutique() {
     e.target.value = chiffres ? nombre(Number(chiffres)) : "";
     majMargeProduit();
   });
+  $("arrivage-donne").addEventListener("input", function (e) {
+    const chiffres = e.target.value.replace(/\D/g, "").slice(0, 9);
+    e.target.value = chiffres ? nombre(Number(chiffres)) : "";
+    $("arrivage-erreur").hidden = true;
+    majArrivage();
+  });
+  $("arrivage-fournisseur").addEventListener("input", function () { $("arrivage-erreur").hidden = true; afficherSuggestionsAchat(); majArrivage(); });
+  $("arrivage-suggestions").addEventListener("click", function (e) {
+    const b = e.target.closest("[data-fournisseur-achat]");
+    if (!b) return;
+    $("arrivage-fournisseur").value = b.dataset.fournisseurAchat;
+    afficherSuggestionsAchat();
+    majArrivage();
+  });
   $("arrivage-paye").addEventListener("click", function (e) {
     const b = e.target.closest("[data-arrivage-paye]");
-    if (b) choisirArrivagePaye(b.dataset.arrivagePaye === "oui");
+    if (b) { $("arrivage-erreur").hidden = true; choisirArrivagePaye(b.dataset.arrivagePaye); }
   });
   $("arrivage-quantite").addEventListener("input", majArrivage);
   $("arrivage-prix").addEventListener("input", function (e) {

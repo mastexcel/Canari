@@ -279,7 +279,9 @@ function ouvrirAchatIntrant(id) {
   $("arrivage-prix").value = typeof prixConnu === "number" ? nombre(Math.round(prixConnu)) : "";
   $("arrivage-quantite").value = "1";
   $("arrivage-erreur").hidden = true;
-  choisirArrivagePaye(false);
+  $("arrivage-donne").value = "";
+  $("arrivage-fournisseur").value = "";
+  choisirArrivagePaye("non");
   ouvrirFeuille("arrivage-form");
 }
 
@@ -293,6 +295,12 @@ function enregistrerAchatIntrant() {
   }
   const qte = i.uniteAchat ? Math.round(n * i.contenance * 1000) / 1000 : n;
   const prix = lireMontant($("arrivage-prix").value);
+  const probleme = verifierPaiementAchat(Math.round(n * prix));
+  if (probleme) {
+    $("arrivage-erreur").textContent = probleme;
+    $("arrivage-erreur").hidden = false;
+    return;
+  }
   if (prix) {
     // Prix moyen pondéré : l'ancien stock garde son prix, le nouveau arrive au nouveau prix.
     const nouveau = i.uniteAchat ? prix / i.contenance : prix;
@@ -304,19 +312,14 @@ function enregistrerAchatIntrant() {
   const achat = { id: nouvelId(), type: "intrant", intrantId: i.id, quantite: qte, raison: "achat", note: i.nom, montant: 0, client: "", t: Date.now() };
   if (i.uniteAchat) { achat.qteAchat = n; achat.uniteAchat = i.uniteAchat; }
   donnees.mouvements.push(achat);
-  if (arrivagePaye && prix) {
-    donnees.mouvements.push({
-      id: nouvelId(), type: "depense", categorie: "marchandise", montant: Math.round(n * prix),
-      note: "Achat : " + qteTexte(n, i.uniteAchat || i.unite) + " de " + i.nom, client: "", t: Date.now() + 1
-    });
-  }
+  const paiement = prix ? noterPaiementAchat(Math.round(n * prix), "Achat : " + qteTexte(n, i.uniteAchat || i.unite) + " de " + i.nom) : "";
   sauver();
   fermerFeuilles();
   intrantAchete = null;
   vueStock = "intrants";
   afficher();
   message(i.nom + " : + " + qteTexte(qte, i.unite) + (i.uniteAchat ? " (" + qteTexte(n, i.uniteAchat) + ")" : "") +
-    ". Prix moyen : " + franc(Math.round(i.cout || 0)) + parUnite(i.unite) + ".", null, true);
+    ". Prix moyen : " + franc(Math.round(i.cout || 0)) + parUnite(i.unite) + "." + (paiement ? " " + paiement : ""), null, true);
 }
 
 /* ---------- Mise en route ---------- */

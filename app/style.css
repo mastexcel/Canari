@@ -1372,3 +1372,10 @@ input.qte {
 .conso li.manque { background: #FBEDE9; }
 .conso li.manque small, .conso li.manque b { color: var(--sort); font-weight: 600; }
 #arrivage-conso { display: flex; flex-direction: column; gap: 8px; }
+
+/* ---------- Paiement d'un achat ---------- */
+#arrivage-credit, #arrivage-donne-bloc { display: flex; flex-direction: column; gap: 8px; }
+#arrivage-credit[hidden], #arrivage-donne-bloc[hidden] { display: none; }
+#arrivage-paye .choix[aria-pressed="true"] { background: var(--vert-foret); color: #fff; }
+.paiement-resume { font-weight: 600; color: var(--brun); }
+.paiement-resume:empty { display: none; }

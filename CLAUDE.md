@@ -48,7 +48,13 @@ Concurrents étudiés : Djago (Côte d'Ivoire), Keiwa, NAFA ERP, OkCredit, Khata
   - **Rendu sobre** : bordures fines de 1 px, ombres légères, angles à 16-18 px, pas d'effet de relief, étiquettes des grandes cartes en petites capitales.
   - Contrastes vérifiés : tous les textes ≥ 6,8:1 (le minimum exigé est 4,5:1).
   - Le fond ne doit pas être en `background-attachment: fixed` (défilement saccadé sur les petits téléphones) : les formes sont posées par `body::before`, qui ne se redessine pas.
-- **Polices** : Fredoka (nom, titres, gros chiffres) et Rubik (texte). Toutes deux sur Google Fonts.
+- **Polices (retravaillées à la demande du propriétaire : « faire correspondre les polices au contenu »)**, section « TYPOGRAPHIE » de `app/style.css`. Toujours deux polices seulement (poids de l'appli inchangé), mais deux rôles nets :
+  - **Fredoka** (`--titre`), ronde et chaleureuse → l'**identité** : le logo, le slogan, les titres d'écran et de fenêtre, les titres de liste, les mots des gros boutons, le nom de la boutique sur les factures.
+  - **Rubik** (`--texte`, `--chiffres`), nette et sobre → tout ce qui se **lit et se compare** : les phrases, les listes, et surtout **tous les montants**.
+  - **Pourquoi les montants ne sont plus en Fredoka** : son chiffre 1 est bien plus étroit que les autres (mesuré : « 111111 » = 69 px contre 103 px pour « 000000 »), donc les colonnes de montants dansent d'une ligne à l'autre. Rubik sait écrire les **chiffres tabulaires** (tous de la même largeur) : `font-variant-numeric: tabular-nums lining-nums`, posé sur les montants et sur les listes et tableaux entiers (`.liste`, `.clients`, `.produits`, `.barres`, `.matrice`, `.historique`…). Le bilan du jour en garde des chiffres proportionnels : c'est une phrase, pas une colonne.
+  - Réglages fins : interligne 1,5 pour la lecture et 1,2 dans les boutons ; grands nombres en Rubik 700 resserrés (`letter-spacing` négatif) ; étiquettes des grandes cartes en petites capitales espacées ; titres en `text-wrap: balance`.
+  - Sur la facture, le nom de la boutique reste en Fredoka (identité) mais « FACTURE » / « REÇU D'ACOMPTE » et les montants passent en Rubik (mention administrative). Code : `app/facture.js`.
+  - **Règle pour la suite** : tout nouveau montant ou tableau de chiffres doit hériter de `--chiffres` et des chiffres tabulaires ; ne jamais remettre Fredoka sur un nombre.
 - **Icône de l'appli** : `images/canari-joyeux.png` (jarre souriante, pièce qui tombe, fond vert). Une version simplifiée du personnage 3D pourra la remplacer.
 - **Mascotte « Petit Canari »** : `images/mascotte-canari-3d.png`. À utiliser sur l'écran d'accueil, les écrans vides, les messages de réussite. Humeurs :
   - joyeux (`canari-joyeux.png`) : bon gain, vente enregistrée ;

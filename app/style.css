@@ -1919,3 +1919,84 @@ body::after {
 }
 .message button { background: var(--olive-700); color: #fff; }
 .message #message-autre { background: #fff; color: var(--olive-800); border: 1px solid var(--bord); }
+
+/* =====================================================================
+   TYPOGRAPHIE  (demande du propriétaire : des polices qui correspondent
+   au contenu)
+
+   Deux polices, deux rôles bien séparés :
+   · FREDOKA, ronde et chaleureuse → l'identité : le logo, les titres
+     d'écran, les titres de fenêtre, les mots des gros boutons.
+   · RUBIK, nette et sobre → tout ce qui se lit et se compare : les
+     phrases, les listes et surtout LES MONTANTS.
+
+   Pourquoi les montants passent à Rubik : dans Fredoka, le chiffre 1 est
+   beaucoup plus étroit que les autres (mesuré : « 111111 » fait 69 px
+   quand « 000000 » en fait 103). Les colonnes de montants dansent donc
+   d'une ligne à l'autre. Rubik sait écrire les chiffres tous à la même
+   largeur (« chiffres tabulaires ») : les montants s'alignent à la
+   virgule près, comme dans un vrai cahier de caisse.
+   ===================================================================== */
+:root {
+  --titre: "Fredoka", system-ui, sans-serif;
+  --texte: "Rubik", system-ui, sans-serif;
+  --chiffres: "Rubik", system-ui, sans-serif;
+}
+
+/* ---------- Lecture ---------- */
+body {
+  font-family: var(--texte);
+  line-height: 1.5;
+}
+.bilan p { line-height: 1.55; }
+.aide, .accueil-texte, .vide p, .carte-reglage p { line-height: 1.5; }
+.ligne-texte b { line-height: 1.3; }
+.bouton, .choix, .onglet, .action, .rapide, .suggestion { line-height: 1.2; }
+
+/* ---------- Titres : Fredoka, resserrée ---------- */
+.logo, .slogan, .titre-ecran, .saisie-titre, .titre-liste, .carte-reglage h2,
+.voix-titre, .bouton-principal, .action, .param-corps .titre-ecran {
+  font-family: var(--titre);
+  letter-spacing: -0.2px;
+}
+.titre-ecran, .saisie-titre, .titre-liste { text-wrap: balance; }
+.action { letter-spacing: 0; }
+
+/* ---------- Chiffres : Rubik, tous de la même largeur ---------- */
+.gros-chiffre, .chiffre strong, .ligne-montant, .montant, .montant-f,
+.total-credits strong, .client-haut strong, .barre-valeur, .stock-quantite b,
+.note.quantite, .ligne-carte b, .lc-montant, .lc-f, .cascade-ligne b,
+.fiche-total b, .matrice .marge td, .conso li b, .abo-prix, .rapide,
+.client-tel, .ligne-fiche .lf-qte, .ligne-fiche .lf-prix, .date {
+  font-family: var(--chiffres);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+/* Les listes et les tableaux entiers, pour que tout s'aligne. */
+.liste, .clients, .produits, .barres, .matrice, .historique, .carte-gain,
+.total-credits, .lignes-charges, .conso, .cascade, .abo-formules {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+/* Le bilan du jour est une phrase : chiffres à leur largeur naturelle,
+   plus agréables à lire au fil du texte. */
+.bilan, .bilan p { font-variant-numeric: normal; }
+
+/* ---------- Poids et resserrement des grands nombres ---------- */
+.gros-chiffre {
+  font-weight: 700;
+  letter-spacing: -1.5px;
+  line-height: 1.05;
+}
+.total-credits strong { font-weight: 700; letter-spacing: -1px; }
+.chiffre strong { font-weight: 700; letter-spacing: -0.3px; font-size: 21px; }
+.client-haut strong, .stock-quantite b { font-weight: 700; letter-spacing: -0.4px; }
+.ligne-montant { font-weight: 600; letter-spacing: -0.2px; }
+.montant { font-weight: 700; letter-spacing: -1px; }
+.montant-f, .lc-f { font-weight: 600; }
+.barre-valeur, .vendu, .ligne-carte b { font-weight: 600; }
+.abo-prix { font-weight: 700; }
+
+/* ---------- Petits textes et étiquettes ---------- */
+.champ-etiquette { font-weight: 600; color: var(--olive-800); }
+.etiquette { font-variant-numeric: normal; }
+.ligne-texte small, .client-info, .barre-jour small { letter-spacing: .1px; }
+.etat { letter-spacing: .1px; font-weight: 600; }

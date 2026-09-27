@@ -131,7 +131,7 @@ function dessinerDocument(doc) {
       y += 62;
 
       // Titre, numéro et date
-      texte(doc.titre, marge, y, fredoka(40), C.texte);
+      texte(doc.titre, marge, y, rubik(34, 700), C.texte);
       texte((LANGUE === "en" ? "No. " : "N° ") + doc.numero, L - marge, y - 4, rubik(26, 600), C.texte, "right");
       y += 38;
       texte(dateHeure(doc.t), L - marge, y, rubik(24), C.doux, "right");
@@ -162,22 +162,22 @@ function dessinerDocument(doc) {
           trait(y, C.ligne, 2);
         });
         y += 56;
-        texte(tr("TOTAL"), L - marge - 300, y, fredoka(34), C.texte, "right");
-        texte(franc(doc.total), L - marge, y, fredoka(40), C.vert, "right");
+        texte(tr("TOTAL"), L - marge - 300, y, rubik(34, 600), C.texte, "right");
+        texte(franc(doc.total), L - marge, y, rubik(40, 700), C.vert, "right");
         y += 50;
         if (doc.reste > 0) {
           texte(tr("Payé"), L - marge - 300, y, rubik(28), C.doux, "right");
           texte(franc(doc.paye), L - marge, y, rubik(28, 600), C.entre, "right");
           y += 44;
           texte(tr("Reste à payer"), L - marge - 300, y, rubik(28, 600), C.rouge, "right");
-          texte(franc(doc.reste), L - marge, y, fredoka(34), C.rouge, "right");
+          texte(franc(doc.reste), L - marge, y, rubik(34, 700), C.rouge, "right");
           y += 30;
         }
       } else {
         // Reçu de paiement
         const rangee = function (libelle, valeur, couleur, grand) {
           texte(libelle, marge, y, rubik(28, grand ? 600 : 400), grand ? C.texte : C.doux);
-          texte(valeur, L - marge, y, grand ? fredoka(40) : rubik(28, 600), couleur, "right");
+          texte(valeur, L - marge, y, grand ? rubik(40, 700) : rubik(28, 600), couleur, "right");
           y += grand ? 64 : 50;
         };
         y += 10;

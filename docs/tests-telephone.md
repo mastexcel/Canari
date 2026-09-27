@@ -56,8 +56,8 @@ Téléphone testé : ______________________  Version d'Android : ________  Date 
 30. ☐ Vente à crédit à un nouveau client → « Contacts » → ouvrir le fichier téléchargé → le client apparaît dans les contacts (et dans WhatsApp).
 31. ☐ « Choisir dans mes contacts » remplit bien le nom et le numéro.
 32. ☐ Réglages → Langue → English : tout l'écran passe en anglais ; retour en français.
-33. ☐ « Parler » puis « Vente deux mille » : la vente de 2 000 F s'ouvre et Canari le dit à voix haute.
-34. ☐ « Crédit Koffi cinq mille », « Koffi a payé mille », « Combien j'ai gagné ? » (avec internet).
+33. ☐ « Vente » puis « Dire » : « deux mille », puis « oui » : la vente de 2 000 F est notée et Canari le dit à voix haute.
+34. ☐ « Crédit » puis « Dire » : « Koffi cinq mille », son numéro, puis « oui » (avec internet).
 35. ☐ « Écouter » lit le bilan du jour, même sans internet.
 36. ☐ Questionnaire → Ta boutique → choisir une autre monnaie : les montants, les boutons rapides, une facture et une relance l'affichent.
 37. ☐ Dans « Vente », appuie sur « Dire » : « six mille, il a donné deux mille », puis le nom et le numéro, puis « oui ». Canari répond à chaque fois.

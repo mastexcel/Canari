@@ -668,10 +668,8 @@ function majReglagesVoix() {
 
 function initVoix() {
   const peutParler = "speechSynthesis" in window;
-  $("voix-parler").hidden = !Reconnaissance;
   $("saisie-parler").hidden = !Reconnaissance;
   document.querySelectorAll(".voix-lire").forEach(function (b) { b.hidden = !peutParler; });
-  $("voix-parler").addEventListener("click", ecouter);
   $("voix-arreter").addEventListener("click", arreterVoix);
   $("voix-bilan").addEventListener("click", function () { parler($("bilan-texte").textContent); });
   $("voix-ecran").addEventListener("click", function () { parler(resumeEcran()); });

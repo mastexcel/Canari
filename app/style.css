@@ -1064,7 +1064,7 @@ button.ligne-texte {
 #bloc-quantite { display: flex; flex-direction: column; gap: 8px; }
 #bloc-quantite[hidden] { display: none; }
 .note.quantite { font-family: "Fredoka", system-ui, sans-serif; font-size: 24px; }
-#arrivage-form .pas-a-pas .note { flex: 1; text-align: center; }
+#arrivage-form .pas-a-pas .note { flex: 1; min-width: 0; width: 100%; text-align: center; }
 .petit-modifier.supprimer { color: var(--sort); align-self: center; }
 
 /* ---------- Ma boutique ---------- */
@@ -1287,3 +1287,11 @@ input.qte {
   padding: 2px;
 }
 .choix-produit-nom small b { color: var(--entre); }
+
+/* ---------- Unité d'achat ---------- */
+#bloc-achat, #bloc-achat-autre, #bloc-cout-simple { display: flex; flex-direction: column; gap: 8px; }
+#bloc-achat[hidden], #bloc-achat-autre[hidden], #bloc-cout-simple[hidden] { display: none; }
+#bloc-achat .choix { font-size: 15px; line-height: 1.15; }
+.stock-quantite small { font-size: 14px; color: #6B5646; font-weight: 400; }
+.aide.conversion { font-weight: 600; color: var(--entre); }
+.ligne-montant .m-stock.petit { font-size: 14px; font-weight: 500; }

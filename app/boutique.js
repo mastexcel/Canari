@@ -39,6 +39,9 @@ function parUnite(u) { return !u || u === "unite" ? "" : " / " + nomUnite(u, 1);
 /* ---------- Produits et stock ---------- */
 
 // Un produit : { id, nom, unite, prix, cout, suivi (compter le stock ?), seuil (alerte) }.
+// S'il s'achète dans une autre unité (sac de 50 kg vendu au kg) :
+//   uniteAchat = "sac", contenance = 50 (kg dans un sac), prixAchatLot = prix d'un sac.
+// « cout » est toujours le prix d'achat moyen d'UNE unité de vente (le kg).
 // Le stock n'est jamais écrit à la main : il se calcule à partir des lignes
 // « stock » (départ, arrivage, correction) moins les quantités vendues.
 // Ainsi, retirer une vente remet automatiquement le produit en stock.
@@ -99,10 +102,12 @@ function afficherStock() {
       const n = stockDe(p.id), u = uniteDe(p);
       const etat = !p.suivi ? '<span class="stock-quantite neutre">Stock non compté</span>'
         : '<span class="stock-quantite' + (aRacheter(p) ? ' bas' : '') + '"><b>' + qteTexte(n, u) + '</b> en stock' +
+          (p.uniteAchat && p.contenance ? ' <small>(≈ ' + qteTexte(Math.round(n / p.contenance * 10) / 10, p.uniteAchat) + ')</small>' : '') +
           (aRacheter(p) ? ' · à racheter' : '') + '</span>';
       return '<li class="produit' + (aRacheter(p) ? ' bas' : '') + '" data-nom="' + echapper(p.nom.toLowerCase()) + '">' +
         '<div class="client-haut"><b>' + echapper(p.nom) + '</b><strong>' + franc(p.prix) + '<small>' + parUnite(u) + '</small></strong></div>' +
         '<p class="aide">Coûte ' + franc(coutProduit(p)) + parUnite(u) + (typeof p.cout === "number" ? "" : " (marge habituelle)") +
+          (p.uniteAchat ? ' (acheté ' + franc(p.prixAchatLot) + ' le ' + nomUnite(p.uniteAchat, 1) + ' de ' + qteTexte(p.contenance, u) + ')' : '') +
           ' · bénéfice ' + franc(p.prix - coutProduit(p)) + (u === "unite" ? " par vente" : " par " + nomUnite(u, 1)) + '</p>' +
         '<p>' + etat + '</p>' +
         '<div class="client-boutons' + (p.suivi ? '' : ' un-seul') + '">' +
@@ -119,6 +124,23 @@ function afficherStock() {
 
 let produitEnCours = null; // null = nouveau produit
 let suiviProduit = true;
+let achatAutre = false;   // acheté dans une autre unité (sac, carton…)
+
+function choisirAchat(autre) {
+  achatAutre = autre;
+  document.querySelectorAll("[data-achat]").forEach(function (b) {
+    b.setAttribute("aria-pressed", String((b.dataset.achat === "autre") === autre));
+  });
+  $("bloc-achat-autre").hidden = !autre;
+  $("bloc-cout-simple").hidden = autre;
+  majUniteProduit();
+}
+// Prix d'achat d'une unité de vente, d'après le prix du sac (ou du carton).
+function coutDepuisLot() {
+  const contenance = lireQte($("produit-contenance").value);
+  const lot = lireMontant($("produit-prix-lot").value);
+  return contenance > 0 && lot > 0 ? lot / contenance : 0;
+}
 
 function choisirSuivi(oui) {
   suiviProduit = oui;
@@ -144,18 +166,26 @@ function majUniteProduit() {
   const plur = u === "unite" ? "" : " (en " + nomUnite(u, 2) + ")";
   $("produit-quantite-etiquette").textContent = (produitEnCours ? "Combien il en reste vraiment ?" : "Combien tu en as maintenant ?") + plur;
   $("produit-seuil-etiquette").textContent = "Me prévenir quand il en reste" + plur;
+  $("achat-meme").textContent = u === "unite" ? "Pareil (à l'unité)" : "Pareil (au " + nomUnite(u, 1) + ")";
+  const ua = $("produit-unite-achat").value;
+  $("contenance-etiquette").textContent = "Combien de " + nomUnite(u, 2) + " dans un " + nomUnite(ua, 1) + " ?";
+  $("prix-lot-etiquette").textContent = "Prix d'achat d'un " + nomUnite(ua, 1);
+  $("bloc-achat").hidden = !suiviProduit;
+  if (!suiviProduit && achatAutre) { achatAutre = false; $("bloc-achat-autre").hidden = true; $("bloc-cout-simple").hidden = false; }
   majMargeProduit();
 }
 
 function majMargeProduit() {
   const prix = lireMontant($("produit-prix").value);
-  const tape = $("produit-cout").value.trim() !== "";
-  const cout = tape ? lireMontant($("produit-cout").value) : coutParMarge(prix);
+  const lot = achatAutre ? coutDepuisLot() : 0;
+  const tape = achatAutre ? lot > 0 : $("produit-cout").value.trim() !== "";
+  const cout = achatAutre ? lot : tape ? lireMontant($("produit-cout").value) : coutParMarge(prix);
   if (!prix) { $("produit-marge").textContent = "Si tu ne sais pas, laisse vide : Canari utilisera ta marge habituelle (" + margeHabituelle() + " %)."; return; }
   const b = prix - cout;
   const u = uniteChoisie();
-  $("produit-marge").textContent = (tape ? "" : "Marge habituelle (" + margeHabituelle() + " %) : ") +
-    "tu gagnes " + (b < 0 ? "− " : "") + franc(Math.abs(b)) + (u === "unite" ? " sur chaque vente." : " par " + nomUnite(u, 1) + " vendu.");
+  $("produit-marge").textContent = (achatAutre && lot ? "Prix d'achat : " + franc(Math.round(lot * 100) / 100) + parUnite(u) + ". " : "") +
+    (tape ? "" : "Marge habituelle (" + margeHabituelle() + " %) : ") +
+    (achatAutre && lot ? "Tu gagnes " : "tu gagnes ") + (b < 0 ? "− " : "") + franc(Math.abs(b)) + (u === "unite" ? " sur chaque vente." : " par " + nomUnite(u, 1) + ".");
 }
 
 function ouvrirProduit(id) {
@@ -170,6 +200,15 @@ function ouvrirProduit(id) {
   const u = uniteDe(p);
   $("produit-unite").value = UNITES[u] ? u : "autre";
   $("produit-unite-autre").value = UNITES[u] ? "" : u;
+  $("produit-unite-achat").value = p && p.uniteAchat ? p.uniteAchat : "sac";
+  $("produit-contenance").value = p && p.contenance ? String(p.contenance).replace(".", ",") : "";
+  $("produit-prix-lot").value = p && p.prixAchatLot ? nombre(p.prixAchatLot) : "";
+  achatAutre = !!(p && p.uniteAchat);
+  $("bloc-achat-autre").hidden = !achatAutre;
+  $("bloc-cout-simple").hidden = achatAutre;
+  document.querySelectorAll("[data-achat]").forEach(function (b) {
+    b.setAttribute("aria-pressed", String((b.dataset.achat === "autre") === achatAutre));
+  });
   $("produit-erreur").hidden = true;
   $("produit-supprimer").hidden = !p;
   choisirSuivi(p ? p.suivi : true);
@@ -199,8 +238,24 @@ function enregistrerProduit(e) {
   p.nom = nom;
   p.unite = uniteChoisie();
   p.prix = prix;
-  if ($("produit-cout").value.trim() !== "") p.cout = lireMontant($("produit-cout").value);
-  else delete p.cout;
+  if (achatAutre) {
+    const contenance = lireQte($("produit-contenance").value);
+    const lot = lireMontant($("produit-prix-lot").value);
+    if (!(contenance > 0)) return oups("Écris combien il y en a dans un " + nomUnite($("produit-unite-achat").value, 1) + ".", $("produit-contenance"));
+    if (!lot) return oups("Écris le prix d'achat d'un " + nomUnite($("produit-unite-achat").value, 1) + ".", $("produit-prix-lot"));
+    // Le prix moyen n'est remplacé que si le prix du lot ou la contenance ont changé.
+    const change = p.uniteAchat !== $("produit-unite-achat").value || p.contenance !== contenance || p.prixAchatLot !== lot;
+    p.uniteAchat = $("produit-unite-achat").value;
+    p.contenance = contenance;
+    p.prixAchatLot = lot;
+    if (change || typeof p.cout !== "number") p.cout = Math.round(lot / contenance * 100) / 100;
+  } else {
+    delete p.uniteAchat; delete p.contenance; delete p.prixAchatLot;
+    if ($("produit-cout").value.trim() !== "") {
+      const tape = lireMontant($("produit-cout").value);
+      if (typeof p.cout !== "number" || Math.round(p.cout) !== tape) p.cout = tape;
+    } else delete p.cout;
+  }
   p.suivi = suiviProduit;
   p.seuil = isNaN(seuil) ? 3 : Math.max(0, seuil);
   donnees.produits[p.id] = p;
@@ -234,13 +289,41 @@ function supprimerProduit() {
 /* ---------- Arrivage de marchandise ---------- */
 
 let produitArrivage = null;
+let arrivagePaye = false;
+
+function choisirArrivagePaye(oui) {
+  arrivagePaye = oui;
+  document.querySelectorAll("[data-arrivage-paye]").forEach(function (b) {
+    b.setAttribute("aria-pressed", String((b.dataset.arrivagePaye === "oui") === oui));
+  });
+  majArrivage();
+}
+// Affiche la conversion (2 sacs = 100 kg) et le total payé.
+function majArrivage() {
+  const p = produitArrivage;
+  if (!p) return;
+  const n = lireQte($("arrivage-quantite").value) || 0;
+  const prix = lireMontant($("arrivage-prix").value);
+  const u = uniteDe(p);
+  $("arrivage-conversion").textContent = p.uniteAchat ? "= " + qteTexte(n * p.contenance, u) + " ajoutés au stock" : "";
+  $("arrivage-total").textContent = prix && n ? "Total : " + franc(Math.round(n * prix)) +
+    (arrivagePaye ? ", noté comme dépense de marchandise." : "") : "";
+}
+
 function ouvrirArrivage(id) {
   produitArrivage = donnees.produits[id];
   $("arrivage-titre").textContent = "Arrivage : " + produitArrivage.nom;
   const u = uniteDe(produitArrivage);
   $("arrivage-actuel").textContent = "Tu en as " + qteTexte(stockDe(id), u) + " en ce moment.";
-  $("arrivage-etiquette").textContent = u === "unite" ? "Combien en as-tu reçu ?" : "Combien en as-tu reçu (en " + nomUnite(u, 2) + ") ?";
+  const ua = produitArrivage.uniteAchat;
+  const unRecu = ua || u;
+  $("arrivage-etiquette").textContent = unRecu === "unite" ? "Combien en as-tu reçu ?" : "Combien en as-tu reçu (en " + nomUnite(unRecu, 2) + ") ?";
+  $("arrivage-prix-etiquette").textContent = ua ? "Prix d'un " + nomUnite(ua, 1) + " cette fois"
+    : "Prix d'achat" + (u === "unite" ? " d'une unité" : " du " + nomUnite(u, 1)) + " cette fois";
+  const prixConnu = ua ? produitArrivage.prixAchatLot : produitArrivage.cout;
+  $("arrivage-prix").value = typeof prixConnu === "number" ? nombre(Math.round(prixConnu)) : "";
   $("arrivage-quantite").value = "1";
+  choisirArrivagePaye(false);
   $("arrivage-erreur").hidden = true;
   ouvrirFeuille("arrivage-form");
 }
@@ -253,14 +336,33 @@ function enregistrerArrivage(e) {
     return;
   }
   const p = produitArrivage;
-  donnees.mouvements.push({
-    id: nouvelId(), type: "stock", produitId: p.id, quantite: n, raison: "arrivage",
+  const qte = p.uniteAchat ? Math.round(n * p.contenance * 1000) / 1000 : n; // en unités de vente
+  const prix = lireMontant($("arrivage-prix").value);
+  if (prix) {
+    // Prix moyen : l'ancien stock garde son prix, le nouveau arrive au nouveau prix.
+    const coutNouveau = p.uniteAchat ? prix / p.contenance : prix;
+    const avant = Math.max(0, stockDe(p.id));
+    const coutAncien = typeof p.cout === "number" ? p.cout : coutNouveau;
+    p.cout = Math.round((avant * coutAncien + qte * coutNouveau) / (avant + qte) * 100) / 100;
+    if (p.uniteAchat) p.prixAchatLot = prix;
+  }
+  const arrivage = {
+    id: nouvelId(), type: "stock", produitId: p.id, quantite: qte, raison: "arrivage",
     note: p.nom, montant: 0, client: "", t: Date.now()
-  });
+  };
+  if (p.uniteAchat) { arrivage.qteAchat = n; arrivage.uniteAchat = p.uniteAchat; }
+  donnees.mouvements.push(arrivage);
+  if (arrivagePaye && prix) {
+    donnees.mouvements.push({
+      id: nouvelId(), type: "depense", categorie: "marchandise", montant: Math.round(n * prix),
+      note: "Achat : " + qteTexte(n, p.uniteAchat || uniteDe(p)) + " de " + p.nom, client: "", t: Date.now() + 1
+    });
+  }
   sauver();
   fermerFeuilles();
   afficher();
-  message(p.nom + " : + " + qteTexte(n, uniteDe(p)) + ". Il y en a maintenant " + qteTexte(stockDe(p.id), uniteDe(p)) + ".", null, true);
+  message(p.nom + " : + " + qteTexte(qte, uniteDe(p)) + (p.uniteAchat ? " (" + qteTexte(n, p.uniteAchat) + ")" : "") +
+    ". Il y en a maintenant " + qteTexte(stockDe(p.id), uniteDe(p)) + ".", null, true);
 }
 
 /* ---------- Choisir les produits pendant une vente ---------- */
@@ -497,6 +599,31 @@ function initBoutique() {
     return '<option value="' + u + '">' + (u === "unite" ? "à l'unité (pièce)" : UNITES[u][0]) + '</option>';
   }).join("") + '<option value="autre">autre…</option>';
   $("produit-unite").addEventListener("change", majUniteProduit);
+  $("produit-unite-achat").innerHTML = Object.keys(UNITES).filter(function (u) { return u !== "prestation"; }).map(function (u) {
+    return '<option value="' + u + '">' + UNITES[u][0] + '</option>';
+  }).join("");
+  $("produit-unite-achat").value = "sac";
+  $("produit-unite-achat").addEventListener("change", majUniteProduit);
+  $("produit-achat-facon").addEventListener("click", function (e) {
+    const b = e.target.closest("[data-achat]");
+    if (b) choisirAchat(b.dataset.achat === "autre");
+  });
+  $("produit-contenance").addEventListener("input", majMargeProduit);
+  $("produit-prix-lot").addEventListener("input", function (e) {
+    const chiffres = e.target.value.replace(/\D/g, "").slice(0, 9);
+    e.target.value = chiffres ? nombre(Number(chiffres)) : "";
+    majMargeProduit();
+  });
+  $("arrivage-paye").addEventListener("click", function (e) {
+    const b = e.target.closest("[data-arrivage-paye]");
+    if (b) choisirArrivagePaye(b.dataset.arrivagePaye === "oui");
+  });
+  $("arrivage-quantite").addEventListener("input", majArrivage);
+  $("arrivage-prix").addEventListener("input", function (e) {
+    const chiffres = e.target.value.replace(/\D/g, "").slice(0, 9);
+    e.target.value = chiffres ? nombre(Number(chiffres)) : "";
+    majArrivage();
+  });
   $("produit-unite-autre").addEventListener("input", majUniteProduit);
   $("produit-form").addEventListener("submit", enregistrerProduit);
   $("produit-annuler").addEventListener("click", fermerFeuilles);
@@ -509,6 +636,7 @@ function initBoutique() {
     if (!b) return;
     const n = (lireQte($("arrivage-quantite").value) || 0) + Number(b.dataset.pas);
     $("arrivage-quantite").value = String(Math.max(1, Math.round(n * 1000) / 1000)).replace(".", ",");
+    majArrivage();
   });
 
   $("choix-vente").addEventListener("click", function (e) {

@@ -362,10 +362,30 @@
     <input id="produit-prix" class="montant" inputmode="numeric" placeholder="0">
     <span class="montant-f">F</span>
   </div>
-  <label class="champ-etiquette" for="produit-cout" id="produit-cout-etiquette">Prix d'achat (ce qu'il te coûte)</label>
-  <div class="montant-boite petite">
-    <input id="produit-cout" class="montant" inputmode="numeric" placeholder="0">
-    <span class="montant-f">F</span>
+  <div id="bloc-achat">
+    <p class="champ-etiquette" id="achat-facon-etiquette">Tu l'achètes…</p>
+    <div class="deux-choix" id="produit-achat-facon" role="group" aria-label="Unité d'achat">
+      <button type="button" class="choix" data-achat="meme" aria-pressed="true" id="achat-meme">Pareil</button>
+      <button type="button" class="choix" data-achat="autre" aria-pressed="false">En sac, carton…</button>
+    </div>
+  </div>
+  <div id="bloc-achat-autre" hidden>
+    <label class="champ-etiquette" for="produit-unite-achat">Tu l'achètes en…</label>
+    <select id="produit-unite-achat" class="note"></select>
+    <label class="champ-etiquette" for="produit-contenance" id="contenance-etiquette">Combien dans un sac ?</label>
+    <input id="produit-contenance" class="note quantite" inputmode="decimal" placeholder="ex. 50">
+    <label class="champ-etiquette" for="produit-prix-lot" id="prix-lot-etiquette">Prix d'achat d'un sac</label>
+    <div class="montant-boite petite">
+      <input id="produit-prix-lot" class="montant" inputmode="numeric" placeholder="0">
+      <span class="montant-f">F</span>
+    </div>
+  </div>
+  <div id="bloc-cout-simple">
+    <label class="champ-etiquette" for="produit-cout" id="produit-cout-etiquette">Prix d'achat (ce qu'il te coûte)</label>
+    <div class="montant-boite petite">
+      <input id="produit-cout" class="montant" inputmode="numeric" placeholder="0">
+      <span class="montant-f">F</span>
+    </div>
   </div>
   <p class="aide" id="produit-marge"></p>
   <p class="champ-etiquette">Compter le stock ?</p>
@@ -399,7 +419,19 @@
     <input id="arrivage-quantite" class="note quantite" inputmode="decimal" value="1">
     <button type="button" class="bouton pas" data-pas="1" aria-label="Un de plus">+</button>
   </div>
-  <p class="aide">Pour noter ce que tu as payé, utilise « Dépense » ou « Dette fournisseur ».</p>
+  <p class="aide conversion" id="arrivage-conversion"></p>
+  <label class="champ-etiquette" for="arrivage-prix" id="arrivage-prix-etiquette">Prix d'achat cette fois</label>
+  <div class="montant-boite petite">
+    <input id="arrivage-prix" class="montant" inputmode="numeric" placeholder="0">
+    <span class="montant-f">F</span>
+  </div>
+  <p class="aide" id="arrivage-total"></p>
+  <p class="champ-etiquette">Tu l'as payé ?</p>
+  <div class="deux-choix" id="arrivage-paye" role="group" aria-label="Paiement de l'arrivage">
+    <button type="button" class="choix" data-arrivage-paye="oui" aria-pressed="false">Oui, maintenant</button>
+    <button type="button" class="choix" data-arrivage-paye="non" aria-pressed="true">Non / déjà noté</button>
+  </div>
+  <p class="aide" id="arrivage-paye-aide">Pour un achat à crédit, utilise aussi « Dette fournisseur ».</p>
   <p class="erreur" id="arrivage-erreur" hidden></p>
   <div class="saisie-boutons">
     <button type="button" class="bouton bouton-annuler" id="arrivage-annuler">Annuler</button>

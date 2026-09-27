@@ -382,7 +382,8 @@ function ligneHtml(m) {
     montants = (verse > 0 ? '<span class="m-sort">− ' + franc(verse) + '</span>' : "") +
       (reste > 0 ? '<span class="m-credit">' + franc(reste) + ' à payer</span>' : "");
   } else if (m.type === "stock") {
-    montants = '<span class="m-stock">' + (m.quantite > 0 ? "+" : "−") + " " + qteTexte(Math.abs(m.quantite), uniteDe(donnees.produits[m.produitId])) + '</span>';
+    montants = '<span class="m-stock">' + (m.quantite > 0 ? "+" : "−") + " " + qteTexte(Math.abs(m.quantite), uniteDe(donnees.produits[m.produitId])) + '</span>' +
+      (m.qteAchat ? '<span class="m-stock petit">' + qteTexte(m.qteAchat, m.uniteAchat) + '</span>' : '');
   } else {
     const signe = m.type === "paye" ? "+ " : (m.type === "depense" || m.type === "fpaye" || m.type === "maison") ? "− " : "";
     montants = '<span>' + signe + franc(m.montant) + '</span>';

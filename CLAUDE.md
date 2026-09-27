@@ -75,6 +75,8 @@ Concurrents étudiés : Djago (Côte d'Ivoire), Keiwa, NAFA ERP, OkCredit, Khata
 
 Calculs : gain = encaissé − dépensé ; reste pour la boutique = gain − pris pour la maison.
 
+**Décision du propriétaire (étape 3) : vente ≠ encaissement.** Une vente n'est pas forcément payée en entier. Chaque vente garde son prix total (`montant`) et ce que le client a donné (`encaisse`). Le reste passe à crédit sur le nom du client. Le bouton « Crédit » est une vente où le client n'a rien donné. L'encaissé du jour ne compte que l'argent reçu (ventes payées + remboursements) ; l'écran principal affiche aussi « Vendu aujourd'hui : X F, dont Y F à crédit ».
+
 **Saisie**
 - Montant avec clavier numérique et boutons rapides (500, 1 000, 2 000, 5 000 F).
 - Nom du client ou du fournisseur avec suggestions des noms déjà utilisés.

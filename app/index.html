@@ -36,57 +36,109 @@
     <span id="date-du-jour" class="date"></span>
   </header>
 
-  <div class="carte-gain">
-    <p class="etiquette">Gain du jour</p>
-    <p class="gros-chiffre" id="gain">0 F</p>
-    <div class="trois-chiffres">
-      <div class="chiffre entre"><span>Encaissé</span><strong id="encaisse">0 F</strong></div>
-      <div class="chiffre sort"><span>Dépensé</span><strong id="depense">0 F</strong></div>
-      <div class="chiffre maison"><span>Maison</span><strong id="maison">0 F</strong></div>
+  <!-- Onglet Jour -->
+  <div id="vue-jour" class="vue">
+    <div class="carte-gain">
+      <p class="etiquette">Gain du jour</p>
+      <p class="gros-chiffre" id="gain">0 F</p>
+      <div class="trois-chiffres">
+        <div class="chiffre entre"><span>Encaissé</span><strong id="encaisse">0 F</strong></div>
+        <div class="chiffre sort"><span>Dépensé</span><strong id="depense">0 F</strong></div>
+        <div class="chiffre maison"><span>Maison</span><strong id="maison">0 F</strong></div>
+      </div>
+      <p class="vendu" id="vendu" hidden></p>
+    </div>
+
+    <div class="gros-boutons">
+      <button class="bouton action vente" type="button" data-saisie="vente">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Vente
+      </button>
+      <button class="bouton action depense" type="button" data-saisie="depense">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg>Dépense
+      </button>
+      <button class="bouton action credit" type="button" data-saisie="credit">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v10H4zM4 11h16"/></svg>Crédit
+      </button>
+    </div>
+    <div class="petits-boutons">
+      <button class="bouton secondaire maison" type="button" data-bientot>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11 12 4l8 7v9H4z"/></svg>Pris pour la maison
+      </button>
+      <button class="bouton secondaire fournisseur" type="button" data-bientot>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.5"/><circle cx="17" cy="17.5" r="1.5"/></svg>Dette fournisseur
+      </button>
+    </div>
+
+    <h2 class="titre-liste" id="titre-liste" hidden>Aujourd'hui</h2>
+    <ul class="liste" id="liste"></ul>
+
+    <div class="vide" id="vide">
+      <img src="icones/canari-tranquille.webp" width="96" height="114" alt="">
+      <p>Rien de noté aujourd'hui.<br>Appuie sur <strong>Vente</strong> quand un client achète.</p>
     </div>
   </div>
 
-  <div class="gros-boutons">
-    <button class="bouton action vente" type="button" data-saisie="vente">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Vente
-    </button>
-    <button class="bouton action depense" type="button" data-saisie="depense">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg>Dépense
-    </button>
-    <button class="bouton action credit" type="button" data-bientot>
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v10H4zM4 11h16"/></svg>Crédit
-    </button>
-  </div>
-  <div class="petits-boutons">
-    <button class="bouton secondaire maison" type="button" data-bientot>
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11 12 4l8 7v9H4z"/></svg>Pris pour la maison
-    </button>
-    <button class="bouton secondaire fournisseur" type="button" data-bientot>
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.5"/><circle cx="17" cy="17.5" r="1.5"/></svg>Dette fournisseur
-    </button>
-  </div>
-
-  <h2 class="titre-liste" id="titre-liste" hidden>Aujourd'hui</h2>
-  <ul class="liste" id="liste"></ul>
-
-  <div class="vide" id="vide">
-    <img src="icones/canari-tranquille.webp" width="96" height="114" alt="">
-    <p>Rien de noté aujourd'hui.<br>Appuie sur <strong>Vente</strong> quand un client paie.</p>
+  <!-- Onglet Crédits -->
+  <div id="vue-credits" class="vue" hidden>
+    <div class="deux-choix" role="group" aria-label="Qui doit à qui">
+      <button type="button" class="choix" data-cote="clients" aria-pressed="true">On me doit</button>
+      <button type="button" class="choix" data-cote="fournisseurs" aria-pressed="false">Je dois</button>
+    </div>
+    <div id="credits-clients"></div>
+    <div id="credits-fournisseurs" hidden>
+      <div class="vide">
+        <img src="icones/canari-pensif.webp" width="96" height="114" alt="">
+        <p>Bientôt, tu pourras noter ici ce que tu dois à tes fournisseurs.</p>
+      </div>
+    </div>
   </div>
 </section>
 
-<!-- Fenêtre de saisie (vente, dépense…) -->
+<!-- Barre des onglets -->
+<nav class="onglets" id="onglets" hidden>
+  <button type="button" class="onglet" data-onglet="jour" aria-current="page">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11 12 4l8 7v9H4z"/></svg>Jour
+  </button>
+  <button type="button" class="onglet" data-onglet="credits">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v10H4zM4 11h16"/></svg>Crédits
+  </button>
+</nav>
+
+<!-- Fenêtre de saisie -->
 <div class="fond-saisie" id="fond-saisie" hidden></div>
 <form class="saisie" id="saisie" hidden novalidate autocomplete="off">
   <h2 class="saisie-titre" id="saisie-titre">Nouvelle vente</h2>
-  <label class="champ-etiquette" for="montant">Combien ?</label>
+
+  <label class="champ-etiquette" for="montant" id="montant-etiquette">Combien ?</label>
   <div class="montant-boite">
-    <input id="montant" class="montant" inputmode="numeric" pattern="[0-9 ]*" placeholder="0" enterkeyhint="done">
+    <input id="montant" class="montant" inputmode="numeric" placeholder="0" enterkeyhint="done">
     <span class="montant-f">F</span>
   </div>
   <div class="rapides" id="rapides"></div>
+
+  <div id="bloc-paiement" class="deux-choix" role="group" aria-label="Le client a-t-il tout payé ?">
+    <button type="button" class="choix" data-paiement="tout" aria-pressed="true">Tout payé</button>
+    <button type="button" class="choix" data-paiement="partiel" aria-pressed="false">Pas tout payé</button>
+  </div>
+
+  <div id="bloc-donne">
+    <label class="champ-etiquette" for="donne">Combien il a donné ?</label>
+    <div class="montant-boite petite">
+      <input id="donne" class="montant" inputmode="numeric" placeholder="0" enterkeyhint="done">
+      <span class="montant-f">F</span>
+    </div>
+    <p class="reste" id="reste"></p>
+  </div>
+
+  <div id="bloc-client">
+    <label class="champ-etiquette" for="client">Nom du client</label>
+    <input id="client" class="note" placeholder="ex. Maman Awa" enterkeyhint="done" autocapitalize="words">
+    <div class="suggestions" id="suggestions"></div>
+  </div>
+
   <label class="champ-etiquette" for="note" id="note-etiquette">Quoi ? (facultatif)</label>
   <input id="note" class="note" enterkeyhint="done">
+
   <p class="erreur" id="erreur" hidden></p>
   <div class="saisie-boutons">
     <button type="button" class="bouton bouton-annuler" id="saisie-annuler">Annuler</button>

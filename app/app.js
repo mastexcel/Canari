@@ -1,8 +1,12 @@
-// Canari · écran principal, saisie des ventes et des dépenses.
-// Les calculs suivent le prototype (prototype/carnet-boutique.html).
+// Canari · écran principal, ventes (payées en entier ou en partie), dépenses,
+// crédits clients et remboursements.
+// Les calculs suivent le prototype (prototype/carnet-boutique.html), avec une
+// différence voulue : une vente garde son montant total ET ce que le client a
+// donné. Le reste passe à crédit sur le nom du client.
 
 const CLE_DEJA_VU = "canari.accueilVu";
 const CLE_DONNEES = "canari.donnees";
+const JOUR = 864e5;
 
 function lire(cle) {
   try { return localStorage.getItem(cle); } catch (e) { return null; }
@@ -14,13 +18,16 @@ const $ = function (id) { return document.getElementById(id); };
 
 /* ---------- Données enregistrées sur le téléphone ---------- */
 
-// Chaque mouvement : { id, type, montant, note, client, t }
-// type : vente, depense, credit, paye, maison, fdette, fpaye
-let donnees = { mouvements: [] };
+// Chaque mouvement : { id, type, montant, encaisse, note, client, t }
+// type : vente, depense, paye (remboursement client), maison, fdette, fpaye
+// Pour une vente, « encaisse » est ce que le client a donné ; le reste est à crédit.
+// meta : infos par client (téléphone, promesse, relances), utilisées plus tard.
+let donnees = { mouvements: [], meta: {} };
 try {
   const brut = JSON.parse(lire(CLE_DONNEES));
   if (brut && Array.isArray(brut.mouvements)) donnees = brut;
 } catch (e) { /* données illisibles : on repart de zéro */ }
+if (!donnees.meta) donnees.meta = {};
 
 function sauver() {
   if (!ecrire(CLE_DONNEES, JSON.stringify(donnees))) {
@@ -33,10 +40,21 @@ function sauver() {
 const nombre = function (n) {
   return Math.round(n).toLocaleString("fr-FR").replace(/[  ]/g, " ");
 };
-const franc = function (n) { return nombre(n) + " F"; };
+// Espaces insécables : « 6 500 F » ne sera jamais coupé en fin de ligne.
+const franc = function (n) { return nombre(n).replace(/ /g, " ") + " F"; };
+const lireMontant = function (texte) { return parseInt(String(texte).replace(/\D/g, ""), 10) || 0; };
 const cleJour = function (t) {
   const d = new Date(t);
   return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+};
+const debutJour = function (t) { const d = new Date(t); d.setHours(0, 0, 0, 0); return d.getTime(); };
+const joursDepuis = function (t) { return Math.round((debutJour(Date.now()) - debutJour(t)) / JOUR); };
+const ilYA = function (t) {
+  const j = joursDepuis(t);
+  return j <= 0 ? "aujourd'hui" : j === 1 ? "hier" : "il y a " + j + " jours";
+};
+const dateCourte = function (t) {
+  return new Date(t).toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
 };
 const nouvelId = function () { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); };
 const echapper = function (s) {
@@ -44,29 +62,95 @@ const echapper = function (s) {
     return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
   });
 };
+const cleClient = function (nom) { return "c:" + nom.trim().toLowerCase().replace(/\s+/g, " "); };
 
 /* ---------- Calculs ---------- */
 
+// Argent réellement reçu pour une vente (les anciennes ventes étaient payées en entier).
+function encaisseDe(m) {
+  return typeof m.encaisse === "number" ? m.encaisse : m.montant;
+}
+// Part d'une vente laissée à crédit.
+function creditDe(m) {
+  if (m.type === "credit") return m.montant;
+  if (m.type === "vente") return m.montant - encaisseDe(m);
+  return 0;
+}
+
 function totauxDuJour(jour) {
-  let encaisse = 0, depense = 0, maison = 0;
+  let encaisse = 0, depense = 0, maison = 0, vendu = 0, aCredit = 0;
   donnees.mouvements.forEach(function (m) {
     if (cleJour(m.t) !== jour) return;
-    if (m.type === "vente" || m.type === "paye") encaisse += m.montant;
+    if (m.type === "vente" || m.type === "credit") {
+      vendu += m.montant;
+      aCredit += creditDe(m);
+      if (m.type === "vente") encaisse += encaisseDe(m);
+    }
+    else if (m.type === "paye") encaisse += m.montant;
     else if (m.type === "depense" || m.type === "fpaye") depense += m.montant;
     else if (m.type === "maison") maison += m.montant;
   });
-  return { encaisse: encaisse, depense: depense, maison: maison, gain: encaisse - depense };
+  return { encaisse: encaisse, depense: depense, maison: maison, gain: encaisse - depense, vendu: vendu, aCredit: aCredit };
+}
+
+// Liste des clients qui doivent de l'argent, du plus gros au plus petit.
+function clientsQuiDoivent() {
+  const parCle = new Map();
+  donnees.mouvements.slice().sort(function (a, b) { return a.t - b.t; }).forEach(function (m) {
+    const nom = (m.client || "").trim();
+    if (!nom) return;
+    const credit = creditDe(m);
+    if (credit <= 0 && m.type !== "paye") return;
+    const cle = cleClient(nom);
+    const c = parCle.get(cle) || { cle: cle, nom: nom, du: 0, depuis: 0, historique: [] };
+    c.nom = nom;
+    if (m.type === "paye") {
+      c.du -= m.montant;
+      c.historique.push({ t: m.t, texte: "A payé", montant: -m.montant });
+    } else {
+      if (c.du <= 0) c.depuis = m.t; // nouvelle dette après avoir tout réglé
+      c.du += credit;
+      c.historique.push({ t: m.t, texte: m.note || "Achat à crédit", montant: credit });
+    }
+    if (c.du <= 0) { c.du = 0; c.depuis = 0; }
+    parCle.set(cle, c);
+  });
+  return Array.from(parCle.values())
+    .filter(function (c) { return c.du > 0; })
+    .sort(function (a, b) { return b.du - a.du; });
+}
+
+function nomsClients() {
+  const vus = new Map();
+  donnees.mouvements.slice().sort(function (a, b) { return b.t - a.t; }).forEach(function (m) {
+    if (!m.client || !(m.type === "vente" || m.type === "credit" || m.type === "paye")) return;
+    const cle = cleClient(m.client);
+    if (!vus.has(cle)) vus.set(cle, m.client.trim());
+  });
+  return Array.from(vus.values());
 }
 
 /* ---------- Affichage ---------- */
 
 const NOMS = {
-  vente: "Vente", depense: "Dépense", credit: "Crédit client", paye: "Remboursement",
+  vente: "Vente", depense: "Dépense", credit: "Vente à crédit", paye: "Remboursement",
   maison: "Pris pour la maison", fdette: "Dette fournisseur", fpaye: "Payé au fournisseur"
 };
-const SIGNES = { vente: "+ ", paye: "+ ", depense: "− ", fpaye: "− ", maison: "− ", credit: "", fdette: "" };
+
+let onglet = "jour";
+let coteCredits = "clients";
 
 function afficher() {
+  afficherJour();
+  afficherCredits();
+  document.querySelectorAll(".vue").forEach(function (v) { v.hidden = v.id !== "vue-" + onglet; });
+  document.querySelectorAll("[data-onglet]").forEach(function (b) {
+    if (b.dataset.onglet === onglet) b.setAttribute("aria-current", "page");
+    else b.removeAttribute("aria-current");
+  });
+}
+
+function afficherJour() {
   const aujourdhui = cleJour(Date.now());
   const t = totauxDuJour(aujourdhui);
   $("gain").textContent = (t.gain < 0 ? "− " : "") + franc(Math.abs(t.gain));
@@ -74,30 +158,83 @@ function afficher() {
   $("encaisse").textContent = franc(t.encaisse);
   $("depense").textContent = franc(t.depense);
   $("maison").textContent = franc(t.maison);
+  $("vendu").hidden = t.aCredit === 0;
+  $("vendu").textContent = "Vendu aujourd'hui : " + franc(t.vendu) + ", dont " + franc(t.aCredit) + " à crédit";
 
   const lignes = donnees.mouvements
     .filter(function (m) { return cleJour(m.t) === aujourdhui; })
     .sort(function (a, b) { return b.t - a.t; });
   $("vide").hidden = lignes.length > 0;
   $("titre-liste").hidden = lignes.length === 0;
-  $("liste").innerHTML = lignes.map(function (m) {
-    const heure = new Date(m.t).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-    const qui = m.client ? " · " + echapper(m.client) : "";
-    return '<li class="ligne t-' + m.type + '">' +
-      '<span class="pastille" aria-hidden="true"></span>' +
-      '<span class="ligne-texte"><b>' + echapper(m.note || NOMS[m.type]) + '</b>' +
-      '<small>' + NOMS[m.type] + qui + ' · ' + heure + '</small></span>' +
-      '<span class="ligne-montant">' + SIGNES[m.type] + franc(m.montant) + '</span>' +
-      '<button type="button" class="retirer" data-retirer="' + m.id + '" aria-label="Retirer cette ligne">' +
-      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>' +
-      '</li>';
-  }).join("");
+  $("liste").innerHTML = lignes.map(ligneHtml).join("");
+}
+
+function ligneHtml(m) {
+  const heure = new Date(m.t).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  const qui = m.client ? " · " + echapper(m.client) : "";
+  let type = m.type, montants;
+  if (m.type === "vente" || m.type === "credit") {
+    const recu = m.type === "vente" ? encaisseDe(m) : 0;
+    const credit = creditDe(m);
+    if (recu === 0) type = "credit";
+    montants = (recu > 0 ? '<span class="m-entre">+ ' + franc(recu) + '</span>' : "") +
+      (credit > 0 ? '<span class="m-credit">' + franc(credit) + ' à crédit</span>' : "");
+  } else {
+    const signe = m.type === "paye" ? "+ " : (m.type === "depense" || m.type === "fpaye" || m.type === "maison") ? "− " : "";
+    montants = '<span>' + signe + franc(m.montant) + '</span>';
+  }
+  const nomType = type === "credit" ? "Vente à crédit" : m.type === "vente" && creditDe(m) > 0 ? "Vente, pas tout payé" : NOMS[m.type];
+  const titre = m.note || (m.type === "vente" && creditDe(m) > 0 ? "Vente de " + franc(m.montant) : NOMS[type]);
+  return '<li class="ligne t-' + type + '">' +
+    '<span class="pastille" aria-hidden="true"></span>' +
+    '<span class="ligne-texte"><b>' + echapper(titre) + '</b>' +
+    '<small>' + nomType + qui + ' · ' + heure + '</small></span>' +
+    '<span class="ligne-montant">' + montants + '</span>' +
+    '<button type="button" class="retirer" data-retirer="' + m.id + '" aria-label="Retirer cette ligne">' +
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>' +
+    '</li>';
+}
+
+function afficherCredits() {
+  document.querySelectorAll("[data-cote]").forEach(function (b) {
+    b.setAttribute("aria-pressed", String(b.dataset.cote === coteCredits));
+  });
+  $("credits-clients").hidden = coteCredits !== "clients";
+  $("credits-fournisseurs").hidden = coteCredits !== "fournisseurs";
+
+  const clients = clientsQuiDoivent();
+  if (!clients.length) {
+    $("credits-clients").innerHTML =
+      '<div class="vide"><img src="icones/canari-tranquille.webp" width="96" height="114" alt="">' +
+      '<p>Personne ne te doit d\'argent.<br>Quand un client prend à crédit, appuie sur <strong>Crédit</strong>.</p></div>';
+    return;
+  }
+  const total = clients.reduce(function (s, c) { return s + c.du; }, 0);
+  $("credits-clients").innerHTML =
+    '<div class="total-credits"><span>Tes clients te doivent</span><strong>' + franc(total) + '</strong>' +
+    '<small>' + clients.length + ' client' + (clients.length > 1 ? 's' : '') + '</small></div>' +
+    '<ul class="clients">' + clients.map(function (c) {
+      const derniers = c.historique.filter(function (h) { return h.montant > 0; }).slice(-2)
+        .map(function (h) { return h.texte; }).join(", ");
+      return '<li class="client">' +
+        '<div class="client-haut"><b>' + echapper(c.nom) + '</b><strong>' + franc(c.du) + '</strong></div>' +
+        '<p class="client-info">Doit depuis ' + ilYA(c.depuis).replace("il y a ", "") + (derniers ? ' · ' + echapper(derniers) : '') + '</p>' +
+        '<details class="historique"><summary>Voir l\'historique</summary><ul>' +
+        c.historique.slice().reverse().map(function (h) {
+          return '<li><span>' + dateCourte(h.t) + ' · ' + echapper(h.texte) + '</span><span class="' + (h.montant < 0 ? 'm-entre' : 'm-credit') + '">' +
+            (h.montant < 0 ? '− ' : '+ ') + franc(Math.abs(h.montant)) + '</span></li>';
+        }).join("") + '</ul></details>' +
+        '<button type="button" class="bouton bouton-paye" data-paye="' + echapper(c.cle) + '">' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>Il a payé</button>' +
+        '</li>';
+    }).join("") + '</ul>';
 }
 
 function montrer(id) {
   document.querySelectorAll(".ecran").forEach(function (e) {
     e.hidden = e.id !== id;
   });
+  $("onglets").hidden = id !== "principal";
   document.querySelector('meta[name="theme-color"]')
     .setAttribute("content", id === "accueil" ? "#174A3F" : "#F6EEE3");
 }
@@ -115,7 +252,7 @@ function message(texte, annuler, joyeux) {
   minuterieMessage = setTimeout(function () {
     $("message").hidden = true;
     actionAnnuler = null;
-  }, annuler ? 6000 : 3000);
+  }, annuler ? 6000 : 3500);
 }
 $("message-annuler").addEventListener("click", function () {
   if (actionAnnuler) actionAnnuler();
@@ -126,67 +263,170 @@ $("message-annuler").addEventListener("click", function () {
 /* ---------- Saisie ---------- */
 
 const MODES = {
-  vente: { titre: "Nouvelle vente", couleur: "var(--entre)", note: "Qu'as-tu vendu ? (facultatif)", exemple: "ex. 2 pains, 1 savon" },
-  depense: { titre: "Nouvelle dépense", couleur: "var(--sort)", note: "Pour quoi ? (facultatif)", exemple: "ex. marchandise, transport" }
+  vente: { titre: "Nouvelle vente", couleur: "var(--entre)", montant: "Prix total", note: "Qu'as-tu vendu ? (facultatif)", exemple: "ex. 2 pains, 1 savon", paiement: true },
+  credit: { titre: "Vente à crédit", couleur: "var(--credit)", montant: "Prix total", note: "Qu'a-t-il pris ? (facultatif)", exemple: "ex. huile 1 L", paiement: true },
+  depense: { titre: "Nouvelle dépense", couleur: "var(--sort)", montant: "Combien ?", note: "Pour quoi ? (facultatif)", exemple: "ex. marchandise, transport" },
+  paye: { titre: "Remboursement", couleur: "var(--entre)", montant: "Combien il te donne ?", note: "Note (facultatif)", exemple: "ex. paiement partiel" }
 };
 const RAPIDES = [500, 1000, 2000, 5000];
 let modeSaisie = "vente";
+let paiementPartiel = false;
+let clientRembourse = null; // client choisi quand on note un remboursement
 
-function ouvrirSaisie(mode) {
+function ouvrirSaisie(mode, client) {
   modeSaisie = mode;
+  clientRembourse = client || null;
   const M = MODES[mode];
   $("saisie").style.setProperty("--couleur-saisie", M.couleur);
-  $("saisie-titre").textContent = M.titre;
+  $("saisie-titre").textContent = M.titre + (client ? " de " + client.nom : "");
+  $("montant-etiquette").textContent = M.montant;
   $("note-etiquette").textContent = M.note;
   $("note").placeholder = M.exemple;
   $("montant").value = "";
+  $("donne").value = "";
+  $("client").value = "";
   $("note").value = "";
   $("erreur").hidden = true;
-  $("rapides").innerHTML = RAPIDES.map(function (v) {
+
+  let rapides = RAPIDES.map(function (v) {
     return '<button type="button" class="rapide" data-rapide="' + v + '">' + franc(v) + '</button>';
   }).join("");
+  if (client) rapides = '<button type="button" class="rapide rapide-tout" data-rapide="' + client.du + '">Tout : ' + franc(client.du) + '</button>' + rapides;
+  $("rapides").innerHTML = rapides;
+  $("rapides").classList.toggle("avec-tout", !!client);
+
+  $("bloc-paiement").hidden = !M.paiement;
+  choisirPaiement(mode === "credit");
+  $("message").hidden = true;
   $("fond-saisie").hidden = false;
   $("saisie").hidden = false;
+  $("saisie").scrollTop = 0;
   $("montant").focus();
 }
+
+function choisirPaiement(partiel) {
+  paiementPartiel = partiel;
+  document.querySelectorAll("[data-paiement]").forEach(function (b) {
+    b.setAttribute("aria-pressed", String((b.dataset.paiement === "partiel") === partiel));
+  });
+  const M = MODES[modeSaisie];
+  const avecClient = M.paiement && partiel;
+  $("bloc-donne").hidden = !avecClient;
+  $("bloc-client").hidden = !avecClient;
+  if (avecClient) afficherSuggestions();
+  majReste();
+}
+
+function majReste() {
+  const total = lireMontant($("montant").value);
+  const donne = lireMontant($("donne").value);
+  if (!total) { $("reste").textContent = ""; return; }
+  if (donne > total) { $("reste").textContent = "Il a donné plus que le prix."; return; }
+  $("reste").textContent = "Reste à crédit : " + franc(total - donne);
+}
+
+function afficherSuggestions() {
+  const tape = $("client").value.trim().toLowerCase();
+  const noms = nomsClients().filter(function (n) {
+    return n.toLowerCase() !== tape && (!tape || n.toLowerCase().indexOf(tape) !== -1);
+  }).slice(0, 6);
+  $("suggestions").innerHTML = noms.map(function (n) {
+    return '<button type="button" class="suggestion" data-nom="' + echapper(n) + '">' + echapper(n) + '</button>';
+  }).join("");
+}
+
 function fermerSaisie() {
   $("saisie").hidden = true;
   $("fond-saisie").hidden = true;
-  document.activeElement && document.activeElement.blur();
+  if (document.activeElement) document.activeElement.blur();
 }
 
-$("montant").addEventListener("input", function (e) {
+function formaterChamp(e) {
   const chiffres = e.target.value.replace(/\D/g, "").slice(0, 9);
   e.target.value = chiffres ? nombre(Number(chiffres)) : "";
   $("erreur").hidden = true;
+  majReste();
+}
+$("montant").addEventListener("input", formaterChamp);
+$("donne").addEventListener("input", formaterChamp);
+$("client").addEventListener("input", function () { $("erreur").hidden = true; afficherSuggestions(); });
+$("suggestions").addEventListener("click", function (e) {
+  const b = e.target.closest("[data-nom]");
+  if (!b) return;
+  $("client").value = b.dataset.nom;
+  afficherSuggestions();
 });
 $("rapides").addEventListener("click", function (e) {
   const b = e.target.closest("[data-rapide]");
   if (!b) return;
   $("montant").value = nombre(Number(b.dataset.rapide));
   $("erreur").hidden = true;
+  majReste();
+});
+$("bloc-paiement").addEventListener("click", function (e) {
+  const b = e.target.closest("[data-paiement]");
+  if (b) choisirPaiement(b.dataset.paiement === "partiel");
 });
 $("saisie-annuler").addEventListener("click", fermerSaisie);
 $("fond-saisie").addEventListener("click", fermerSaisie);
 
+function erreur(texte, champ) {
+  $("erreur").textContent = texte;
+  $("erreur").hidden = false;
+  if (champ) champ.focus();
+}
+
 $("saisie").addEventListener("submit", function (e) {
   e.preventDefault();
-  const montant = parseInt($("montant").value.replace(/\D/g, ""), 10);
-  if (!montant || montant <= 0) {
-    $("erreur").textContent = "Écris un montant, par exemple 1 500.";
-    $("erreur").hidden = false;
-    $("montant").focus();
-    return;
+  const montant = lireMontant($("montant").value);
+  if (!montant) return erreur("Écris un montant, par exemple 1 500.", $("montant"));
+
+  const M = MODES[modeSaisie];
+  const note = $("note").value.trim();
+  let mouvement, texte, joyeux = false;
+
+  if (M.paiement) {
+    let encaisse = montant, client = "";
+    if (paiementPartiel) {
+      encaisse = lireMontant($("donne").value);
+      client = $("client").value.trim().replace(/\s+/g, " ");
+      if (encaisse > montant) return erreur("Il a donné plus que le prix. Vérifie les montants.", $("donne"));
+      if (encaisse === montant) {
+        client = "";
+      } else if (!client) {
+        return erreur("Écris le nom du client pour savoir qui te doit.", $("client"));
+      }
+    }
+    mouvement = { id: nouvelId(), type: "vente", montant: montant, encaisse: encaisse, note: note, client: client, t: Date.now() };
+    donnees.mouvements.push(mouvement);
+    const reste = montant - encaisse;
+    if (reste > 0) {
+      const c = clientsQuiDoivent().find(function (x) { return x.cle === cleClient(client); });
+      texte = "Noté. " + client + " te doit maintenant " + franc(c ? c.du : reste) + ".";
+    } else {
+      texte = "Vente de " + franc(montant) + " notée.";
+      joyeux = true;
+    }
+  } else if (modeSaisie === "paye") {
+    const c = clientRembourse;
+    if (montant > c.du) return erreur(c.nom + " ne te doit que " + franc(c.du) + ".", $("montant"));
+    mouvement = { id: nouvelId(), type: "paye", montant: montant, encaisse: montant, note: note, client: c.nom, t: Date.now() };
+    donnees.mouvements.push(mouvement);
+    // Quand le client rembourse, sa promesse de paiement est effacée.
+    if (donnees.meta[c.cle]) donnees.meta[c.cle].promesse = "";
+    const reste = c.du - montant;
+    texte = reste > 0 ? "Merci ! " + c.nom + " doit encore " + franc(reste) + "." : c.nom + " a tout payé. Bravo !";
+    joyeux = true;
+  } else {
+    mouvement = { id: nouvelId(), type: modeSaisie, montant: montant, note: note, client: "", t: Date.now() };
+    donnees.mouvements.push(mouvement);
+    texte = NOMS[modeSaisie] + " de " + franc(montant) + " notée.";
   }
-  const mouvement = {
-    id: nouvelId(), type: modeSaisie, montant: montant,
-    note: $("note").value.trim(), client: "", t: Date.now()
-  };
-  donnees.mouvements.push(mouvement);
+
   sauver();
   fermerSaisie();
   afficher();
-  message(NOMS[modeSaisie] + " de " + franc(montant) + " notée.", null, modeSaisie === "vente");
+  message(texte, null, joyeux);
 });
 
 /* ---------- Retirer une ligne ---------- */
@@ -206,6 +446,25 @@ $("liste").addEventListener("click", function (e) {
   });
 });
 
+/* ---------- Onglets et crédits ---------- */
+
+$("onglets").addEventListener("click", function (e) {
+  const b = e.target.closest("[data-onglet]");
+  if (!b) return;
+  onglet = b.dataset.onglet;
+  afficher();
+  window.scrollTo(0, 0);
+});
+$("vue-credits").addEventListener("click", function (e) {
+  const cote = e.target.closest("[data-cote]");
+  if (cote) { coteCredits = cote.dataset.cote; afficherCredits(); return; }
+  const paye = e.target.closest("[data-paye]");
+  if (paye) {
+    const c = clientsQuiDoivent().find(function (x) { return x.cle === paye.dataset.paye; });
+    if (c) ouvrirSaisie("paye", c);
+  }
+});
+
 /* ---------- Démarrage ---------- */
 
 const dateTexte = new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
@@ -221,7 +480,7 @@ document.querySelectorAll("[data-saisie]").forEach(function (b) {
 });
 document.querySelectorAll("[data-bientot]").forEach(function (b) {
   b.addEventListener("click", function () {
-    message("Bientôt ! Ce bouton marchera dans une prochaine étape.");
+    message("Bientôt ! Ce bouton marchera à la prochaine étape.");
   });
 });
 

@@ -633,8 +633,11 @@
 <div class="saisie facture-apercu" id="facture-apercu" hidden style="--couleur-saisie: var(--vert-foret)">
   <h2 class="saisie-titre" id="facture-titre">Facture</h2>
   <img id="facture-image" alt="Aperçu de la facture">
+  <button type="button" class="bouton bouton-whatsapp" id="facture-envoyer" hidden>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.7z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1-1.5-2-1-1 1a4 4 0 0 1-2-2l1-1-1-2z"/></svg><span>Envoyer à <b id="facture-envoyer-nom"></b></span>
+  </button>
   <button type="button" class="bouton bouton-whatsapp" id="facture-partager">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.7z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1-1.5-2-1-1 1a4 4 0 0 1-2-2l1-1-1-2z"/></svg>Envoyer sur WhatsApp
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.7z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1-1.5-2-1-1 1a4 4 0 0 1-2-2l1-1-1-2z"/></svg><span id="facture-partager-texte">Envoyer sur WhatsApp</span>
   </button>
   <p class="aide" id="facture-aide">Choisis WhatsApp, puis le client.</p>
   <div class="saisie-boutons deux-egaux">

@@ -258,12 +258,21 @@ function ouvrirDocument(m) {
   const doc = m.type === "paye" ? documentRecu(m) : documentVente(m);
   $("facture-titre").textContent = (m.type === "paye" ? "Reçu " : "Facture ") + doc.numero;
   $("facture-image").removeAttribute("src");
-  $("facture-aide").textContent = donnees.boutique.nom
-    ? "Choisis WhatsApp, puis " + (doc.client || "le client") + "."
-    : "Astuce : ajoute le nom et le logo de ta boutique dans Réglages ⚙.";
+  // Envoi direct : seulement si on connaît le numéro du client.
+  const direct = !!(doc.telClient && doc.telClient.length >= 8);
+  $("facture-envoyer").hidden = !direct;
+  $("facture-envoyer-nom").textContent = doc.client || "";
+  $("facture-partager").classList.toggle("bouton-annuler", direct);
+  $("facture-partager").classList.toggle("bouton-whatsapp", !direct);
+  $("facture-partager-texte").textContent = direct ? tr("Partager l'image") : tr("Envoyer sur WhatsApp");
+  $("facture-aide").textContent = direct
+    ? "La conversation de " + doc.client + " s'ouvre directement, sans chercher dans tes contacts."
+    : doc.client
+      ? tr(doc.client + " n'a pas de numéro. Ajoute-le avec « Modifier » dans l'onglet Crédits pour envoyer en un geste.")
+      : "Cette vente n'a pas de client : choisis WhatsApp, puis la personne.";
   ouvrirFeuille("facture-apercu");
   dessinerDocument(doc).then(function (toile) {
-    documentEnCours = { toile: toile, nom: tr(m.type === "paye" ? "recu-" : "facture-") + doc.numero + ".png" };
+    documentEnCours = { toile: toile, doc: doc, nom: tr(m.type === "paye" ? "recu-" : "facture-") + doc.numero + ".png" };
     $("facture-image").src = toile.toDataURL("image/png");
   });
 }
@@ -302,7 +311,68 @@ function partagerDocument() {
   });
 }
 
+/* ---------- Envoi direct dans la conversation du client ---------- */
+
+// La facture écrite en texte : c'est elle qui part dans WhatsApp, car un lien
+// WhatsApp peut ouvrir la bonne conversation mais ne peut pas y coller une image.
+function factureEnTexte(doc) {
+  const b = donnees.boutique;
+  const lignes = [];
+  // L'anglais ne met pas d'espace avant les deux-points.
+  const sep = LANGUE === "en" ? ": " : " : ";
+  lignes.push(doc.titre + " " + doc.numero + (b.nom ? " · " + b.nom : ""));
+  if (doc.client) lignes.push(tr("Client") + sep + doc.client);
+  lignes.push("");
+  if (doc.lignes) {
+    doc.lignes.forEach(function (l) {
+      const qte = !l.unite || l.unite === "unite" ? String(l.qte).replace(".", ",") : qteTexte(l.qte, l.unite);
+      lignes.push("• " + tr(qte) + " " + l.nom + sep + franc(Math.round(l.prix * l.qte)));
+    });
+    lignes.push("");
+    lignes.push(tr("TOTAL") + sep + franc(doc.total));
+    if (doc.paye) lignes.push(tr("Déjà payé") + sep + franc(doc.paye));
+    if (doc.reste > 0) lignes.push(tr("Reste à payer") + sep + franc(doc.reste));
+  } else {
+    lignes.push(tr("Montant dû avant ce paiement") + sep + franc(doc.avant));
+    lignes.push(tr("Payé aujourd'hui") + sep + franc(doc.paye));
+    lignes.push(doc.reste > 0 ? tr("Reste à payer") + sep + franc(doc.reste) : tr("Tout est payé. Merci !"));
+  }
+  const paiement = lignesPaiement();
+  if (doc.reste > 0 && paiement.length) {
+    lignes.push("");
+    lignes.push(tr("Pour payer le reste :"));
+    paiement.forEach(function (p) { lignes.push("• " + p); });
+  }
+  if (b.merci) { lignes.push(""); lignes.push(b.merci); }
+  return lignes.join("\n");
+}
+
+// Copie l'image dans le presse-papier : dans la conversation, un appui long
+// sur la zone de texte permet de la coller. Tous les téléphones ne le savent pas faire.
+function copierImageDocument() {
+  if (!navigator.clipboard || !window.ClipboardItem || !documentEnCours) return Promise.resolve(false);
+  try {
+    const item = new ClipboardItem({
+      "image/png": new Promise(function (ok) { documentEnCours.toile.toBlob(ok, "image/png"); })
+    });
+    return navigator.clipboard.write([item]).then(function () { return true; }, function () { return false; });
+  } catch (e) { return Promise.resolve(false); }
+}
+
+function envoyerDocumentAuClient() {
+  if (!documentEnCours || !documentEnCours.doc) return;
+  const doc = documentEnCours.doc;
+  const lien = "https://wa.me/" + numeroWhatsApp(doc.telClient) + "?text=" + encodeURIComponent(factureEnTexte(doc));
+  copierImageDocument().then(function (copiee) {
+    window.open(lien, "_blank", "noopener");
+    message(copiee
+      ? "La conversation de " + doc.client + " s'ouvre. L'image est copiée : appuie longuement sur la zone de texte pour la coller."
+      : "La conversation de " + doc.client + " s'ouvre avec la facture écrite. Pour l'image, reviens et touche « Partager l'image ».", null, true);
+  });
+}
+
 function initFacture() {
+  $("facture-envoyer").addEventListener("click", envoyerDocumentAuClient);
   $("facture-partager").addEventListener("click", partagerDocument);
   $("facture-enregistrer").addEventListener("click", enregistrerDocument);
   $("facture-fermer").addEventListener("click", fermerFeuilles);

@@ -132,3 +132,24 @@ EN_MOTIFS.push(
   [/^Mon numéro Canari : (.+)$/, "My Canari number: $1"],
   [/^Boutique : (.+)$/, "Shop: $1"]
 );
+
+/* Envoi de la facture directement au client (voir facture.js) */
+Object.assign(EN, {
+  "Partager l'image": "Share the image",
+  "Client": "Customer",
+  "Envoyer à": "Send to",
+  "Déjà payé": "Already paid",
+  "Tout est payé. Merci !": "Everything is paid. Thank you!",
+  "Cette vente n'a pas de client : choisis WhatsApp, puis la personne.": "This sale has no customer: choose WhatsApp, then the person."
+});
+EN_MOTIFS.push(
+  [/^Envoyer à (.*)$/, "Send to $1"],
+  [/^(.+) n'a pas de numéro\. Ajoute-le avec « Modifier » dans l'onglet Crédits pour envoyer en un geste\.$/,
+    "$1 has no number. Add it with “Edit” in the Credits tab to send in one tap."],
+  [/^La conversation de (.+) s'ouvre directement, sans chercher dans tes contacts\.$/,
+    "$1's chat opens straight away, with no need to search your contacts."],
+  [/^La conversation de (.+) s'ouvre\. L'image est copiée : appuie longuement sur la zone de texte pour la coller\.$/,
+    "$1's chat is opening. The image is copied: press and hold the text box to paste it."],
+  [/^La conversation de (.+) s'ouvre avec la facture écrite\. Pour l'image, reviens et touche « Partager l'image »\.$/,
+    "$1's chat is opening with the written invoice. For the image, come back and tap “Share the image”."]
+);

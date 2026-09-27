@@ -63,6 +63,8 @@ Téléphone testé : ______________________  Version d'Android : ________  Date 
 37. ☐ Dans « Vente », appuie sur « Dire » : « six mille, il a donné deux mille », puis le nom et le numéro, puis « oui ». Canari répond à chaque fois.
 38. ☐ Le haut-parleur en haut de l'écran lit l'onglet affiché (Crédits, Relances, Bilan, Stock).
 39. ☐ Réglages → Voix → « Canari lit ses messages » : les messages du bas sont dits à voix haute.
+40. ☐ Note une vente à crédit pour un client avec numéro, ouvre la facture, touche « Envoyer à [nom] » : la conversation WhatsApp du client s'ouvre avec la facture écrite.
+41. ☐ Dans la conversation, appuie longuement sur la zone de texte : l'image de la facture doit pouvoir être collée.
 
 ---
 

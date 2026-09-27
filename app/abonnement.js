@@ -19,13 +19,17 @@ const FORMULES = [
   { id: "trimestre", nom: "3 mois", jours: 92, prix: 2500, detail: "Tu économises 500 F" },
   { id: "an", nom: "1 an", jours: 366, prix: 9000, detail: "3 mois offerts", conseil: true }
 ];
-// Comptes de Canari (le propriétaire) qui reçoivent les abonnements.
-// À remplir avec les vrais numéros avant le lancement.
+// Comptes de Canari (le propriétaire) qui reçoivent les abonnements, tous sur son
+// compte entreprise Djamo. À remplir avant le lancement.
 const RECEPTION = {
   whatsapp: "",   // numéro WhatsApp qui reçoit les demandes et envoie les codes
-  comptes: [      // { nom: "Wave", tel: "07…", lien: "https://pay.wave.com/…" }
-  ],
-  carte: ""       // lien de paiement par carte (agrégateur), plus tard
+  djamo: {
+    qr: "",       // image du QR code Djamo (ex. "icones/qr-djamo.png") : Djamo, Wave, Orange Money, MTN, Moov
+    lien: ""      // lien de paiement contenu dans le QR code, s'il y en a un
+  },
+  carte: "",      // lien de paiement par carte Visa
+  comptes: [      // autres comptes, facultatif : { nom: "Wave", tel: "07…", lien: "…" }
+  ]
 };
 // Clé publique de la page gerant.html (format JWK, courbe P-256). Elle ne permet
 // que de vérifier les codes, pas d'en fabriquer.
@@ -170,13 +174,22 @@ function ouvrirAbonnement(raison) {
       '<b>' + f.nom + '</b><span class="abo-prix">' + franc(f.prix) + '</span><small>' + f.detail + '</small></button>';
   }).join("");
   choisirFormule(formuleChoisie);
-  const comptes = RECEPTION.comptes.filter(function (c) { return c.tel || c.lien; });
-  $("abo-comptes").innerHTML = comptes.length ? comptes.map(function (c) {
-    return '<li><b>' + echapper(c.nom) + '</b> : ' + (c.tel ? echapper(afficherTel(c.tel)) : '') +
-      (c.lien ? ' <a href="' + echapper(c.lien) + '" target="_blank" rel="noopener">Payer par lien</a>' : '') + '</li>';
-  }).join("") : '<li>Les numéros de paiement arrivent bientôt.</li>';
+  // QR code Djamo : se scanne avec Djamo, Wave, Orange Money, MTN MoMo ou Moov Money.
+  const d = RECEPTION.djamo;
+  $("abo-djamo").hidden = !d.qr && !d.lien;
+  $("abo-qr-bloc").hidden = !d.qr;
+  if (d.qr) { $("abo-qr").src = d.qr; $("abo-qr-enregistrer").href = d.qr; }
+  $("abo-djamo-lien").hidden = !d.lien;
+  if (d.lien) $("abo-djamo-lien").href = d.lien;
   $("abo-carte").hidden = !RECEPTION.carte;
   if (RECEPTION.carte) $("abo-carte").href = RECEPTION.carte;
+  const comptes = RECEPTION.comptes.filter(function (c) { return c.tel || c.lien; });
+  $("abo-comptes").hidden = !comptes.length;
+  $("abo-comptes").innerHTML = comptes.map(function (c) {
+    return '<li><b>' + echapper(c.nom) + '</b> : ' + (c.tel ? echapper(afficherTel(c.tel)) : '') +
+      (c.lien ? ' <a href="' + echapper(c.lien) + '" target="_blank" rel="noopener">Payer par lien</a>' : '') + '</li>';
+  }).join("");
+  $("abo-bientot").hidden = !$("abo-djamo").hidden || !!RECEPTION.carte || comptes.length > 0;
   $("abo-demande").hidden = !RECEPTION.whatsapp;
   $("abo-code").value = "";
   $("abo-erreur").hidden = true;
@@ -193,7 +206,7 @@ function choisirFormule(id) {
   const texte = "Bonjour Canari, je veux l'abonnement " + f.nom + " (" + franc(f.prix) + ").\n" +
     "Mon numéro Canari : " + idAffiche(donnees.abonnement.id) + "\n" +
     (b.nom ? "Boutique : " + b.nom + "\n" : "") +
-    "J'ai payé par : ";
+    "J'ai payé par (QR Djamo, Wave, Orange Money, MTN, Moov ou carte Visa) : ";
   $("abo-demande").href = "https://wa.me/" + numeroWhatsApp(RECEPTION.whatsapp) + "?text=" + encodeURIComponent(texte);
 }
 function validerCode() {

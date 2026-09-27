@@ -44,7 +44,13 @@ Sécurité : le code est signé avec une **clé secrète** qui reste sur le tél
 
 Limites connues : quelqu'un de très habile peut remettre son essai à zéro en effaçant l'appli (il perd alors tous ses chiffres), ou partager sa sauvegarde avec une autre boutique. C'est acceptable au début.
 
-## Carte bancaire et paiement automatique (plus tard)
+## Moyens de paiement choisis par le propriétaire
+
+- **QR code Djamo** du compte entreprise : le client le scanne avec Djamo, Wave, Orange Money, MTN MoMo ou Moov Money. L'appli affiche le QR code, propose de l'enregistrer (on ne peut pas scanner l'écran de son propre téléphone : on scanne l'image depuis la galerie si l'appli de paiement le permet, ou avec un autre téléphone), et ouvre la page de paiement si le QR contient un lien.
+- **Carte Visa** : bouton « Payer par carte Visa » vers le lien de paiement par carte du compte Djamo (à fournir par le propriétaire).
+- Tout l'argent arrive sur le compte entreprise Djamo.
+
+## Paiement automatique (plus tard)
 
 Recevoir une carte bancaire, ou activer l'abonnement **tout seul** après un paiement mobile money, demande un **agrégateur de paiement** (des entreprises qui encaissent mobile money et cartes pour le compte d'un marchand et envoient une confirmation), plus un **petit serveur** qui reçoit cette confirmation et crée le code. Il faut une entreprise enregistrée (RCCM) et un contrat avec l'agrégateur.
 

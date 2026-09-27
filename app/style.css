@@ -1413,3 +1413,6 @@ input.qte {
 .abo-code { font-family: monospace; font-size: 14px; resize: vertical; word-break: break-all; }
 .lien-bouton { font: inherit; font-weight: 600; color: var(--vert-foret); background: none; border: 0; text-decoration: underline; min-height: 44px; padding: 0 6px; cursor: pointer; }
 .rappel-abonnement img { flex: none; }
+.abo-djamo, .abo-qr-bloc { display: flex; flex-direction: column; gap: 8px; }
+.abo-qr { align-self: center; width: 240px; height: 240px; max-width: 100%; object-fit: contain; background: #fff; border: 2px solid var(--bord); border-radius: 16px; padding: 8px; }
+a.bouton { text-decoration: none; }

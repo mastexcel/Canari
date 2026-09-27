@@ -228,6 +228,7 @@ Compte en ligne et synchronisation, plusieurs vendeurs par boutique, paiement mo
 6. Onglet Semaine et bilan du jour.
 6 bis. Paramètres (logo, nom), produits et prix, vente par produits, factures et reçus d'acompte en image sur WhatsApp, stock simple.
 7. Export des données, tests sur un vrai téléphone d'entrée de gamme.
+7 bis. **Test avec de vrais commerçants (en cours)** : guide de terrain prêt dans `docs/test-terrain.md` — 10 commerçants, 6 gestes à faire seul, questions de prix, fiche à remplir, seuils de décision. Sert à répondre à deux questions : l'appli est-elle comprise sans aide, et paieront-ils 1 000 F par mois ? Les résultats décident de la suite (corriger l'appli, ou ajuster le prix, ou lancer).
 8. Préparation pour le Play Store (icône, captures d'écran, description).
 
 À chaque étape : montrer le résultat, expliquer comment le tester, attendre l'avis du propriétaire avant de passer à la suite.

@@ -47,7 +47,7 @@ Limites connues : quelqu'un de très habile peut remettre son essai à zéro en 
 ## Moyens de paiement choisis par le propriétaire
 
 - **QR code Djamo** du compte entreprise : le client le scanne avec Djamo, Wave, Orange Money, MTN MoMo ou Moov Money. L'appli affiche le QR code, propose de l'enregistrer (on ne peut pas scanner l'écran de son propre téléphone : on scanne l'image depuis la galerie si l'appli de paiement le permet, ou avec un autre téléphone), et ouvre la page de paiement si le QR contient un lien.
-- **Carte Visa** : bouton « Payer par carte Visa » vers le lien de paiement par carte du compte Djamo (à fournir par le propriétaire).
+- **Carte Visa : pas disponible pour l'instant.** La page de paiement Djamo du propriétaire (`https://pay.djamo.com/hq91c`) ne propose que le mobile money. Le bouton reste caché dans l'appli. À demander à Djamo : « pouvez-vous m'activer un lien de paiement qui accepte les cartes Visa ? »
 - Tout l'argent arrive sur le compte entreprise Djamo.
 
 ## Paiement automatique (plus tard)

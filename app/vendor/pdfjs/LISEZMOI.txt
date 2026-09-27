@@ -1,0 +1,2 @@
+pdf.js 4.10.38 (Mozilla, licence Apache 2.0) : sert uniquement à lire un logo envoyé en PDF.
+Chargé à la demande, jamais au démarrage.

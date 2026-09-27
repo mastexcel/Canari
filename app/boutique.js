@@ -297,25 +297,95 @@ function afficherLogo() {
   $("logo-retirer").hidden = !logo;
 }
 
-// Réduit l'image choisie (300 px au plus) pour ne pas alourdir le téléphone.
+// Le logo peut être une image (photo, PNG, JPG…) ou un PDF (1re page).
+// Il est réduit à 300 px au plus pour ne pas alourdir le téléphone.
 function chargerLogo(fichier) {
-  const url = URL.createObjectURL(fichier);
-  const img = new Image();
-  img.onload = function () {
-    const cote = 300;
-    const echelle = Math.min(1, cote / Math.max(img.width, img.height));
+  const estPdf = fichier.type === "application/pdf" || /\.pdf$/i.test(fichier.name || "");
+  message(estPdf ? "Lecture du PDF…" : "Lecture de l'image…");
+  (estPdf ? pdfEnToile(fichier) : imageEnToile(fichier)).then(function (toile) {
+    enregistrerLogo(estPdf ? rogner(toile) : toile);
+  }).catch(function (err) {
+    if (err === "sans-internet") message("Pour lire un PDF la première fois, il faut internet. Réessaie avec internet, ou choisis une image.");
+    else message(estPdf ? "Ce PDF ne peut pas être lu. Essaie avec une image du logo." : "Cette image ne peut pas être lue.");
+  });
+}
+
+function imageEnToile(fichier) {
+  return new Promise(function (ok, ko) {
+    const url = URL.createObjectURL(fichier);
+    const img = new Image();
+    img.onload = function () {
+      const toile = document.createElement("canvas");
+      toile.width = img.width;
+      toile.height = img.height;
+      toile.getContext("2d").drawImage(img, 0, 0);
+      URL.revokeObjectURL(url);
+      ok(toile);
+    };
+    img.onerror = function () { URL.revokeObjectURL(url); ko(); };
+    img.src = url;
+  });
+}
+
+// Dessine la 1re page du PDF. pdf.js n'est chargé qu'à ce moment-là.
+function pdfEnToile(fichier) {
+  const lecteur = import("./vendor/pdfjs/pdf.min.mjs").catch(function () { throw "sans-internet"; });
+  return Promise.all([lecteur, fichier.arrayBuffer()]).then(function (r) {
+    const pdfjs = r[0];
+    pdfjs.GlobalWorkerOptions.workerSrc = "vendor/pdfjs/pdf.worker.min.mjs";
+    return pdfjs.getDocument({ data: new Uint8Array(r[1]), isEvalSupported: false }).promise;
+  }).then(function (pdf) {
+    return pdf.getPage(1);
+  }).then(function (page) {
+    const base = page.getViewport({ scale: 1 });
+    const echelle = Math.min(4, 1200 / Math.max(base.width, base.height));
+    const vue = page.getViewport({ scale: echelle });
     const toile = document.createElement("canvas");
-    toile.width = Math.round(img.width * echelle);
-    toile.height = Math.round(img.height * echelle);
-    toile.getContext("2d").drawImage(img, 0, 0, toile.width, toile.height);
-    URL.revokeObjectURL(url);
-    donnees.boutique.logo = toile.toDataURL("image/png");
-    sauver();
-    afficherLogo();
-    message("Logo enregistré.", null, true);
-  };
-  img.onerror = function () { URL.revokeObjectURL(url); message("Cette image ne peut pas être lue."); };
-  img.src = url;
+    toile.width = Math.ceil(vue.width);
+    toile.height = Math.ceil(vue.height);
+    return page.render({ canvasContext: toile.getContext("2d"), viewport: vue }).promise.then(function () { return toile; });
+  });
+}
+
+// Enlève les marges blanches ou transparentes autour du logo (un PDF est souvent une page entière).
+function rogner(toile) {
+  const ctx = toile.getContext("2d");
+  const l = toile.width, h = toile.height;
+  const px = ctx.getImageData(0, 0, l, h).data;
+  let haut = h, bas = -1, gauche = l, droite = -1;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < l; x++) {
+      const i = (y * l + x) * 4;
+      const vide = px[i + 3] < 20 || (px[i] > 245 && px[i + 1] > 245 && px[i + 2] > 245);
+      if (vide) continue;
+      if (y < haut) haut = y;
+      if (y > bas) bas = y;
+      if (x < gauche) gauche = x;
+      if (x > droite) droite = x;
+    }
+  }
+  if (bas < 0) return toile; // page vide : on garde tel quel
+  const marge = 8;
+  gauche = Math.max(0, gauche - marge); haut = Math.max(0, haut - marge);
+  droite = Math.min(l - 1, droite + marge); bas = Math.min(h - 1, bas + marge);
+  const r = document.createElement("canvas");
+  r.width = droite - gauche + 1;
+  r.height = bas - haut + 1;
+  r.getContext("2d").drawImage(toile, gauche, haut, r.width, r.height, 0, 0, r.width, r.height);
+  return r;
+}
+
+function enregistrerLogo(source) {
+  const cote = 300;
+  const echelle = Math.min(1, cote / Math.max(source.width, source.height));
+  const toile = document.createElement("canvas");
+  toile.width = Math.max(1, Math.round(source.width * echelle));
+  toile.height = Math.max(1, Math.round(source.height * echelle));
+  toile.getContext("2d").drawImage(source, 0, 0, toile.width, toile.height);
+  donnees.boutique.logo = toile.toDataURL("image/png");
+  sauver();
+  afficherLogo();
+  message("Logo enregistré. Il sera sur tes factures.", null, true);
 }
 
 function enregistrerBoutique(e) {

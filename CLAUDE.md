@@ -140,7 +140,7 @@ Calculs (remplacés par la décision « bénéfice » ci-dessous) : gain = encai
 
 ## Ajouts demandés par le propriétaire (faits, étape 6 bis)
 
-- **Paramètres de la boutique** : nom, logo, numéro, adresse (utilisés sur les factures).
+- **Paramètres de la boutique** : nom, logo (image ou PDF), numéro, adresse, **N° RCCM** (Registre du commerce) et **N° de DFE / compte contribuable (NCC)**, tous facultatifs. Demandés dès le questionnaire de départ (écran « Ta boutique »), modifiables dans Réglages, et imprimés sur les factures et reçus sous le nom de la boutique.
 - **Produits et services** avec leur prix.
 - **Saisie d'une vente au choix** : choisir des produits (total calculé, stock mis à jour, facture prête) OU taper juste un montant pour aller vite.
 - **Factures en image avec le logo**, partagées sur WhatsApp comme une photo : facture de vente, et **reçu d'acompte** à chaque paiement d'une partie d'un crédit (déjà payé, reste à payer).

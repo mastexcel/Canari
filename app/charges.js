@@ -236,7 +236,7 @@ function preremplirCharges(b) {
 function ouvrirParametrage(depart, retour) {
   const b = donnees.boutique;
   brouillon = {
-    nom: b.nom || "", tel: b.tel || "",
+    nom: b.nom || "", tel: b.tel || "", rccm: b.rccm || "", dfe: b.dfe || "",
     canaux: (b.canaux || []).slice(), activites: (b.activites || []).slice(),
     marge: margeHabituelle(), joursTravail: joursTravail(),
     charges: JSON.parse(JSON.stringify(donnees.charges || []))
@@ -252,6 +252,8 @@ function lireEtape() {
   if (nom === "boutique") {
     brouillon.nom = $("param-nom").value.trim().replace(/\s+/g, " ");
     brouillon.tel = normaliserTel($("param-tel").value);
+    brouillon.rccm = $("param-rccm").value.trim().toUpperCase();
+    brouillon.dfe = $("param-dfe").value.trim().toUpperCase();
   } else if (nom === "marge") {
     const m = parseInt($("param-marge").value.replace(/\D/g, ""), 10);
     if (!isNaN(m) && m < 100) brouillon.marge = m;
@@ -315,7 +317,18 @@ function afficherEtape() {
     html = '<label class="champ-etiquette" for="param-nom">Son nom</label>' +
       '<input id="param-nom" class="note" placeholder="ex. Boutique Awa" autocapitalize="words" value="' + echapper(b.nom) + '">' +
       '<label class="champ-etiquette" for="param-tel">Son téléphone</label>' +
-      '<input id="param-tel" class="note" type="tel" inputmode="tel" placeholder="ex. 07 00 00 00 00" value="' + (b.tel ? afficherTel(b.tel) : "") + '">';
+      '<input id="param-tel" class="note" type="tel" inputmode="tel" placeholder="ex. 07 00 00 00 00" value="' + (b.tel ? afficherTel(b.tel) : "") + '">' +
+      '<p class="champ-etiquette">Ton logo (image ou PDF, facultatif)</p>' +
+      '<div class="logo-boutique"><div class="logo-apercu" id="param-logo-apercu">' +
+        (donnees.boutique.logo ? '<img src="' + donnees.boutique.logo + '" alt="Logo de la boutique">' : '<span>Pas de logo</span>') + '</div>' +
+        '<label class="bouton bouton-annuler bouton-fichier">' +
+          '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM4 15l5-5 4 4 3-3 4 4"/></svg>Choisir un logo' +
+          '<input type="file" id="param-logo" accept="image/*,application/pdf,.pdf"></label></div>' +
+      '<p class="aide">Pour des factures officielles (facultatif) :</p>' +
+      '<label class="champ-etiquette" for="param-rccm">N° RCCM (Registre du commerce)</label>' +
+      '<input id="param-rccm" class="note" placeholder="ex. CI-ABJ-2024-A-12345" autocapitalize="characters" value="' + echapper(b.rccm) + '">' +
+      '<label class="champ-etiquette" for="param-dfe">N° de DFE / compte contribuable (NCC)</label>' +
+      '<input id="param-dfe" class="note" placeholder="ex. 2401234 A" autocapitalize="characters" value="' + echapper(b.dfe) + '">';
   } else if (nom === "canaux") {
     titre = "Comment vends-tu ?";
     html = '<p class="aide">Tu peux en choisir plusieurs.</p>' + choixMultiplesHtml(CANAUX, b.canaux, "data-canal");
@@ -382,6 +395,8 @@ function terminerParametrage() {
   const b = donnees.boutique;
   if (brouillon.nom) b.nom = brouillon.nom;
   if (brouillon.tel) b.tel = brouillon.tel;
+  b.rccm = brouillon.rccm;
+  b.dfe = brouillon.dfe;
   b.canaux = brouillon.canaux;
   b.activites = brouillon.activites;
   b.marge = brouillon.marge;
@@ -479,6 +494,12 @@ function initCharges() {
     }
   });
   $("param-contenu").addEventListener("change", function (e) {
+    if (e.target.id === "param-logo") {
+      const f = e.target.files && e.target.files[0];
+      if (f) chargerLogo(f);
+      e.target.value = "";
+      return;
+    }
     if (e.target.classList.contains("lc-mode")) {
       const li = e.target.closest(".ligne-charge");
       li.querySelector(".lc-frequence").hidden = e.target.value === "pourcent";

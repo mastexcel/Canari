@@ -569,6 +569,8 @@ function remplirFormBoutique() {
   $("boutique-nom").value = b.nom || "";
   $("boutique-tel").value = b.tel ? afficherTel(b.tel) : "";
   $("boutique-adresse").value = b.adresse || "";
+  $("boutique-rccm").value = b.rccm || "";
+  $("boutique-dfe").value = b.dfe || "";
   $("boutique-merci").value = b.merci || "";
   $("boutique-marge").value = String(margeHabituelle());
   afficherLogo();
@@ -577,6 +579,8 @@ function afficherLogo() {
   const logo = donnees.boutique.logo;
   $("logo-apercu").innerHTML = logo ? '<img src="' + logo + '" alt="Logo de la boutique">' : '<span>Pas de logo</span>';
   $("logo-retirer").hidden = !logo;
+  const param = document.getElementById("param-logo-apercu");
+  if (param) param.innerHTML = logo ? '<img src="' + logo + '" alt="Logo de la boutique">' : '<span>Pas de logo</span>';
 }
 
 // Le logo peut être une image (photo, PNG, JPG…) ou un PDF (1re page).
@@ -676,6 +680,8 @@ function enregistrerBoutique(e) {
   b.nom = $("boutique-nom").value.trim().replace(/\s+/g, " ");
   b.tel = normaliserTel($("boutique-tel").value);
   b.adresse = $("boutique-adresse").value.trim();
+  b.rccm = $("boutique-rccm").value.trim().toUpperCase();
+  b.dfe = $("boutique-dfe").value.trim().toUpperCase();
   b.merci = $("boutique-merci").value.trim();
   const marge = parseInt($("boutique-marge").value.replace(/\D/g, ""), 10);
   if (!isNaN(marge) && marge < 100) b.marge = marge;

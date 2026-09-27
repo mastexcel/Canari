@@ -122,6 +122,9 @@ function dessinerDocument(doc) {
         ctx.font = rubik(26);
         couper(ctx, b.adresse, L - xTexte - marge).forEach(function (l) { texte(l, xTexte, yt, rubik(26), C.doux); yt += 34; });
       }
+      // Numéros officiels de l'entreprise.
+      if (b.rccm) { texte("RCCM : " + b.rccm, xTexte, yt, rubik(22), C.doux); yt += 30; }
+      if (b.dfe) { texte("DFE / NCC : " + b.dfe, xTexte, yt, rubik(22), C.doux); yt += 30; }
       y = Math.max(yt, logo ? y + 140 : yt) + 18;
       trait(y, C.ligne, 3);
       y += 62;

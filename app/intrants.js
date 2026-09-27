@@ -253,7 +253,7 @@ function enregistrerIntrant(e) {
 
 function supprimerIntrant() {
   const i = intrantEnCours;
-  if (!i || !window.confirm("Supprimer « " + i.nom + " » de tes intrants ?\n\nLes recettes qui l'utilisent garderont leur ligne, sans stock.")) return;
+  if (!i || !window.confirm(tr("Supprimer « " + i.nom + " » de tes intrants ?") + "\n\n" + tr("Les recettes qui l'utilisent garderont leur ligne, sans stock."))) return;
   delete donnees.intrants[i.id];
   listeProduits().forEach(function (p) {
     if (p.fiche) p.fiche.lignes.forEach(function (l) { if (l.intrantId === i.id) delete l.intrantId; });

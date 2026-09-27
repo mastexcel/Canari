@@ -260,9 +260,9 @@ function initFiches() {
     const m = MODELES_FICHES[typeProduit][Number(b.dataset.modele)];
     lireFicheForm();
     const dejaRemplie = ficheEnCours.lignes.some(function (l) { return l.qte || l.prix; });
-    if (dejaRemplie && !window.confirm("Remplacer les lignes déjà tapées par le modèle « " + m.nom + " » ?")) return;
-    ficheEnCours.lignes = m.lignes.map(function (x) { return nouvelleLigneFiche(x[0], x[1]); });
-    if (!$("produit-nom").value.trim()) $("produit-nom").value = m.nom;
+    if (dejaRemplie && !window.confirm(tr("Remplacer les lignes déjà tapées par le modèle « " + m.nom + " » ?"))) return;
+    ficheEnCours.lignes = m.lignes.map(function (x) { return nouvelleLigneFiche(tr(x[0]), x[1]); });
+    if (!$("produit-nom").value.trim()) $("produit-nom").value = tr(m.nom);
     $("produit-unite").value = m.unite;
     afficherFicheForm();
     majUniteProduit();

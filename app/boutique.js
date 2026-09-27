@@ -313,7 +313,7 @@ function enregistrerProduit(e) {
 
 function supprimerProduit() {
   const p = produitEnCours;
-  if (!p || !window.confirm("Supprimer « " + p.nom + " » de tes produits ?\n\nLes ventes déjà notées ne changent pas.")) return;
+  if (!p || !window.confirm(tr("Supprimer « " + p.nom + " » de tes produits ?") + "\n\n" + tr("Les ventes déjà notées ne changent pas."))) return;
   delete donnees.produits[p.id];
   sauver();
   fermerFeuilles();

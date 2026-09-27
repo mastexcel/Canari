@@ -224,7 +224,7 @@ function nouvelleLigne(modele, type) {
 function preremplirCharges(b) {
   const noms = b.charges.map(function (l) { return l.nom.toLowerCase(); });
   const ajouter = function (modele, type) {
-    if (noms.indexOf(modele.nom.toLowerCase()) !== -1) return;
+    if (noms.indexOf(modele.nom.toLowerCase()) !== -1 || noms.indexOf(tr(modele.nom).toLowerCase()) !== -1) return;
     b.charges.push(nouvelleLigne(modele, type));
     noms.push(modele.nom.toLowerCase());
   };
@@ -278,7 +278,7 @@ function lireEtape() {
 function ligneChargeHtml(l, avecMode) {
   const pourcent = l.mode === "pourcent";
   return '<li class="ligne-charge" data-id="' + l.id + '">' +
-    '<div class="lc-haut"><input class="note lc-nom" value="' + echapper(l.nom) + '" aria-label="Nom">' +
+    '<div class="lc-haut"><input class="note lc-nom" value="' + echapper(tr(l.nom)) + '" aria-label="Nom">' +
     '<button type="button" class="retirer" data-retirer-charge="' + l.id + '" aria-label="Retirer cette ligne">' +
     '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>' +
     '<div class="lc-bas">' +

@@ -71,6 +71,9 @@ Téléphone testé : ______________________  Version d'Android : ________  Date 
 45. ☐ Bilan → **Tableau de bord** : les courbes s'affichent, chaque carte a un chiffre, une phrase et un conseil. Le haut-parleur en haut lit les trois gestes conseillés.
 46. ☐ Écran Jour → **Investissement** : note 120 000 F, « Congélateur », 5 ans. Canari doit dire « il te coûtera 66 F par jour ». L'argent sort de la caisse, mais le bénéfice ne baisse que de 66 F.
 47. ☐ Le matériel apparaît dans le tableau de bord avec sa barre d'usure, et une ligne « − Usure du matériel » apparaît dans le calcul du mois.
+48. ☐ Tableau de bord → **Semaine / Mois / Année** : tout l'écran suit le choix, et il est gardé quand tu reviens.
+49. ☐ Les deux camemberts s'affichent (d'où vient le chiffre d'affaires, où part l'argent), et le graphique « ce qui rentre et ce qui sort » montre deux barres par jour en Semaine et par mois en Année.
+50. ☐ Chaque carte a bien une phrase **et** un conseil, même quand tout va bien.
 
 ---
 

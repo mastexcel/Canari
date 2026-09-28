@@ -20,6 +20,82 @@
 const ANNEE = 365;
 const DUREES = [1, 2, 3, 5, 10]; // durées d'usage proposées, en années
 
+/* ---------- La période regardée (demande du propriétaire) ----------
+   Semaine = 7 jours détaillés, Mois = 30 jours détaillés, Année = 12
+   mois détaillés. Le choix vaut pour tout le tableau de bord et reste
+   gardé sur le téléphone. */
+const PERIODES = {
+  semaine: { nom: "Semaine", detail: "7 jours", jours: 7, avant: "aux 7 jours d'avant" },
+  mois: { nom: "Mois", detail: "30 jours", jours: 30, avant: "aux 30 jours d'avant" },
+  annee: { nom: "Année", detail: "12 mois", jours: 365, avant: "à l'année d'avant" }
+};
+const CLE_PERIODE = "canari.periodeTableau";
+// La valeur gardée sur le téléphone est lue au démarrage (initTableau) :
+// ce fichier se charge avant app.js, où vit lire().
+let periodeTableau = "mois";
+function periode() { return PERIODES[periodeTableau]; }
+
+// Combien de jours la période couvre. Pour l'année, on prend les 12 mois
+// civils entiers (du 1er du mois, il y a 11 mois, jusqu'à aujourd'hui) :
+// sinon le premier mois serait coupé en deux et la courbe mentirait.
+function joursDePeriode() {
+  if (periodeTableau !== "annee") return periode().jours;
+  const a = new Date();
+  const debut = new Date(a.getFullYear(), a.getMonth() - 11, 1, 12);
+  return Math.round((debutJour(a) - debutJour(debut)) / JOUR) + 1;
+}
+
+// Les jours d'une tranche : `nombre` jours qui se terminent il y a `decalage` jours.
+function joursEntre(decalage, nombre) {
+  const jours = [];
+  for (let i = nombre - 1 + decalage; i >= decalage; i--) {
+    const d = new Date();
+    d.setHours(12, 0, 0, 0);
+    d.setDate(d.getDate() - i);
+    const cle = cleJour(d);
+    jours.push({ date: d, cle: cle, totaux: totauxDuJour(cle), aujourdhui: i === 0 });
+  }
+  return jours;
+}
+
+// Les mêmes chiffres, mais regroupés par mois civil (pour l'année).
+function parMoisCivil(jours) {
+  const mois = [];
+  let courant = null;
+  jours.forEach(function (j) {
+    const cle = j.date.getFullYear() + "-" + j.date.getMonth();
+    if (!courant || courant.cle !== cle) {
+      courant = { cle: cle, date: j.date, jours: [], totaux: { vendu: 0, benefice: 0, encaisse: 0, sorti: 0, maison: 0 } };
+      mois.push(courant);
+    }
+    courant.jours.push(j);
+    ["vendu", "benefice", "encaisse", "sorti", "maison"].forEach(function (k) { courant.totaux[k] += j.totaux[k]; });
+  });
+  return mois;
+}
+
+// Les points à dessiner : un par jour, ou un par mois pour l'année.
+function pointsDe(jours) {
+  if (periodeTableau !== "annee") {
+    return jours.map(function (j) {
+      return {
+        nom: j.date.toLocaleDateString(LOCALE, { day: "numeric" }),
+        court: j.date.toLocaleDateString(LOCALE, { weekday: "narrow" }),
+        vendu: j.totaux.vendu, benefice: j.totaux.benefice,
+        recettes: j.totaux.encaisse, sorties: j.totaux.sorti + j.totaux.maison
+      };
+    });
+  }
+  return parMoisCivil(jours).map(function (m) {
+    const nom = m.date.toLocaleDateString(LOCALE, { month: "short" }).replace(".", "");
+    return {
+      nom: nom, court: nom.charAt(0).toUpperCase(),
+      vendu: m.totaux.vendu, benefice: m.totaux.benefice,
+      recettes: m.totaux.encaisse, sorties: m.totaux.sorti + m.totaux.maison
+    };
+  });
+}
+
 /* ---------- Les investissements ---------- */
 
 // Gardée en mémoire : elle est demandée pour chaque jour du bilan.
@@ -80,14 +156,16 @@ function valeurStock() {
 
 function totalDu(liste) { return liste.reduce(function (s, c) { return s + c.du; }, 0); }
 
-// Tous les indicateurs, calculés une fois puis gardés en mémoire.
-function indicateurs() { return memo("tableau", calculIndicateurs); }
+// Tous les indicateurs, calculés une fois par période puis gardés en mémoire.
+function indicateurs() { return memo("tableau-" + periodeTableau, calculIndicateurs); }
 
 function calculIndicateurs() {
-  const jours = derniersJours(30);
+  const P = periode();
+  const nbJours = joursDePeriode();
+  const jours = joursEntre(0, nbJours);
   const premier = donnees.mouvements.reduce(function (min, m) { return Math.min(min, m.t); }, Infinity);
-  const joursNotes = premier === Infinity ? 0 : Math.min(30, joursDepuis(premier) + 1);
-  const r = { jours: jours, joursNotes: joursNotes, vide: joursNotes === 0 };
+  const joursNotes = premier === Infinity ? 0 : Math.min(nbJours, joursDepuis(premier) + 1);
+  const r = { jours: jours, joursNotes: joursNotes, vide: joursNotes === 0, periode: P, points: pointsDe(jours) };
 
   const somme = function (liste, champ) {
     return liste.reduce(function (s, j) { return s + j.totaux[champ]; }, 0);
@@ -99,14 +177,20 @@ function calculIndicateurs() {
   r.aCredit = somme(jours, "aCredit");
   r.maison = somme(jours, "maison");
   r.joursVente = jours.filter(function (j) { return j.totaux.vendu > 0; }).length;
+  r.venteMoyenne = 0; // rempli plus bas
 
   /* --- Activité --- */
-  const sept = jours.slice(-7), septAvant = jours.slice(-14, -7);
-  const v1 = sept.reduce(function (s, j) { return s + j.totaux.vendu; }, 0);
-  const v0 = septAvant.reduce(function (s, j) { return s + j.totaux.vendu; }, 0);
-  r.ventes7 = v1;
-  r.tendance = v0 ? Math.round((v1 - v0) / v0 * 100) : null;
+  // La tendance compare la période affichée à la même durée juste avant.
+  const avant = joursEntre(nbJours, nbJours);
+  const v0 = avant.reduce(function (s, j) { return s + j.totaux.vendu; }, 0);
+  const joursVenteAvant = avant.filter(function (j) { return j.totaux.vendu > 0; }).length;
+  r.venduAvant = v0;
+  r.joursVenteAvant = joursVenteAvant;
   r.venteMoyenne = r.joursVente ? Math.round(r.vendu / r.joursVente) : 0;
+  // Pas de tendance tant que la période d'avant est trop vide : « + 611 % »
+  // parce qu'on vient d'installer l'appli n'apprend rien à personne.
+  r.tendance = v0 && joursVenteAvant >= Math.max(2, Math.round(r.joursVente / 2))
+    ? Math.round((r.vendu - v0) / v0 * 100) : null;
 
   let nbVentes = 0;
   jours.forEach(function (j) {
@@ -128,6 +212,37 @@ function calculIndicateurs() {
   r.semaine = parSemaine.map(function (v, i) { return compte[i] ? Math.round(v / compte[i]) : 0; });
   r.meilleurJour = r.semaine.indexOf(Math.max.apply(null, r.semaine));
   r.joursSansVente = Math.max(0, joursNotes - r.joursVente);
+
+  // Recettes et sorties d'argent : ce que le comparatif met face à face.
+  r.recettes = somme(jours, "encaisse");
+  r.sorties = somme(jours, "sorti") + r.maison;
+
+  // Camembert 1 : où part l'argent qui sort.
+  const postes = { marchandise: 0, charge: 0, impot: 0, autre: 0, maison: 0, invest: 0 };
+  jours.forEach(function (j) {
+    mouvementsDuJour(j.cle).forEach(function (m) {
+      if (m.type === "depense") {
+        const c = m.categorie === "marchandise" || estMarchandise(m) ? "marchandise"
+          : m.categorie === "charge" ? "charge" : m.categorie === "impot" ? "impot" : "autre";
+        postes[c] += m.montant;
+      } else if (m.type === "fpaye") postes.marchandise += m.montant;
+      else if (m.type === "fdette") postes.marchandise += m.verse || 0;
+      else if (m.type === "maison") postes.maison += m.montant;
+      else if (m.type === "invest") postes.invest += m.montant;
+    });
+  });
+  const NOMS_POSTES = {
+    marchandise: ["Achats de marchandise", "la marchandise"],
+    charge: ["Charges fixes", "tes charges fixes"],
+    impot: ["Impôts et taxes", "tes impôts et taxes"],
+    autre: ["Autres dépenses", "tes autres dépenses"],
+    maison: ["Pris pour la maison", "ce que tu prends pour la maison"],
+    invest: ["Investissements", "tes investissements"]
+  };
+  r.postes = Object.keys(postes).filter(function (k) { return postes[k] > 0; })
+    .map(function (k) { return { cle: k, nom: NOMS_POSTES[k][0], phrase: NOMS_POSTES[k][1], valeur: postes[k] }; })
+    .sort(function (a, b) { return b.valeur - a.valeur; });
+  r.totalSorties = r.postes.reduce(function (s, p) { return s + p.valeur; }, 0);
 
   /* --- Efficacité --- */
   r.tauxMarge = r.vendu ? Math.round(r.margeBrute / r.vendu * 100) : null;
@@ -164,15 +279,17 @@ function calculIndicateurs() {
   r.joursAuSeuil = r.seuil ? jours.filter(function (j) { return j.totaux.vendu >= r.seuil; }).length : null;
   r.beneficeParJour = r.joursVente ? Math.round(r.benefice / r.joursVente) : 0;
 
-  // Ce que chaque produit a rapporté sur 30 jours (prix de vente moins prix de revient).
+  // Ce que chaque produit a vendu et rapporté pendant la période.
   const parProduit = {};
+  let venduSansDetail = 0;
   jours.forEach(function (j) {
     mouvementsDuJour(j.cle).forEach(function (m) {
-      if (!m.lignes) return;
+      if (m.type !== "vente" && m.type !== "credit") return;
+      if (!m.lignes) { venduSansDetail += m.montant; return; }
       m.lignes.forEach(function (l) {
         const p = donnees.produits[l.produitId];
         if (!p) return;
-        const e = parProduit[l.produitId] || (parProduit[l.produitId] = { nom: p.nom, vendu: 0, marge: 0, qte: 0 });
+        const e = parProduit[l.produitId] || (parProduit[l.produitId] = { nom: p.nom, unite: uniteDe(p), vendu: 0, marge: 0, qte: 0 });
         e.vendu += l.prix * l.qte;
         e.marge += (l.prix - (l.cout || 0)) * l.qte;
         e.qte += l.qte;
@@ -182,6 +299,16 @@ function calculIndicateurs() {
   r.produits = Object.keys(parProduit).map(function (k) { return parProduit[k]; })
     .sort(function (a, b) { return b.marge - a.marge; });
   r.produitsPerte = r.produits.filter(function (p) { return p.marge <= 0; });
+  r.produitsCA = r.produits.slice().sort(function (a, b) { return b.vendu - a.vendu; });
+  r.produitsQte = r.produits.slice().sort(function (a, b) { return b.qte - a.qte; });
+  r.venduSansDetail = venduSansDetail;
+
+  // Camembert 2 : d'où vient le chiffre d'affaires (5 produits, puis « autres »).
+  const parts = r.produitsCA.slice(0, 5).map(function (p) { return { nom: p.nom, valeur: p.vendu }; });
+  const autres = r.produitsCA.slice(5).reduce(function (s, p) { return s + p.vendu; }, 0);
+  if (autres > 0) parts.push({ nom: "Autres produits", valeur: autres });
+  if (venduSansDetail > 0) parts.push({ nom: "Ventes au montant", valeur: venduSansDetail });
+  r.partsCA = parts;
 
   /* --- Investissement et trésorerie --- */
   r.caisse = caisseTotale();
@@ -233,15 +360,90 @@ function colonnesSvg(valeurs, meilleur) {
     }).join("") + '</svg>';
 }
 
-// Des barres couchées : les produits qui rapportent le plus.
-function barresProduits(items) {
-  const max = Math.max.apply(null, items.map(function (p) { return Math.abs(p.marge); }).concat([1]));
+// Des barres couchées : un classement de produits. `valeur` dit sur quoi
+// classer (bénéfice, chiffre d'affaires, quantité), `texte` comment l'écrire.
+function barresListe(items, valeur, texte) {
+  const max = Math.max.apply(null, items.map(function (p) { return Math.abs(valeur(p)); }).concat([1]));
   return '<ul class="barres-produits">' + items.map(function (p) {
-    const l = Math.max(4, Math.round(Math.abs(p.marge) / max * 100));
+    const v = valeur(p);
+    const l = Math.max(4, Math.round(Math.abs(v) / max * 100));
     return '<li><span class="bp-nom">' + echapper(p.nom) + '</span>' +
-      '<span class="bp-piste"><span class="bp-barre' + (p.marge <= 0 ? " perte" : "") + '" style="width:' + l + '%"></span></span>' +
-      '<span class="bp-valeur' + (p.marge < 0 ? " m-negatif" : "") + '">' + (p.marge < 0 ? "− " : "") + franc(Math.abs(p.marge)) + '</span></li>';
+      '<span class="bp-piste"><span class="bp-barre' + (v <= 0 ? " perte" : "") + '" style="width:' + l + '%"></span></span>' +
+      '<span class="bp-valeur' + (v < 0 ? " m-negatif" : "") + '">' + texte(p) + '</span></li>';
   }).join("") + '</ul>';
+}
+function barresProduits(items) {
+  return barresListe(items, function (p) { return p.marge; }, function (p) { return sommeF(p.marge); });
+}
+
+/* ---------- Les camemberts (demande du propriétaire) ---------- */
+
+// Sept teintes de la signature Canari : aucune couleur vive.
+const COULEURS_PART = ["var(--olive-600)", "var(--ocre-600)", "var(--dore)", "var(--olive-400)",
+  "var(--ocre-300)", "var(--maison-clair)", "var(--olive-200)"];
+
+// Un camembert : une part par poste, et la liste chiffrée en dessous.
+function camembertSvg(parts) {
+  const total = parts.reduce(function (s, p) { return s + p.valeur; }, 0);
+  if (!total) return "";
+  const C = 50, R = 46;
+  let debut = -Math.PI / 2;
+  const tranches = parts.length === 1
+    ? '<circle cx="' + C + '" cy="' + C + '" r="' + R + '" fill="' + COULEURS_PART[0] + '"/>'
+    : parts.map(function (p, i) {
+        const angle = p.valeur / total * Math.PI * 2;
+        const fin = debut + angle;
+        const x1 = (C + R * Math.cos(debut)).toFixed(2), y1 = (C + R * Math.sin(debut)).toFixed(2);
+        const x2 = (C + R * Math.cos(fin)).toFixed(2), y2 = (C + R * Math.sin(fin)).toFixed(2);
+        debut = fin;
+        return '<path d="M' + C + ' ' + C + ' L' + x1 + ' ' + y1 +
+          ' A' + R + ' ' + R + ' 0 ' + (angle > Math.PI ? 1 : 0) + ' 1 ' + x2 + ' ' + y2 + ' Z" fill="' +
+          COULEURS_PART[i % COULEURS_PART.length] + '"/>';
+      }).join("");
+  return '<div class="camembert">' +
+    '<svg class="camembert-dessin" viewBox="0 0 100 100" role="img" aria-hidden="true">' + tranches + '</svg>' +
+    '<ul class="camembert-legende">' + parts.map(function (p, i) {
+      return '<li><span class="cl-puce" style="background:' + COULEURS_PART[i % COULEURS_PART.length] + '"></span>' +
+        '<span class="cl-nom">' + echapper(p.nom) + '</span>' +
+        '<span class="cl-valeur">' + franc(p.valeur) + '</span>' +
+        '<span class="cl-part">' + Math.round(p.valeur / total * 100) + ' %</span></li>';
+    }).join("") + '</ul></div>';
+}
+
+/* ---------- Recettes contre dépenses (demande du propriétaire) ---------- */
+
+// Peu de points (7 jours, 12 mois) : deux barres côte à côte.
+// Beaucoup de points (30 jours) : deux courbes, plus lisibles.
+function comparatifSvg(points) {
+  const max = Math.max.apply(null, points.map(function (p) { return Math.max(p.recettes, p.sorties); }).concat([1]));
+  const L = 300, H = 110, bas = H - 16, haut = 8;
+  const y = function (v) { return (bas - v / max * (bas - haut)).toFixed(1); };
+  let dessin;
+  if (points.length <= 12) {
+    const pas = L / points.length, large = Math.max(4, Math.min(11, pas / 2.6));
+    dessin = points.map(function (p, i) {
+      const centre = i * pas + pas / 2;
+      const rect = function (v, classe, dx) {
+        const h = Math.max(1, bas - Number(y(v)));
+        return '<rect class="' + classe + '" x="' + (centre + dx).toFixed(1) + '" y="' + y(v) +
+          '" width="' + large.toFixed(1) + '" height="' + h.toFixed(1) + '" rx="2.5"/>';
+      };
+      return rect(p.recettes, "barre-recette", -large - 1.5) + rect(p.sorties, "barre-sortie", 1.5) +
+        '<text class="colonne-nom" x="' + centre.toFixed(1) + '" y="' + (H - 3) + '" text-anchor="middle">' + p.court + '</text>';
+    }).join("");
+  } else {
+    const x = function (i) { return (i / (points.length - 1) * L).toFixed(1); };
+    const trace = function (champ) {
+      return "M" + points.map(function (p, i) { return x(i) + " " + y(p[champ]); }).join(" L");
+    };
+    dessin = '<path class="graphe-zero" d="M0 ' + bas + ' L' + L + ' ' + bas + '"/>' +
+      '<path class="trait-recette" d="' + trace("recettes") + '"/>' +
+      '<path class="trait-sortie" d="' + trace("sorties") + '"/>';
+  }
+  return '<svg class="graphe graphe-comparatif" viewBox="0 0 ' + L + ' ' + H + '" role="img" aria-hidden="true">' +
+    dessin + '</svg>' +
+    '<p class="legende-comparatif"><span class="puce-recette"></span>ce qui rentre' +
+    '<span class="puce-sortie"></span>ce qui sort</p>';
 }
 
 /* ---------- L'affichage ---------- */
@@ -274,6 +476,16 @@ function virgule(n) { return String(n).replace(".", ","); }
 // « 1 jour », « 3 jours » : jamais de « jour(s) ».
 function pluriel(n, mot) { return n + " " + mot + (n > 1 ? "s" : ""); }
 
+// Les trois boutons Semaine · Mois · Année, en haut du tableau de bord.
+function choixPeriodeHtml() {
+  return '<div class="trois-choix periodes" role="group" aria-label="Période regardée">' +
+    Object.keys(PERIODES).map(function (k) {
+      return '<button type="button" class="choix" data-periode="' + k + '" aria-pressed="' +
+        (k === periodeTableau) + '">' + PERIODES[k].nom + '</button>';
+    }).join("") + '</div>' +
+    '<p class="aide periode-aide">' + periode().detail + ' détaillés.</p>';
+}
+
 function afficherTableau() {
   const r = indicateurs();
   if (r.vide) {
@@ -282,23 +494,38 @@ function afficherTableau() {
     return;
   }
 
-  const cartes = [];
+  const cartes = [choixPeriodeHtml()];
 
   /* ---------------- Activité ---------------- */
   const act = [];
   act.push(carteIndicateur({
-    nom: "Ventes des 30 derniers jours",
+    nom: "Ventes sur " + r.periode.detail,
     valeur: franc(r.vendu),
     verdict: r.tendance === null ? "neutre" : r.tendance >= 0 ? "bon" : r.tendance >= -15 ? "attention" : "alerte",
-    dessin: courbeSvg(r.jours.map(function (j) { return j.totaux.vendu; })),
+    dessin: courbeSvg(r.points.map(function (p) { return p.vendu; })),
     lecture: r.tendance === null
       ? "Tu as vendu en moyenne " + franc(r.venteMoyenne) + " par jour de vente."
-      : r.tendance >= 0
-        ? "Tes ventes montent de " + r.tendance + " % par rapport aux 7 jours d'avant."
-        : "Tes ventes baissent de " + Math.abs(r.tendance) + " % par rapport aux 7 jours d'avant.",
-    conseil: r.tendance !== null && r.tendance < -15
-      ? "Regarde ce qui a changé : un produit en rupture, un concurrent, la saison. Préviens tes bons clients que tu as de la marchandise."
-      : ""
+      : r.tendance > 100
+        ? "Tes ventes ont plus que doublé par rapport " + r.periode.avant + "."
+        : r.tendance >= 0
+          ? "Tes ventes montent de " + r.tendance + " % par rapport " + r.periode.avant + "."
+          : "Tes ventes baissent de " + Math.abs(r.tendance) + " % par rapport " + r.periode.avant + ".",
+    conseil: r.tendance === null ? "Note chaque vente, même petite : c'est cette courbe qui te dira si tu progresses."
+      : r.tendance < -15 ? "Regarde ce qui a changé : un produit en rupture, un concurrent, la saison. Préviens tes bons clients que tu as de la marchandise."
+      : r.tendance >= 15 ? "Ça monte : garde le stock de tes produits qui partent, c'est le pire moment pour en manquer."
+      : "Ça tient. Vise une hausse régulière plutôt qu'un gros coup."
+  }));
+  // Le comparatif demandé : ce qui rentre face à ce qui sort.
+  const ecart = r.recettes - r.sorties;
+  act.push(carteIndicateur({
+    nom: "Ce qui rentre et ce qui sort",
+    valeur: sommeF(ecart),
+    verdict: ecart > 0 ? "bon" : ecart === 0 ? "attention" : "alerte",
+    dessin: comparatifSvg(r.points),
+    lecture: "Il est rentré " + franc(r.recettes) + " et il est sorti " + franc(r.sorties) + ".",
+    conseil: ecart >= 0
+      ? "Ta caisse se remplit. Mets de côté une part de cet écart chaque semaine."
+      : "Il sort plus d'argent qu'il n'en rentre. Regarde le camembert des dépenses juste en dessous, et fais-toi payer tes crédits."
   }));
   act.push(carteIndicateur({
     nom: "Ton meilleur jour",
@@ -317,6 +544,42 @@ function afficherTableau() {
   }));
   cartes.push(famille("Activité", "Est-ce que ça bouge ?", act));
 
+  /* ---------------- D'où vient l'argent, et où il part ---------------- */
+  const rep = [];
+  if (r.partsCA.length) {
+    const premier = r.partsCA[0];
+    const partPremier = Math.round(premier.valeur / r.vendu * 100);
+    rep.push(carteIndicateur({
+      nom: "D'où vient ton chiffre d'affaires",
+      valeur: franc(r.vendu),
+      verdict: partPremier > 60 ? "attention" : "bon",
+      dessin: camembertSvg(r.partsCA),
+      lecture: premier.nom + " fait " + partPremier + " % de tes ventes.",
+      conseil: partPremier > 60
+        ? "Tout repose sur un seul produit : le jour où il manque, ta journée est perdue. Cherche un deuxième produit qui marche."
+        : "Tes ventes sont bien réparties : si un produit manque, la boutique tient quand même."
+    }));
+  }
+  if (r.postes.length) {
+    const gros = r.postes[0];
+    const partGros = Math.round(gros.valeur / r.totalSorties * 100);
+    rep.push(carteIndicateur({
+      nom: "Où part ton argent",
+      valeur: franc(r.totalSorties),
+      verdict: gros.cle === "marchandise" ? "bon" : gros.cle === "maison" ? "alerte" : "attention",
+      dessin: camembertSvg(r.postes),
+      lecture: "Ton plus gros poste, c'est " + gros.phrase + " : " + partGros + " % de ce qui sort.",
+      conseil: gros.cle === "marchandise"
+        ? "C'est normal : la marchandise se revend. Surveille surtout que tu ne l'achètes pas trop cher."
+        : gros.cle === "maison"
+          ? "Tu prends plus pour la maison que tu ne dépenses pour la boutique. Fixe-toi une somme fixe par semaine."
+          : gros.cle === "charge"
+            ? "Tes charges fixes pèsent lourd : vends plus, ou cherche à les faire baisser (loyer, électricité)."
+            : "Regarde ligne par ligne ce qui compose ce poste : c'est là qu'on trouve la dépense de trop."
+    }));
+  }
+  cartes.push(famille("Répartition", "D'où vient l'argent, et où il part ?", rep));
+
   /* ---------------- Efficacité ---------------- */
   const eff = [];
   if (r.tauxMarge !== null) {
@@ -327,7 +590,9 @@ function afficherTableau() {
       lecture: "Sur " + franc(1000) + " vendus, il te reste " + franc(Math.round(r.tauxMarge * 10)) + " avant tes autres frais.",
       conseil: r.tauxMarge < 15
         ? "C'est trop peu : tu travailles presque pour ton fournisseur. Monte tes prix ou achète moins cher, en plus grande quantité."
-        : ""
+        : r.tauxMarge < 30
+          ? "Ça peut monter : négocie tes achats en gros, ou ajoute des produits qui marchent mieux."
+          : "Bonne marge. Garde-la en achetant toujours au même bon prix."
     }));
   }
   if (r.partCredit !== null) {
@@ -340,7 +605,8 @@ function afficherTableau() {
       conseil: r.partCredit > 40
         ? "Trop de crédit étouffe la caisse. Fixe une limite par client et ne sers plus à crédit celui qui n'a pas réglé le précédent."
         : r.aRelancer ? (r.aRelancer === 1 ? "Tu as 1 client à relancer aujourd'hui. Va dans l'onglet Relances."
-          : "Tu as " + r.aRelancer + " clients à relancer aujourd'hui. Va dans l'onglet Relances.") : ""
+          : "Tu as " + r.aRelancer + " clients à relancer aujourd'hui. Va dans l'onglet Relances.")
+        : "Le crédit fait revenir les clients. Garde-le sous contrôle en notant chaque fois le numéro."
     }));
   }
   if (r.recouvrement !== null) {
@@ -351,7 +617,9 @@ function afficherTableau() {
       lecture: "Sur les crédits des 90 derniers jours, tu as déjà récupéré " + r.recouvrement + " %.",
       conseil: r.recouvrement < 50
         ? "Relance chaque semaine, le même jour. Un client relancé tôt paie beaucoup plus souvent qu'un client oublié."
-        : ""
+        : r.recouvrement < 80
+          ? "Pas mal. Fixe une date avec chaque client au moment du crédit : c'est ce qui fait payer."
+          : "Tes clients te paient bien. Continue à noter chaque remboursement le jour même."
     }));
   }
   if (r.joursDeStock !== null) {
@@ -362,7 +630,9 @@ function afficherTableau() {
       lecture: "Tu as " + franc(r.valeurStock) + " de marchandise : de quoi tenir " + r.joursDeStock + " jours.",
       conseil: r.joursDeStock > 30
         ? "C'est de l'argent qui dort. Achète plus souvent et en plus petite quantité, et brade ce qui ne part pas."
-        : ""
+        : r.joursDeStock > 15
+          ? "Correct. Surveille les produits qui restent longtemps : ce sont eux qui bloquent ton argent."
+          : "Ton stock tourne vite : ton argent travaille au lieu de dormir."
     }));
   }
   cartes.push(famille("Efficacité", "Est-ce que ça tourne bien ?", eff));
@@ -376,11 +646,13 @@ function afficherTableau() {
       verdict: r.tauxNet >= 15 ? "bon" : r.tauxNet >= 5 ? "attention" : "alerte",
       dessin: courbeSvg(r.jours.map(function (j) { return j.totaux.benefice; }), "graphe-benefice"),
       lecture: r.benefice >= 0
-        ? "Tu gagnes environ " + franc(r.beneficeParJour) + " par jour de vente, soit " + franc(r.benefice) + " sur 30 jours."
-        : "Tu perds environ " + franc(Math.abs(r.beneficeParJour)) + " par jour de vente, soit " + franc(Math.abs(r.benefice)) + " sur 30 jours.",
+        ? "Tu gagnes environ " + franc(r.beneficeParJour) + " par jour de vente, soit " + franc(r.benefice) + " au total."
+        : "Tu perds environ " + franc(Math.abs(r.beneficeParJour)) + " par jour de vente, soit " + franc(Math.abs(r.benefice)) + " au total.",
       conseil: r.tauxNet < 5
         ? "Ton bénéfice est trop mince. Regarde d'abord tes trois plus grosses dépenses, puis tes prix."
-        : ""
+        : r.tauxNet < 15
+          ? "Ça passe, mais sans marge de sécurité. Un mois creux et tu es dans le rouge."
+          : "Beau bénéfice. Garde une part de côté : c'est elle qui paiera ton prochain investissement."
     }));
   }
   if (r.seuil) {
@@ -389,7 +661,27 @@ function afficherTableau() {
       valeur: franc(r.seuil),
       verdict: r.joursAuSeuil >= r.joursVente * 0.8 ? "bon" : r.joursAuSeuil >= r.joursVente * 0.5 ? "attention" : "alerte",
       lecture: "Tu as dépassé ce seuil " + r.joursAuSeuil + " jours sur les " + r.joursNotes + " derniers.",
-      conseil: "En dessous de ce chiffre, ta journée ne paie même pas tes charges."
+      conseil: r.joursAuSeuil >= r.joursVente * 0.8
+        ? "Tu couvres tes charges presque tous les jours : c'est la base d'une boutique solide."
+        : "En dessous de ce chiffre, ta journée ne paie même pas tes charges. Vise-le dès le matin."
+    }));
+  }
+  if (r.produitsCA.length) {
+    pro.push(carteIndicateur({
+      nom: "Tes 5 plus gros chiffres d'affaires",
+      valeur: echapper(r.produitsCA[0].nom),
+      verdict: "neutre",
+      dessin: barresListe(r.produitsCA.slice(0, 5), function (p) { return p.vendu; }, function (p) { return franc(p.vendu); }),
+      lecture: "Ce que chaque produit t'a fait encaisser, avant le prix de revient.",
+      conseil: "Le plus gros chiffre d'affaires n'est pas toujours celui qui rapporte le plus : compare avec la carte du bénéfice."
+    }));
+    pro.push(carteIndicateur({
+      nom: "Tes 5 produits les plus vendus",
+      valeur: echapper(r.produitsQte[0].nom),
+      verdict: "neutre",
+      dessin: barresListe(r.produitsQte.slice(0, 5), function (p) { return p.qte; }, function (p) { return qteTexte(p.qte, p.unite); }),
+      lecture: "Ce qui sort le plus souvent de ta boutique, en quantité.",
+      conseil: "Ce sont eux qui font venir les clients : ne les laisse jamais manquer, même si tu gagnes peu dessus."
     }));
   }
   if (r.produits.length) {
@@ -428,7 +720,7 @@ function afficherTableau() {
       : "Pour l'instant, garde ton argent : tes dettes et tes charges passent avant.",
     conseil: r.capacite > 0
       ? "Avant d'acheter : combien ça me rapporte par jour ? En combien de jours c'est remboursé ?"
-      : ""
+      : "Fais-toi d'abord payer tes crédits et règle tes fournisseurs : c'est le premier investissement."
   }));
   cartes.push(famille("Investissement", "Qu'est-ce que tu peux construire ?", inv));
 
@@ -495,7 +787,17 @@ function strategieHtml(r) {
 /* ---------- Brancher les boutons ---------- */
 
 function initTableau() {
+  const gardee = lire(CLE_PERIODE);
+  if (PERIODES[gardee]) periodeTableau = gardee;
   $("vue-tableau").addEventListener("click", function (e) {
+    const p = e.target.closest("[data-periode]");
+    if (p) {
+      periodeTableau = p.dataset.periode;
+      ecrire(CLE_PERIODE, periodeTableau);
+      afficherTableau();
+      $("vue-tableau").scrollIntoView({ block: "start" });
+      return;
+    }
     if (e.target.closest("#noter-invest")) { ouvrirSaisie("invest"); return; }
     const sup = e.target.closest("[data-retirer-invest]");
     if (sup) {

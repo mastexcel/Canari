@@ -101,13 +101,120 @@ Object.assign(EN, {
   "Continue à tout noter : dans quelques jours, Canari pourra te conseiller.":
     "Keep recording everything: in a few days, Canari will be able to advise you.",
   "entièrement amorti": "fully written off",
-  "Voici ce que je ferais à ta place.": "Here is what I would do in your place."
+  "Voici ce que je ferais à ta place.": "Here is what I would do in your place.",
+
+  /* ---- La période regardée ---- */
+  "Semaine": "Week",
+  "Année": "Year",
+  "Période regardée": "Period shown",
+  "7 jours détaillés.": "7 days, day by day.",
+  "30 jours détaillés.": "30 days, day by day.",
+  "12 mois détaillés.": "12 months, month by month.",
+  "Ventes sur 7 jours": "Sales over 7 days",
+  "Ventes sur 30 jours": "Sales over 30 days",
+  "Ventes sur 12 mois": "Sales over 12 months",
+
+  /* ---- Ce qui rentre et ce qui sort ---- */
+  "Ce qui rentre et ce qui sort": "Money in and money out",
+  "ce qui rentre": "money in",
+  "ce qui sort": "money out",
+  "Ta caisse se remplit. Mets de côté une part de cet écart chaque semaine.":
+    "Your cash is building up. Put part of that gap aside every week.",
+  "Il sort plus d'argent qu'il n'en rentre. Regarde le camembert des dépenses juste en dessous, et fais-toi payer tes crédits.":
+    "More money leaves than comes in. Look at the spending pie just below, and get your credit paid back.",
+
+  /* ---- Les camemberts ---- */
+  "Répartition": "Breakdown",
+  "D'où vient l'argent, et où il part ?": "Where does the money come from, and where does it go?",
+  "D'où vient ton chiffre d'affaires": "Where your sales come from",
+  "Où part ton argent": "Where your money goes",
+  "Autres produits": "Other products",
+  "Ventes au montant": "Sales entered as an amount",
+  "Achats de marchandise": "Stock purchases",
+  "Charges fixes": "Fixed costs",
+  "Impôts et taxes": "Taxes",
+  "Autres dépenses": "Other expenses",
+  "Investissements": "Investments",
+  "Tout repose sur un seul produit : le jour où il manque, ta journée est perdue. Cherche un deuxième produit qui marche.":
+    "Everything rests on one product: the day it runs out, your day is lost. Find a second product that sells.",
+  "Tes ventes sont bien réparties : si un produit manque, la boutique tient quand même.":
+    "Your sales are well spread: if one product runs out, the shop still holds up.",
+  "C'est normal : la marchandise se revend. Surveille surtout que tu ne l'achètes pas trop cher.":
+    "That is normal: stock gets resold. Just watch that you are not buying it too dear.",
+  "Tu prends plus pour la maison que tu ne dépenses pour la boutique. Fixe-toi une somme fixe par semaine.":
+    "You take more for home than you spend on the shop. Set yourself a fixed amount each week.",
+  "Tes charges fixes pèsent lourd : vends plus, ou cherche à les faire baisser (loyer, électricité).":
+    "Your fixed costs weigh heavily: sell more, or try to bring them down (rent, electricity).",
+  "Regarde ligne par ligne ce qui compose ce poste : c'est là qu'on trouve la dépense de trop.":
+    "Go through this heading line by line: that is where you find the expense too many.",
+
+  /* ---- Les classements de produits ---- */
+  "Tes 5 plus gros chiffres d'affaires": "Your 5 biggest sellers by value",
+  "Tes 5 produits les plus vendus": "Your 5 most sold products",
+  "Ce que chaque produit t'a fait encaisser, avant le prix de revient.":
+    "What each product brought in, before the cost price.",
+  "Ce qui sort le plus souvent de ta boutique, en quantité.":
+    "What leaves your shop most often, by quantity.",
+  "Le plus gros chiffre d'affaires n'est pas toujours celui qui rapporte le plus : compare avec la carte du bénéfice.":
+    "The biggest seller by value is not always the one that earns the most: compare with the profit card.",
+  "Ce sont eux qui font venir les clients : ne les laisse jamais manquer, même si tu gagnes peu dessus.":
+    "These are what bring the customers in: never let them run out, even if you earn little on them.",
+
+  /* ---- Les conseils ajoutés sur chaque carte ---- */
+  "Note chaque vente, même petite : c'est cette courbe qui te dira si tu progresses.":
+    "Record every sale, even a small one: this curve is what will tell you if you are growing.",
+  "Ça monte : garde le stock de tes produits qui partent, c'est le pire moment pour en manquer.":
+    "It is going up: keep stock of the products that are moving, this is the worst time to run out.",
+  "Ça tient. Vise une hausse régulière plutôt qu'un gros coup.":
+    "It is holding. Aim for a steady rise rather than one big hit.",
+  "Ça peut monter : négocie tes achats en gros, ou ajoute des produits qui marchent mieux.":
+    "It can go up: negotiate your bulk buying, or add products that sell better.",
+  "Bonne marge. Garde-la en achetant toujours au même bon prix.":
+    "Good margin. Keep it by always buying at the same good price.",
+  "Le crédit fait revenir les clients. Garde-le sous contrôle en notant chaque fois le numéro.":
+    "Credit brings customers back. Keep it under control by recording the phone number every time.",
+  "Pas mal. Fixe une date avec chaque client au moment du crédit : c'est ce qui fait payer.":
+    "Not bad. Agree a date with each customer when you give credit: that is what gets you paid.",
+  "Tes clients te paient bien. Continue à noter chaque remboursement le jour même.":
+    "Your customers pay you well. Keep recording each repayment the same day.",
+  "Correct. Surveille les produits qui restent longtemps : ce sont eux qui bloquent ton argent.":
+    "Fine. Watch the products that sit for a long time: they are the ones locking up your money.",
+  "Ton stock tourne vite : ton argent travaille au lieu de dormir.":
+    "Your stock turns over fast: your money is working instead of sleeping.",
+  "Ça passe, mais sans marge de sécurité. Un mois creux et tu es dans le rouge.":
+    "It passes, but with no safety margin. One quiet month and you are in the red.",
+  "Beau bénéfice. Garde une part de côté : c'est elle qui paiera ton prochain investissement.":
+    "Fine profit. Keep a share aside: that is what will pay for your next investment.",
+  "Tu couvres tes charges presque tous les jours : c'est la base d'une boutique solide.":
+    "You cover your fixed costs nearly every day: that is the base of a solid shop.",
+  "En dessous de ce chiffre, ta journée ne paie même pas tes charges. Vise-le dès le matin.":
+    "Below this figure, your day does not even pay your fixed costs. Aim for it from the morning.",
+  "Fais-toi d'abord payer tes crédits et règle tes fournisseurs : c'est le premier investissement.":
+    "First get your credit paid back and settle your suppliers: that is the first investment."
 });
 
 EN_MOTIFS.push(
   /* ---- Activité ---- */
+  // La période d'avant change avec le choix Semaine · Mois · Année.
   [/^Tes ventes montent de (\d+) % par rapport aux 7 jours d'avant\.$/, "Your sales are up $1% compared with the 7 days before."],
   [/^Tes ventes baissent de (\d+) % par rapport aux 7 jours d'avant\.$/, "Your sales are down $1% compared with the 7 days before."],
+  [/^Tes ventes montent de (\d+) % par rapport aux 30 jours d'avant\.$/, "Your sales are up $1% compared with the 30 days before."],
+  [/^Tes ventes baissent de (\d+) % par rapport aux 30 jours d'avant\.$/, "Your sales are down $1% compared with the 30 days before."],
+  [/^Tes ventes montent de (\d+) % par rapport à l'année d'avant\.$/, "Your sales are up $1% compared with the year before."],
+  [/^Tes ventes baissent de (\d+) % par rapport à l'année d'avant\.$/, "Your sales are down $1% compared with the year before."],
+  [/^Tes ventes ont plus que doublé par rapport aux 7 jours d'avant\.$/, "Your sales have more than doubled compared with the 7 days before."],
+  [/^Tes ventes ont plus que doublé par rapport aux 30 jours d'avant\.$/, "Your sales have more than doubled compared with the 30 days before."],
+  [/^Tes ventes ont plus que doublé par rapport à l'année d'avant\.$/, "Your sales have more than doubled compared with the year before."],
+  /* ---- Ce qui rentre et ce qui sort ---- */
+  [/^Il est rentré (.+ F) et il est sorti (.+ F)\.$/, "$1 came in and $2 went out."],
+  /* ---- Les camemberts ---- */
+  [/^(.+) fait (\d+) % de tes ventes\.$/, "$1 makes up $2% of your sales."],
+  [/^Ton plus gros poste, c'est la marchandise : (\d+) % de ce qui sort\.$/, "Your biggest outgoing is stock: $1% of what leaves."],
+  [/^Ton plus gros poste, c'est tes charges fixes : (\d+) % de ce qui sort\.$/, "Your biggest outgoing is your fixed costs: $1% of what leaves."],
+  [/^Ton plus gros poste, c'est tes impôts et taxes : (\d+) % de ce qui sort\.$/, "Your biggest outgoing is your taxes: $1% of what leaves."],
+  [/^Ton plus gros poste, c'est tes autres dépenses : (\d+) % de ce qui sort\.$/, "Your biggest outgoing is your other expenses: $1% of what leaves."],
+  [/^Ton plus gros poste, c'est ce que tu prends pour la maison : (\d+) % de ce qui sort\.$/, "Your biggest outgoing is what you take for home: $1% of what leaves."],
+  [/^Ton plus gros poste, c'est tes investissements : (\d+) % de ce qui sort\.$/, "Your biggest outgoing is your investments: $1% of what leaves."],
   [/^Tu as vendu en moyenne (.+ F) par jour de vente\.$/, "You sold on average $1 per selling day."],
   [/^En moyenne (.+ F) ce jour-là\.$/, "On average $1 on that day."],
   [/^Environ ([\d,]+) ventes par jour\.$/, "About $1 sales a day."],
@@ -127,8 +234,8 @@ EN_MOTIFS.push(
   [/^Tu as (.+ F) de marchandise : de quoi tenir (\d+) jours\.$/, "You have $1 of stock: enough to last $2 days."],
   [/^(\d+) jours$/, "$1 days"],
   /* ---- Profitabilité ---- */
-  [/^Tu gagnes environ (.+ F) par jour de vente, soit (.+ F) sur 30 jours\.$/, "You earn about $1 per selling day, that is $2 over 30 days."],
-  [/^Tu perds environ (.+ F) par jour de vente, soit (.+ F) sur 30 jours\.$/, "You lose about $1 per selling day, that is $2 over 30 days."],
+  [/^Tu gagnes environ (.+ F) par jour de vente, soit (.+ F) au total\.$/, "You earn about $1 per selling day, that is $2 in all."],
+  [/^Tu perds environ (.+ F) par jour de vente, soit (.+ F) au total\.$/, "You lose about $1 per selling day, that is $2 in all."],
   [/^Tu as dépassé ce seuil (\d+) jours sur les (\d+) derniers\.$/, "You passed this point on $1 of the last $2 days."],
   [/^1 produit ne te rapporte rien, ou te fait perdre de l'argent\.$/, "1 product earns you nothing, or loses you money."],
   [/^(\d+) produits ne te rapportent rien, ou te font perdre de l'argent\.$/, "$1 products earn you nothing, or lose you money."],

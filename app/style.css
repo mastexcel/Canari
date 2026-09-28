@@ -2042,3 +2042,176 @@ body {
    ce qui empêcherait la traduction anglaise de la reconnaître. */
 .ligne-carte.negatif, .ligne-carte.negatif b, .vendu.negatif, p.aide.negatif { color: var(--sort-fonce); }
 .ligne-carte.negatif { box-shadow: inset 3px 0 0 var(--sort); }
+
+/* =====================================================================
+   TABLEAU DE BORD  (demande du propriétaire)
+   Quatre familles d'indicateurs, chacun avec son dessin, sa lecture et
+   son conseil. Les dessins sont des SVG faits maison : rien à charger.
+   Trois verdicts, toujours les mêmes couleurs : olive = ça va, ocre = à
+   surveiller, rouge = attention.
+   ===================================================================== */
+
+/* Le choix « 7 jours · Mois · Tableau de bord ». */
+.trois-choix {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.5fr;
+  gap: 6px;
+  background: var(--ivoire-2);
+  border: 1px solid var(--bord);
+  border-radius: 16px;
+  padding: 4px;
+}
+.trois-choix .choix { font-size: 15px; padding: 10px 4px; }
+
+/* Le troisième petit bouton de l'écran Jour. */
+/* Le troisième bouton prend toute la largeur : « Pris pour la maison » ne
+   tient pas sur trois colonnes à 360 px. */
+.secondaire.investissement {
+  grid-column: 1 / -1;
+  background: linear-gradient(160deg, #fff, var(--olive-100));
+  border-color: var(--olive-200);
+  color: var(--olive-800);
+}
+/* La ligne d'un investissement dans la journée : ardoise comme la maison,
+   ce n'est pas une perte, c'est de l'argent qui change de forme. */
+.t-invest .pastille { background: var(--maison-100); color: var(--maison-fonce); --icone: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222.6%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M4%2020V9m5%2011V4m5%2016v-7m5%207V7%22%2F%3E%3C%2Fsvg%3E"); }
+.t-invest .ligne-montant { color: var(--maison-fonce); }
+
+.famille { margin-top: 22px; }
+.famille-aide { margin: -6px 0 10px; }
+.indicateurs { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+
+.ind {
+  background: rgba(255, 255, 255, .96);
+  border: 1px solid var(--bord);
+  border-left: 4px solid var(--olive-200);
+  border-radius: var(--arrondi);
+  box-shadow: var(--ombre);
+  padding: 12px 14px;
+}
+.ind-haut { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.ind-nom { font-family: var(--titre); font-size: 16px; color: var(--olive-800); line-height: 1.2; }
+.ind-valeur {
+  font-family: var(--chiffres);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -.5px;
+  white-space: nowrap;
+  color: var(--olive-800);
+}
+.ind-lecture { margin: 8px 0 0; font-size: 15px; line-height: 1.45; color: var(--brun); }
+.ind-conseil {
+  margin: 8px 0 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--ivoire-2);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--texte-doux);
+}
+.ind-bon { border-left-color: var(--entre); }
+.ind-bon .ind-valeur { color: var(--entre-fonce); }
+.ind-attention { border-left-color: var(--credit-clair); }
+.ind-attention .ind-valeur { color: var(--credit-fonce); }
+.ind-alerte { border-left-color: var(--sort); }
+.ind-alerte .ind-valeur { color: var(--sort-fonce); }
+
+/* Les courbes. */
+.graphe { display: block; width: 100%; height: 92px; margin: 10px 0 2px; overflow: visible; }
+.graphe-fond { fill: var(--olive-100); opacity: .7; stroke: none; }
+.graphe-trait { fill: none; stroke: var(--entre); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.graphe-zero { fill: none; stroke: var(--bord); stroke-width: 1; stroke-dasharray: 3 4; vector-effect: non-scaling-stroke; }
+.graphe-point { fill: var(--entre); stroke: #fff; stroke-width: 2; }
+.ind-alerte .graphe-trait, .ind-alerte .graphe-point { stroke: var(--sort); }
+.ind-alerte .graphe-point { fill: var(--sort); stroke: #fff; }
+.ind-alerte .graphe-fond { fill: var(--sort-100); }
+
+/* Les sept colonnes de la semaine. */
+.graphe-colonnes { height: 100px; }
+.colonne { fill: var(--olive-200); }
+.colonne.forte { fill: var(--entre); }
+.colonne-nom { font-family: var(--texte); font-size: 13px; fill: var(--texte-doux); }
+
+/* Les produits qui rapportent. */
+.barres-produits { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+.barres-produits li { display: grid; grid-template-columns: 5.5em 1fr auto; align-items: center; gap: 8px; }
+.bp-nom { font-size: 14px; color: var(--texte-doux); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bp-piste { background: var(--ivoire-2); border-radius: 7px; height: 12px; }
+.bp-barre { display: block; height: 12px; border-radius: 7px; background: linear-gradient(90deg, var(--olive-400), var(--entre)); }
+.bp-barre.perte { background: linear-gradient(90deg, var(--sort-clair), var(--sort)); }
+.bp-valeur {
+  font-family: var(--chiffres);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--olive-800);
+  white-space: nowrap;
+}
+
+/* Le matériel. */
+.liste-invest { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.invest {
+  position: relative;
+  background: rgba(255, 255, 255, .96);
+  border: 1px solid var(--bord);
+  border-left: 4px solid var(--maison-clair);
+  border-radius: var(--arrondi);
+  box-shadow: var(--ombre);
+  padding: 12px 14px;
+}
+.invest-haut { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.invest-haut b { font-family: var(--titre); font-size: 16px; color: var(--olive-800); }
+.invest-haut span {
+  font-family: var(--chiffres);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-weight: 700;
+  color: var(--maison-fonce);
+  white-space: nowrap;
+}
+.invest-piste { display: block; background: var(--ivoire-2); border-radius: 6px; height: 10px; margin: 8px 0 6px; }
+.invest-barre { display: block; height: 10px; border-radius: 6px; background: linear-gradient(90deg, var(--maison-clair), var(--maison)); }
+.invest small { display: block; font-size: 13px; color: var(--texte-doux); line-height: 1.4; padding-right: 76px; }
+.invest .supprimer { position: absolute; right: 10px; bottom: 10px; }
+.bouton-invest { background: linear-gradient(160deg, #fff, var(--olive-100)); border: 1px solid var(--olive-200); color: var(--olive-800); box-shadow: var(--ombre); }
+
+/* Ce que je ferais à ta place. */
+.strategie { margin-top: 26px; }
+.actions-strategie { list-style: none; margin: 0; padding: 0; counter-reset: str; display: flex; flex-direction: column; gap: 10px; }
+.action-str {
+  counter-increment: str;
+  position: relative;
+  padding: 12px 14px 12px 46px;
+  border-radius: var(--arrondi);
+  border: 1px solid var(--bord);
+  background: rgba(255, 255, 255, .96);
+  box-shadow: var(--ombre);
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--brun);
+}
+.action-str::before {
+  content: counter(str);
+  position: absolute;
+  left: 12px;
+  top: 11px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: var(--chiffres);
+  font-weight: 700;
+  font-size: 14px;
+  color: #fff;
+  background: var(--olive-600);
+}
+.action-str.g3 { border-left: 4px solid var(--sort); }
+.action-str.g3::before { background: var(--sort); }
+.action-str.g2 { border-left: 4px solid var(--credit-clair); }
+.action-str.g2::before { background: var(--credit); }
+.action-str.g1 { border-left: 4px solid var(--entre-clair); }
+
+/* Les durées d'usage, dans la fenêtre de saisie. */
+.durees { grid-template-columns: repeat(5, 1fr); }
+.durees .choix { font-size: 15px; padding: 10px 2px; }

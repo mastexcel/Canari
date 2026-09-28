@@ -281,14 +281,16 @@ function calculTotauxDuJour(jour) {
     else if (m.type === "fpaye") sorti += m.montant;
     else if (m.type === "fdette") sorti += m.verse || 0;
     else if (m.type === "maison") maison += m.montant;
+    else if (m.type === "invest") sorti += m.montant; // sort de la caisse, mais pas du bénéfice du jour
   });
   const part = partDuJour(vendu);
+  const usure = usureDuJour(jour); // l'usure du matériel, étalée sur sa durée
   const margeBrute = vendu - cout;
   return {
     vendu: vendu, aCredit: aCredit, cout: cout, depenses: depenses,
-    margeBrute: margeBrute, partCharges: part.charges, partImpots: part.impots,
-    chargesEtTaxes: depenses + part.charges + part.impots,
-    benefice: margeBrute - depenses - part.charges - part.impots, // bénéfice net
+    margeBrute: margeBrute, partCharges: part.charges, partImpots: part.impots, usure: usure,
+    chargesEtTaxes: depenses + part.charges + part.impots + usure,
+    benefice: margeBrute - depenses - part.charges - part.impots - usure, // bénéfice net
     encaisse: encaisse, sorti: sorti, maison: maison,
     caisse: encaisse - sorti - maison
   };
@@ -420,7 +422,8 @@ function statutRelance(c) {
 
 const NOMS = {
   vente: "Vente", depense: "Dépense", credit: "Vente à crédit", paye: "Remboursement",
-  maison: "Pris pour la maison", fdette: "Dette fournisseur", fpaye: "Payé au fournisseur", stock: "Stock", intrant: "Intrant"
+  maison: "Pris pour la maison", fdette: "Dette fournisseur", fpaye: "Payé au fournisseur", stock: "Stock", intrant: "Intrant",
+  invest: "Investissement"
 };
 
 let onglet = "jour";
@@ -435,7 +438,11 @@ function afficher() {
   if (onglet === "jour") afficherJour();
   else if (onglet === "credits") afficherCredits();
   else if (onglet === "relances") afficherRelances();
-  else if (onglet === "semaine") { if ($("vue-mois").hidden) afficherSemaine(); else afficherMois(); }
+  else if (onglet === "semaine") {
+    if (!$("vue-tableau").hidden) afficherTableau();
+    else if ($("vue-mois").hidden) afficherSemaine();
+    else afficherMois();
+  }
   else if (onglet === "stock") afficherStock();
   document.querySelectorAll(".vue").forEach(function (v) { v.hidden = v.id !== "vue-" + onglet; });
   document.querySelectorAll("[data-onglet]").forEach(function (b) {
@@ -518,7 +525,7 @@ function ligneHtml(m) {
     montants = '<span class="m-stock">' + (m.quantite > 0 ? "+" : "−") + " " + qteTexte(Math.abs(m.quantite), uniteDe(donnees.produits[m.produitId])) + '</span>' +
       (m.qteAchat ? '<span class="m-stock petit">' + qteTexte(m.qteAchat, m.uniteAchat) + '</span>' : '');
   } else {
-    const signe = m.type === "paye" ? "+ " : (m.type === "depense" || m.type === "fpaye" || m.type === "maison") ? "− " : "";
+    const signe = m.type === "paye" ? "+ " : (m.type === "depense" || m.type === "fpaye" || m.type === "maison" || m.type === "invest") ? "−\u00a0" : "";
     montants = '<span>' + signe + franc(m.montant) + '</span>';
   }
   const RAISONS = { depart: "Stock de départ", arrivage: "Arrivage", correction: "Stock corrigé", production: "Fabriqué" };
@@ -875,7 +882,10 @@ const MODES = {
   paye: { titre: "Remboursement", couleur: "var(--entre)", montant: "Combien il te donne ?", note: "Note (facultatif)", exemple: "ex. paiement partiel" },
   maison: { titre: "Pris pour la maison", couleur: "var(--maison)", montant: "Combien ?", note: "Pour quoi ? (facultatif)", exemple: "ex. popote, école, transport" },
   fdette: { titre: "Dette fournisseur", couleur: "var(--credit)", montant: "Prix total de la marchandise", note: "Qu'as-tu pris ? (facultatif)", exemple: "ex. 10 cartons de lait", fournisseur: true, rapides: [5000, 10000, 25000, 50000] },
-  fpaye: { titre: "Paiement", couleur: "var(--sort)", montant: "Combien tu lui donnes ?", note: "Note (facultatif)", exemple: "ex. deuxième versement" }
+  fpaye: { titre: "Paiement", couleur: "var(--sort)", montant: "Combien tu lui donnes ?", note: "Note (facultatif)", exemple: "ex. deuxième versement" },
+  // Un investissement n'est pas une dépense du jour : l'argent sort une fois,
+  // le matériel sert des années. Voir tableau.js.
+  invest: { titre: "Investissement", couleur: "var(--maison)", montant: "Combien ça coûte ?", note: "Qu'as-tu acheté ?", exemple: "ex. congélateur, moto, machine", rapides: [25000, 50000, 100000, 250000] }
 };
 const RAPIDES = [500, 1000, 2000, 5000];
 let modeSaisie = "vente";
@@ -914,6 +924,8 @@ function ouvrirSaisie(mode, client) {
   $("cout-vente").value = "";
   $("cout-saisie").hidden = true;
   $("bloc-categorie").hidden = mode !== "depense";
+  $("bloc-duree").hidden = mode !== "invest";
+  if (mode === "invest") choisirDuree(3);
   if (mode === "depense") {
     const avecCharges = aDesCharges();
     document.querySelectorAll('[data-categorie="charge"], [data-categorie="impot"]').forEach(function (b) { b.hidden = !avecCharges; });
@@ -1223,12 +1235,15 @@ $("saisie").addEventListener("submit", function (e) {
     joyeux = true;
   } else {
     mouvement = { id: nouvelId(), type: modeSaisie, montant: montant, note: note, client: "", t: Date.now() };
+    if (modeSaisie === "invest") mouvement.duree = dureeChoisie;
     if (modeSaisie === "depense") {
       mouvement.categorie = categorieDepense;
       if ((categorieDepense === "charge" || categorieDepense === "impot") && chargeChoisie) mouvement.chargeId = chargeChoisie;
     }
     donnees.mouvements.push(mouvement);
-    texte = modeSaisie === "maison" ? franc(montant) + " pris pour la maison, c'est noté." : NOMS[modeSaisie] + " de " + franc(montant) + " notée.";
+    texte = modeSaisie === "maison" ? franc(montant) + " pris pour la maison, c'est noté."
+      : modeSaisie === "invest" ? "Investissement noté. Il te coûtera " + franc(Math.round(montant / (dureeChoisie * ANNEE))) + " par jour."
+      : NOMS[modeSaisie] + " de " + franc(montant) + " notée.";
   }
 
   moyenPour(mouvement); // espèces, Wave, Orange Money…
@@ -1682,6 +1697,7 @@ chargerDonnees().then(function (d) {
   initDevise();
   initPaiements();
   initCharges();
+  initTableau();
   initFiches();
   initIntrants();
   initBoutique();

@@ -68,6 +68,9 @@ Téléphone testé : ______________________  Version d'Android : ________  Date 
 42. ☐ Réglages → Mon abonnement → choisis une formule → « Envoyer ta demande » : le message part et se termine par « Lien pour Canari : » suivi d'un lien.
 43. ☐ Sur ton téléphone de propriétaire, touche ce lien : `gerant.html` s'ouvre avec le bandeau « Demande reçue… », le numéro Canari, la formule et le numéro du client déjà remplis. Touche « Créer le code » puis « Envoyer sur WhatsApp » : le code part dans la conversation du client.
 44. ☐ Note une grosse dépense pour être en perte sur la journée : le bénéfice net, l'argent en caisse, le bilan du jour, les jours perdants de la semaine et les lignes « − … » du calcul du mois doivent être **en rouge**, et rester lisibles au soleil.
+45. ☐ Bilan → **Tableau de bord** : les courbes s'affichent, chaque carte a un chiffre, une phrase et un conseil. Le haut-parleur en haut lit les trois gestes conseillés.
+46. ☐ Écran Jour → **Investissement** : note 120 000 F, « Congélateur », 5 ans. Canari doit dire « il te coûtera 66 F par jour ». L'argent sort de la caisse, mais le bénéfice ne baisse que de 66 F.
+47. ☐ Le matériel apparaît dans le tableau de bord avec sa barre d'usure, et une ligne « − Usure du matériel » apparaît dans le calcul du mois.
 
 ---
 

@@ -105,10 +105,10 @@ function bilanDuMois(annee, mois) {
   const enCours = annee === aujourdhui.getFullYear() && mois === aujourdhui.getMonth();
   const joursDuMois = new Date(annee, mois + 1, 0).getDate();
   const dernierJour = enCours ? aujourdhui.getDate() : joursDuMois;
-  const t = { vendu: 0, aCredit: 0, cout: 0, depenses: 0, maison: 0, encaisse: 0, sorti: 0, joursVente: 0 };
+  const t = { vendu: 0, aCredit: 0, cout: 0, depenses: 0, maison: 0, encaisse: 0, sorti: 0, usure: 0, joursVente: 0 };
   for (let j = 1; j <= dernierJour; j++) {
     const d = totauxDuJour(cleJour(new Date(annee, mois, j, 12)));
-    ["vendu", "aCredit", "cout", "depenses", "maison", "encaisse", "sorti"].forEach(function (k) { t[k] += d[k]; });
+    ["vendu", "aCredit", "cout", "depenses", "maison", "encaisse", "sorti", "usure"].forEach(function (k) { t[k] += d[k]; });
     if (d.vendu) t.joursVente++;
   }
   // Charges fixes : la partie du mois écoulée, comptée à partir du premier jour
@@ -124,7 +124,7 @@ function bilanDuMois(annee, mois) {
   t.chargesFixes = Math.round(fixeMensuel("charge") * fraction + t.vendu * tauxVentes("charge") / 100);
   t.impots = Math.round(fixeMensuel("impot") * fraction + t.vendu * tauxVentes("impot") / 100);
   t.margeBrute = t.vendu - t.cout;
-  t.avantImpots = t.margeBrute - t.depenses - t.chargesFixes;
+  t.avantImpots = t.margeBrute - t.depenses - t.chargesFixes - t.usure;
   t.net = t.avantImpots - t.impots;
 
   // Ce qui a déjà été payé pour chaque charge prévue ce mois-ci.
@@ -181,6 +181,7 @@ function afficherMois() {
       ligne("= Marge brute" + pct(t.margeBrute), signe(t.margeBrute), "total" + (t.margeBrute < 0 ? " negatif" : "")) +
       ligne("− Autres dépenses", moins(t.depenses), "moins" + (t.depenses ? "" : " zero")) +
       ligne("− Charges fixes" + (t.enCours && t.chargesFixes ? " (jusqu'à aujourd'hui)" : ""), moins(t.chargesFixes), "moins" + (t.chargesFixes ? "" : " zero")) +
+      (t.usure ? ligne("− Usure du matériel", moins(t.usure), "moins") : "") +
       ligne("= Résultat avant impôts", signe(t.avantImpots), "total" + (t.avantImpots < 0 ? " negatif" : "")) +
       ligne("− Impôts et taxes", moins(t.impots), "moins" + (t.impots ? "" : " zero")) +
       ligne("= Bénéfice net" + (t.net > 0 ? pct(t.net) : ""), signe(t.net), "total net" + (t.net < 0 ? " perte negatif" : "")) +
@@ -519,11 +520,14 @@ function initCharges() {
   $("vue-semaine").addEventListener("click", function (e) {
     const vue = e.target.closest("[data-bilan]");
     if (vue) {
-      const mois = vue.dataset.bilan === "mois";
-      document.querySelectorAll("[data-bilan]").forEach(function (b) { b.setAttribute("aria-pressed", String((b.dataset.bilan === "mois") === mois)); });
-      $("vue-mois").hidden = !mois;
-      $("vue-7jours").hidden = mois;
-      if (mois) afficherMois(); else afficherSemaine();
+      const quoi = vue.dataset.bilan;
+      document.querySelectorAll("[data-bilan]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.bilan === quoi)); });
+      $("vue-7jours").hidden = quoi !== "semaine";
+      $("vue-mois").hidden = quoi !== "mois";
+      $("vue-tableau").hidden = quoi !== "tableau";
+      if (quoi === "mois") afficherMois();
+      else if (quoi === "tableau") afficherTableau();
+      else afficherSemaine();
       return;
     }
     const nav = e.target.closest("[data-mois]");

@@ -305,6 +305,12 @@ function resumeEcran() {
       urgents.slice(0, 5).map(function (c) { return c.nom; }).join(", ") + ".";
   }
   if (onglet === "semaine") {
+    // Le tableau de bord : Canari lit les trois gestes conseillés, c'est le plus utile à entendre.
+    if (!$("vue-tableau").hidden) {
+      const gestes = [].slice.call(document.querySelectorAll(".action-str"))
+        .map(function (e) { return e.textContent; });
+      return gestes.length ? tr("Voici ce que je ferais à ta place.") + " " + gestes.join(" ") : "";
+    }
     if (!$("vue-mois").hidden) {
       const carte = $("vue-mois").querySelector(".carte-gain");
       return carte ? carte.textContent.replace(/\s+/g, " ").trim() : "";

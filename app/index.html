@@ -101,6 +101,9 @@
       <button class="bouton secondaire fournisseur" type="button" data-saisie="fdette">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.5"/><circle cx="17" cy="17.5" r="1.5"/></svg>Dette fournisseur
       </button>
+      <button class="bouton secondaire investissement" type="button" data-saisie="invest">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V9m5 11V4m5 16v-7m5 7V7"/></svg>Investissement
+      </button>
     </div>
 
 
@@ -136,12 +139,14 @@
 
   <!-- Onglet Semaine -->
   <div id="vue-semaine" class="vue" hidden>
-    <div class="deux-choix" role="group" aria-label="Période du bilan">
-      <button type="button" class="choix" data-bilan="semaine" aria-pressed="true">7 derniers jours</button>
+    <div class="trois-choix" role="group" aria-label="Période du bilan">
+      <button type="button" class="choix" data-bilan="semaine" aria-pressed="true">7 jours</button>
       <button type="button" class="choix" data-bilan="mois" aria-pressed="false">Mois</button>
+      <button type="button" class="choix" data-bilan="tableau" aria-pressed="false">Tableau de bord</button>
     </div>
     <div id="vue-7jours"></div>
     <div id="vue-mois" hidden></div>
+    <div id="vue-tableau" hidden></div>
   </div>
 
   <!-- Onglet Stock -->
@@ -390,6 +395,18 @@
       <p class="champ-etiquette">Laquelle ?</p>
       <div class="suggestions" id="choix-charge-payee"></div>
     </div>
+  </div>
+
+  <div id="bloc-duree" hidden>
+    <p class="champ-etiquette">Ça va te servir combien de temps ?</p>
+    <div class="quatre-choix durees" role="group" aria-label="Durée d'usage">
+      <button type="button" class="choix" data-duree="1" aria-pressed="false">1 an</button>
+      <button type="button" class="choix" data-duree="2" aria-pressed="false">2 ans</button>
+      <button type="button" class="choix" data-duree="3" aria-pressed="true">3 ans</button>
+      <button type="button" class="choix" data-duree="5" aria-pressed="false">5 ans</button>
+      <button type="button" class="choix" data-duree="10" aria-pressed="false">10 ans</button>
+    </div>
+    <p class="aide" id="duree-aide"></p>
   </div>
 
   <div id="bloc-paiement" class="deux-choix" role="group" aria-label="Le client a-t-il tout payé ?">
@@ -790,9 +807,11 @@
 <script src="langues/en-principal.js"></script>
 <script src="langues/en-boutique.js"></script>
 <script src="langues/en-extras.js"></script>
+<script src="langues/en-tableau.js"></script>
 <script src="voix.js"></script>
 <script src="paiements.js"></script>
 <script src="charges.js"></script>
+<script src="tableau.js"></script>
 <script src="fiches.js"></script>
 <script src="intrants.js"></script>
 <script src="boutique.js"></script>

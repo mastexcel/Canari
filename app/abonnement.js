@@ -68,14 +68,18 @@ function completerAbonnement() {
   let a = donnees.abonnement;
   if (!a || !a.id) {
     const premier = donnees.mouvements.reduce(function (min, m) { return Math.min(min, m.t || min); }, Date.now());
-    a = donnees.abonnement = { id: nouvelIdCanari(), debut: premier, fin: 0, codes: [] };
+    a = donnees.abonnement = { id: nouvelIdCanari(), debut: premier, fin: 0, codes: [], conseil: 0, essaisConseil: 0 };
   }
   if (!a.codes) a.codes = [];
+  if (!a.conseil) a.conseil = 0;              // fin de l'option Conseil
+  if (!a.essaisConseil) a.essaisConseil = 0;  // questions déjà offertes
   let miroir = null;
   try { miroir = JSON.parse(lire(CLE_MIROIR_ABONNEMENT)); } catch (e) { miroir = null; }
   if (miroir && miroir.id === a.id) {
     a.debut = Math.min(a.debut, miroir.debut || a.debut);
     a.fin = Math.max(a.fin || 0, miroir.fin || 0);
+    a.conseil = Math.max(a.conseil || 0, miroir.conseil || 0);
+    a.essaisConseil = Math.max(a.essaisConseil || 0, miroir.essaisConseil || 0);
     (miroir.codes || []).forEach(function (c) { if (a.codes.indexOf(c) === -1) a.codes.push(c); });
     a.vu = Math.max(a.vu || 0, miroir.vu || 0);
   }
@@ -89,7 +93,8 @@ function garderAbonnement(avant) {
 }
 function garderMiroir() {
   const a = donnees.abonnement;
-  ecrire(CLE_MIROIR_ABONNEMENT, JSON.stringify({ id: a.id, debut: a.debut, fin: a.fin, codes: a.codes, vu: a.vu }));
+  ecrire(CLE_MIROIR_ABONNEMENT, JSON.stringify({ id: a.id, debut: a.debut, fin: a.fin, codes: a.codes, vu: a.vu,
+    conseil: a.conseil, essaisConseil: a.essaisConseil }));
 }
 
 // L'heure du téléphone, sans pouvoir revenir en arrière pour allonger l'essai.
@@ -132,6 +137,8 @@ function idAffiche(id) { return id.slice(0, 4) + "-" + id.slice(4); }
 /* ---------- Codes d'activation ---------- */
 
 // Code : NUMEROCANARI.JOURS.EMISSION.SIGNATURE (signature ECDSA P-256 en base64url).
+// Un « C » devant les jours (…​.C92.…) veut dire : option Conseil, pas abonnement.
+// Les anciens codes, sans lettre, marchent toujours.
 function base64urlVersOctets(texte) {
   const b = atob(texte.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((texte.length + 3) % 4));
   const o = new Uint8Array(b.length);
@@ -141,9 +148,11 @@ function base64urlVersOctets(texte) {
 function lireCode(texte) {
   // On accepte le code seul, le lien entier, avec espaces ou retours à la ligne.
   const brut = String(texte || "").replace(/\s+/g, "");
-  const m = brut.match(/([A-Z2-9]{8})\.(\d{1,4})\.([a-z0-9]{4,12})\.([A-Za-z0-9_-]{80,90})/);
+  const m = brut.match(/([A-Z2-9]{8})\.(C?\d{1,4})\.([a-z0-9]{4,12})\.([A-Za-z0-9_-]{80,90})/);
   if (!m) return null;
-  return { id: m[1], jours: Number(m[2]), emis: m[3], signature: m[4], charge: m[1] + "." + m[2] + "." + m[3] };
+  const conseil = m[2].charAt(0) === "C";
+  return { id: m[1], jours: Number(conseil ? m[2].slice(1) : m[2]), conseil: conseil,
+    emis: m[3], signature: m[4], charge: m[1] + "." + m[2] + "." + m[3] };
 }
 function verifierSignature(code) {
   if (!CLE_PUBLIQUE || !window.crypto || !crypto.subtle) return Promise.resolve(false);
@@ -152,6 +161,15 @@ function verifierSignature(code) {
       return crypto.subtle.verify({ name: "ECDSA", hash: "SHA-256" }, cle,
         base64urlVersOctets(code.signature), new TextEncoder().encode(code.charge));
     }).catch(function () { return false; });
+}
+
+// Ce qu'on dit après un code accepté : abonnement, ou option Conseil.
+function texteApresCode(texte) {
+  const code = lireCode(texte);
+  if (code && code.conseil) {
+    return "Option Conseil active jusqu'au " + dateFin(donnees.abonnement.conseil) + ".";
+  }
+  return texteEtat(etatAbonnement());
 }
 
 // Renvoie une promesse avec un message d'erreur, ou "" si tout va bien.
@@ -164,9 +182,15 @@ function activerCode(texte) {
   if (!CLE_PUBLIQUE) return Promise.resolve("Les abonnements ne sont pas encore ouverts. Réessaie après la prochaine mise à jour.");
   return verifierSignature(code).then(function (ok) {
     if (!ok) return "Ce code n'est pas valable. Vérifie que tu l'as copié en entier.";
-    const e = etatAbonnement();
-    // Les jours payés s'ajoutent à la fin de l'essai ou de l'abonnement en cours.
-    a.fin = Math.max(e.actif ? e.fin : maintenantAbonnement(), a.fin || 0) + code.jours * JOUR;
+    const t = maintenantAbonnement();
+    if (code.conseil) {
+      // Option Conseil : les jours s'ajoutent à la suite de l'option en cours.
+      a.conseil = Math.max(a.conseil || 0, t) + code.jours * JOUR;
+    } else {
+      const e = etatAbonnement();
+      // Les jours payés s'ajoutent à la fin de l'essai ou de l'abonnement en cours.
+      a.fin = Math.max(e.actif ? e.fin : t, a.fin || 0) + code.jours * JOUR;
+    }
     a.codes.push(code.emis);
     garderMiroir();
     sauver();
@@ -244,13 +268,14 @@ function choisirFormule(id) {
 function validerCode() {
   const bouton = $("abo-activer");
   bouton.disabled = true;
-  activerCode($("abo-code").value).then(function (erreur) {
+  const texte = $("abo-code").value;
+  activerCode(texte).then(function (erreur) {
     bouton.disabled = false;
     if (erreur) { $("abo-erreur").textContent = erreur; $("abo-erreur").hidden = false; return; }
     fermerFeuilles();
     afficher();
     if (!$("reglages").hidden) afficherAbonnementReglages();
-    message("Merci ! " + texteEtat(etatAbonnement()), null, true);
+    message("Merci ! " + texteApresCode(texte), null, true);
   });
 }
 
@@ -295,7 +320,7 @@ function codeDansLeLien() {
       $("abo-erreur").hidden = false;
     } else {
       afficher();
-      message("Merci ! " + texteEtat(etatAbonnement()), null, true);
+      message("Merci ! " + texteApresCode(code), null, true);
     }
   });
 }

@@ -2257,3 +2257,68 @@ body {
 .puce-recette { background: var(--entre); }
 .puce-sortie { background: var(--sort); margin-left: 12px; }
 
+
+/* ---------- Export Excel ---------- */
+.periodes-excel { grid-template-columns: 1fr 1fr; }
+.periodes-excel .choix { font-size: 15px; padding: 11px 6px; }
+.deux-champs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
+.champ-date { display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: var(--texte-doux); font-weight: 600; }
+.champ-date input {
+  font: inherit;
+  font-size: 16px;
+  padding: 10px;
+  min-height: 48px;
+  border-radius: 12px;
+  border: 1px solid var(--bord);
+  background: #fff;
+  color: var(--brun);
+}
+.bouton-excel { background: linear-gradient(160deg, #fff, var(--olive-100)); border: 1px solid var(--olive-200); color: var(--olive-800); box-shadow: var(--ombre); }
+
+/* ---------- Demande à Canari (option Conseil) ---------- */
+.conseil { display: flex; flex-direction: column; min-height: 100dvh; padding-bottom: 0; }
+.conseil-presentation { display: flex; gap: 12px; align-items: flex-start; margin: 4px 0 18px; }
+.conseil-presentation img { flex: 0 0 auto; }
+.conseil-presentation p { margin: 0; font-size: 16px; line-height: 1.5; color: var(--brun); }
+#conseil-chat { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.fil { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.bulle {
+  max-width: 88%;
+  padding: 11px 14px;
+  border-radius: 16px;
+  font-size: 16px;
+  line-height: 1.5;
+  box-shadow: var(--ombre);
+}
+.bulle-moi { align-self: flex-end; background: var(--olive-700); color: #fff; border-bottom-right-radius: 5px; }
+.bulle-canari { align-self: flex-start; background: #fff; border: 1px solid var(--bord); color: var(--brun); border-bottom-left-radius: 5px; }
+.bulle.attente { color: var(--texte-doux); font-size: 22px; letter-spacing: 3px; padding: 6px 14px; }
+.conseil-suggestions { margin-top: 12px; }
+.conseil-barre {
+  position: sticky;
+  bottom: 0;
+  display: grid;
+  grid-template-columns: 48px 1fr 48px;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 0 14px;
+  margin-top: auto;
+  background: linear-gradient(180deg, rgba(251, 248, 241, 0), var(--ivoire) 26%);
+}
+#conseil-champ {
+  font: inherit;
+  font-size: 16px;
+  min-height: 48px;
+  padding: 10px 14px;
+  border-radius: 24px;
+  border: 1px solid var(--bord);
+  background: #fff;
+  color: var(--brun);
+}
+#conseil-champ:focus { outline: 0; border-color: var(--olive-400); }
+.bouton-envoyer { background: var(--olive-700); color: #fff; border-color: var(--olive-700); }
+.bouton-envoyer svg { stroke: #fff; }
+.bouton-conseil { background: linear-gradient(160deg, #fff, var(--dore-100)); border: 1px solid var(--credit-clair); color: var(--credit-fonce); box-shadow: var(--ombre); }
+/* Les formules de l'option Conseil : même mise en page que l'abonnement. */
+.conseil-formule { padding-right: 110px; }
+.conseil-formule .abo-conseil { margin-bottom: 4px; }

@@ -781,7 +781,10 @@ function strategieHtml(r) {
     '<h2 class="titre-liste">Ce que je ferais à ta place</h2>' +
     '<ol class="actions-strategie">' + trois.map(function (a) {
       return '<li class="action-str g' + a.g + '">' + a.t + '</li>';
-    }).join("") + '</ol></section>';
+    }).join("") + '</ol>' +
+    '<button type="button" class="bouton bouton-conseil" id="ouvrir-conseil">' +
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-3.2-6.4L20 4l-1.2 3.6A8 8 0 0 1 20 12zM9 10h6M9 14h4"/></svg>' +
+    'Pose ta question à Canari</button></section>';
 }
 
 /* ---------- Brancher les boutons ---------- */
@@ -798,6 +801,7 @@ function initTableau() {
       $("vue-tableau").scrollIntoView({ block: "start" });
       return;
     }
+    if (e.target.closest("#ouvrir-conseil")) { ouvrirConseil(); return; }
     if (e.target.closest("#noter-invest")) { ouvrirSaisie("invest"); return; }
     const sup = e.target.closest("[data-retirer-invest]");
     if (sup) {

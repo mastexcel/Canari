@@ -278,6 +278,37 @@
   </section>
 
   <section class="carte-reglage">
+    <h2>Demande à Canari</h2>
+    <p>Pose tes questions sur ta boutique et reçois une réponse tirée de tes chiffres. Option payante, 5 questions offertes pour essayer.</p>
+    <button type="button" class="bouton bouton-conseil" id="reglages-conseil">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-3.2-6.4L20 4l-1.2 3.6A8 8 0 0 1 20 12zM9 10h6M9 14h4"/></svg>Ouvrir
+    </button>
+  </section>
+
+  <section class="carte-reglage">
+    <h2>Télécharger en Excel</h2>
+    <p>Tes chiffres dans un tableur, pour ton comptable, ta banque ou pour garder une trace. Six feuilles : résumé, mouvements, jour par jour, produits, clients, fournisseurs.</p>
+    <p class="champ-etiquette">Quelle période ?</p>
+    <div class="quatre-choix periodes-excel" role="group" aria-label="Période du fichier Excel">
+      <button type="button" class="choix" data-excel="semaine" aria-pressed="false">7 derniers jours</button>
+      <button type="button" class="choix" data-excel="mois" aria-pressed="true">30 derniers jours</button>
+      <button type="button" class="choix" data-excel="annee" aria-pressed="false">12 derniers mois</button>
+      <button type="button" class="choix" data-excel="tout" aria-pressed="false">Depuis le début</button>
+      <button type="button" class="choix" data-excel="dates" aria-pressed="false">Choisir les dates</button>
+    </div>
+    <div id="excel-dates" hidden>
+      <div class="deux-champs">
+        <label class="champ-date">Du<input type="date" id="excel-du"></label>
+        <label class="champ-date">Au<input type="date" id="excel-au"></label>
+      </div>
+    </div>
+    <p class="aide" id="excel-resume"></p>
+    <button type="button" class="bouton bouton-excel" id="excel-telecharger">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12h6M9 16h6"/></svg>Télécharger le fichier Excel
+    </button>
+  </section>
+
+  <section class="carte-reglage">
     <h2>Récupérer une sauvegarde</h2>
     <p>Sur un nouveau téléphone : ouvre Canari, puis choisis le fichier de sauvegarde. Attention, cela remplace ce qui est noté sur ce téléphone.</p>
     <label class="bouton bouton-annuler bouton-fichier">
@@ -293,6 +324,50 @@
 </section>
 
 <!-- Questionnaire de départ -->
+<!-- Écran « Demande à Canari » (option Conseil, payante) -->
+<section id="conseil" class="ecran conseil" hidden>
+  <header class="entete">
+    <button type="button" class="bouton-retour" id="conseil-fermer" aria-label="Retour">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H6m5-6-6 6 6 6"/></svg>
+    </button>
+    <h1 class="titre-ecran">Demande à Canari</h1>
+  </header>
+
+  <div id="conseil-offre" hidden>
+    <div class="conseil-presentation">
+      <img src="icones/canari-clin-doeil.webp" width="96" height="114" alt="">
+      <p>Pose tes questions sur ta boutique, et Canari répond avec <strong>tes chiffres</strong> : qui te doit de l'argent, ce que tu gagnes vraiment, quel produit te rapporte, si tu peux acheter ce congélateur.</p>
+    </div>
+    <h2 class="titre-liste">Choisis ta formule</h2>
+    <div class="choix-cartes" id="conseil-formules"></div>
+    <a class="bouton bouton-whatsapp" id="conseil-demande" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-3.2-6.4L20 4l-1.2 3.6A8 8 0 0 1 20 12zM4 20l1.6-4"/></svg>Envoyer ta demande
+    </a>
+    <p class="aide">Tu paies comme ton abonnement, puis Canari t'envoie un code à coller dans Réglages → Mon abonnement.</p>
+  </div>
+
+  <div id="conseil-chat" hidden>
+    <p class="abo-etat ok" id="conseil-etat"></p>
+    <ul class="fil" id="conseil-fil"></ul>
+    <div class="vide" id="conseil-vide">
+      <img src="icones/canari-clin-doeil.webp" width="96" height="114" alt="">
+      <p>Pose-moi une question sur ta boutique.<br>Touche une question toute prête, ou écris la tienne.</p>
+    </div>
+    <div class="suggestions conseil-suggestions" id="conseil-suggestions"></div>
+    <p class="aide" id="conseil-reste" hidden></p>
+    <p class="aide" id="conseil-source"></p>
+    <div class="conseil-barre">
+      <button type="button" class="bouton-reglages" id="conseil-dire" aria-label="Dire ta question">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4a3 3 0 0 1 3 3v5a3 3 0 0 1-6 0V7a3 3 0 0 1 3-3zM5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+      </button>
+      <input type="text" id="conseil-champ" placeholder="Écris ta question…" autocomplete="off">
+      <button type="button" class="bouton-reglages bouton-envoyer" id="conseil-envoyer" aria-label="Envoyer la question">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h14m-6-6 6 6-6 6"/></svg>
+      </button>
+    </div>
+  </div>
+</section>
+
 <section id="parametrage" class="ecran parametrage" hidden>
   <header class="param-entete">
     <div class="param-progres" id="param-progres"></div>
@@ -808,10 +883,13 @@
 <script src="langues/en-boutique.js"></script>
 <script src="langues/en-extras.js"></script>
 <script src="langues/en-tableau.js"></script>
+<script src="langues/en-conseil.js"></script>
 <script src="voix.js"></script>
 <script src="paiements.js"></script>
 <script src="charges.js"></script>
 <script src="tableau.js"></script>
+<script src="excel.js"></script>
+<script src="conseil.js"></script>
 <script src="fiches.js"></script>
 <script src="intrants.js"></script>
 <script src="boutique.js"></script>

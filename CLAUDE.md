@@ -226,6 +226,28 @@ Demande : « une page tableau de bord où les courbes et les graphiques interpr�
 - **Chaque carte donne toujours un conseil** (demande du propriétaire : « toutes les courbes doivent être commentées avec des suggestions d'action ») — y compris quand tout va bien, où le conseil dit quoi garder.
 - **Règle pour la suite** : un nouvel indicateur doit toujours donner les quatre choses (chiffre, verdict, lecture, geste), et sa phrase doit recevoir sa traduction anglaise dans `en-tableau.js` (texte exact pour les conseils, motif `EN_MOTIFS` pour les phrases avec des chiffres). Les accords (« 1 produit » / « 3 produits ») s'écrivent en entier des deux côtés, jamais « produit(s) ».
 
+## Export Excel (fait, demande du propriétaire)
+
+- **Où** : Réglages → **Télécharger en Excel**. Période au choix : 7 derniers jours, 30 derniers jours, 12 derniers mois, depuis le début, ou **deux dates choisies**.
+- **Un vrai fichier `.xlsx`**, fabriqué sur le téléphone, **sans aucune bibliothèque** : un fichier Excel est un ZIP de fichiers XML, et `app/excel.js` écrit les deux (ZIP « stored », sans compression, plus le CRC-32 exigé par le format). L'appli reste légère et l'export marche **sans internet**.
+- **Six feuilles** : Résumé (la cascade complète, ce qu'on doit, la valeur du stock), Mouvements (une ligne par opération, avec encaissé / à crédit / prix de revient / moyen de paiement), Jour par jour, Produits (quantité, chiffre d'affaires, marge, % de marge, stock), Clients, Fournisseurs.
+- Les **dates sont de vraies dates** (format `dd/mm/yyyy`) et les **montants de vrais nombres** (`#,##0`) : on peut trier, filtrer et additionner dans Excel, LibreOffice ou Google Sheets. Vérifié en relisant le fichier produit.
+- Le fichier part par le **menu de partage d'Android** (WhatsApp, e-mail, Drive) ou tombe dans « Téléchargements ».
+- **Règle pour la suite** : une nouvelle colonne doit déclarer son format (`texte`, `nombre`, `date`, `pourcent`) dans la feuille, sinon Excel l'affiche comme du texte.
+
+## Option Conseil : « Demande à Canari » (fait, décision du propriétaire, voir `docs/analyse-conseil-ia.md`)
+
+Demande : une option d'intelligence artificielle où le commerçant discute et pose des questions sur son activité pour décider, **facturée** par le propriétaire.
+
+- **Où** : bouton « Pose ta question à Canari » en bas du tableau de bord, et Réglages → **Demande à Canari**. Écran de conversation (`app/conseil.js`) avec questions toutes prêtes, clavier, et bouton « Dire » (voix).
+- **Deux façons de répondre** :
+  1. **Le relais** (vraie IA) : si `RELAIS.url` est rempli avec l'adresse du serveur du propriétaire, la question part avec un **résumé chiffré** de la boutique (`resumeBoutique()`, ~700 mots-jetons) et la réponse revient. **La clé de l'IA n'est jamais dans l'appli** : n'importe qui pourrait l'extraire et dépenser l'argent du propriétaire. C'est aussi le serveur qui **compte les questions** — le compteur de l'appli peut être trafiqué.
+  2. **Les réponses de Canari** (défaut aujourd'hui, et repli automatique si le réseau lâche ou si le serveur ne répond pas en 20 s) : onze sujets reconnus par mots-clés (qui me doit, je dois, ce que je gagne, ma caisse, investir, quel produit, pourquoi je perds, combien vendre, mon stock, vendre plus, la maison), chacun construisant sa réponse depuis le tableau de bord. **0 F, sans internet.**
+- **Payant** : l'option s'active avec un code signé dont les jours commencent par **« C »** (`…​.C92.…`). Les anciens codes, sans lettre, restent valables. `donnees.abonnement.conseil` garde la date de fin, à part de l'abonnement ; le miroir localStorage la garde aussi. La page `gerant.html` a une case « C'est l'option Conseil », cochée automatiquement par le lien (`&o=conseil`), et le journal enregistre le **prix demandé** (l'option n'a pas les prix de l'abonnement).
+- **5 questions offertes** (`RELAIS.essaisOfferts`), avec un message d'avertissement à la dernière.
+- **Prix proposés** : 1 mois 500 F, 3 mois 1 200 F, 1 an 4 000 F. Analyse complète dans `docs/analyse-conseil-ia.md` : une question coûte ~1,7 F avec Claude Haiku 4.5 (1 $ / 5 $ par million de mots-jetons, ~1 630 en entrée et ~250 en sortie, 1 $ ≈ 600 F à revérifier) ; marge de 76 % à l'usage normal, 52 % chez un gros utilisateur, avec une limite d'usage correct de **100 questions par mois à faire compter par le serveur**. Seuil de rentabilité : 9 abonnés avec un serveur à 3 000 F/mois, 1 seul avec une offre gratuite.
+- **Traductions** : les réponses sont découpées **en phrases**, chacune traduite séparément (`tr()` phrase par phrase) et la bulle porte `translate="no"` — sinon il faudrait un motif anglais par combinaison de chiffres. Dictionnaire : `app/langues/en-conseil.js`. **Règle pour la suite** : une nouvelle réponse s'écrit en phrases courtes et autonomes, jamais en un seul bloc avec plusieurs chiffres.
+
 ## Monnaie (fait, demande du propriétaire)
 
 - Choisie au questionnaire de départ (écran « Ta boutique ») et modifiable dans Réglages → infos de la boutique. Par défaut : franc CFA d'Afrique de l'Ouest (« F »).
@@ -260,6 +282,7 @@ Compte en ligne et synchronisation, plusieurs vendeurs par boutique, paiement mo
 6 bis. Paramètres (logo, nom), produits et prix, vente par produits, factures et reçus d'acompte en image sur WhatsApp, stock simple.
 7. Export des données, tests sur un vrai téléphone d'entrée de gamme.
 7 bis. **Test avec de vrais commerçants (en cours)** : guide de terrain prêt dans `docs/test-terrain.md` — 10 commerçants, 6 gestes à faire seul, questions de prix, fiche à remplir, seuils de décision. Sert à répondre à deux questions : l'appli est-elle comprise sans aide, et paieront-ils 1 000 F par mois ? Les résultats décident de la suite (corriger l'appli, ou ajuster le prix, ou lancer).
+7 quater. **Export Excel** et **option Conseil** (« Demande à Canari »), payante (fait).
 7 ter. **Tableau de bord** : indicateurs d'activité, d'efficacité, de profitabilité et d'investissement, lus et expliqués, avec les trois gestes conseillés ; investissements et acquisitions (fait).
 8. Préparation pour le Play Store (icône, captures d'écran, description).
 

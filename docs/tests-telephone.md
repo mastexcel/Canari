@@ -74,6 +74,11 @@ Téléphone testé : ______________________  Version d'Android : ________  Date 
 48. ☐ Tableau de bord → **Semaine / Mois / Année** : tout l'écran suit le choix, et il est gardé quand tu reviens.
 49. ☐ Les deux camemberts s'affichent (d'où vient le chiffre d'affaires, où part l'argent), et le graphique « ce qui rentre et ce qui sort » montre deux barres par jour en Semaine et par mois en Année.
 50. ☐ Chaque carte a bien une phrase **et** un conseil, même quand tout va bien.
+51. ☐ Réglages → **Télécharger en Excel** → « 30 derniers jours » → le fichier s'ouvre dans Google Sheets ou Excel, avec six feuilles, des dates triables et des montants additionnables.
+52. ☐ Même chose avec « Choisir les dates » : deux dates, et le fichier ne contient que cette période.
+53. ☐ Tableau de bord → **Pose ta question à Canari** : les 5 questions offertes marchent, les réponses parlent de tes vrais chiffres, et l'avertissement arrive à la dernière.
+54. ☐ Bouton **micro** dans « Demande à Canari » : dis « qui me doit de l'argent », la réponse arrive.
+55. ☐ Mets le téléphone en **mode avion** : les réponses de Canari marchent toujours.
 
 ---
 

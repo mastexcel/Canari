@@ -1698,6 +1698,8 @@ chargerDonnees().then(function (d) {
   initPaiements();
   initCharges();
   initTableau();
+  initExcel();
+  initConseil();
   initFiches();
   initIntrants();
   initBoutique();

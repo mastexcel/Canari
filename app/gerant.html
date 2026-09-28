@@ -21,6 +21,8 @@
   .whatsapp { background: #1F8F55; }
   .alerte { background: #F7DDD5; color: var(--rouge); border-radius: 12px; padding: 10px 12px; margin: 0; }
   .aide { margin: 0; color: #6B5646; font-size: 15px; }
+  .case { display: flex; align-items: center; gap: 10px; font-size: 16px; margin: 4px 0; }
+  .case input { width: 22px; height: 22px; }
   .ligne { display: flex; gap: 8px; }
   .ligne > * { flex: 1; }
   table { width: 100%; border-collapse: collapse; font-size: 15px; }
@@ -66,6 +68,8 @@
       <option value="autre" data-prix="0">Autre nombre de jours (geste commercial)</option>
     </select>
     <input id="jours-autre" inputmode="numeric" placeholder="Nombre de jours" hidden>
+    <label class="case"><input type="checkbox" id="option-conseil"> C'est l'option <b>Conseil</b> (pas l'abonnement)</label>
+    <p class="aide" id="aide-conseil">Coche seulement si le client a payé « Demande à Canari ». Les jours iront sur l'option Conseil.</p>
     <label for="whatsapp">Son numéro WhatsApp (facultatif)</label>
     <input id="whatsapp" type="tel" inputmode="tel" placeholder="ex. 07 00 00 00 00">
     <p class="alerte" id="erreur" hidden></p>
@@ -144,6 +148,9 @@ function copier(texte, quoi) {
 }
 $("copier-publique").addEventListener("click", function () { copier(clePubliqueTexte(), "Clé publique"); });
 $("copier-message").addEventListener("click", function () { copier($("message").value, "Message"); });
+// Prix réellement demandé par le client (il vient du lien : l'option Conseil
+// n'a pas les mêmes prix que l'abonnement). Sert au journal des ventes.
+let prixDemande = 0;
 $("formule").addEventListener("change", function () { $("jours-autre").hidden = $("formule").value !== "autre"; });
 
 $("fabriquer").addEventListener("click", function () {
@@ -154,14 +161,16 @@ $("fabriquer").addEventListener("click", function () {
   if (!/^[A-Z2-9]{8}$/.test(id)) return oups("Le numéro Canari a 8 caractères, par exemple K7P2-QX9M.");
   if (!(jours > 0 && jours < 10000)) return oups("Écris un nombre de jours.");
   $("erreur").hidden = true;
-  const charge = id + "." + jours + "." + Date.now().toString(36);
+  // Un « C » devant les jours : le code active l'option Conseil, pas l'abonnement.
+  const conseil = $("option-conseil").checked;
+  const charge = id + "." + (conseil ? "C" : "") + jours + "." + Date.now().toString(36);
   crypto.subtle.importKey("jwk", cles.privee, ALGO, false, ["sign"]).then(function (cle) {
     return crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, cle, new TextEncoder().encode(charge));
   }).then(function (signature) {
     const code = charge + "." + base64url(signature);
     const lien = new URL("./#code=" + code, location.href).href;
-    const nom = choix.value === "autre" ? jours + " jours" : choix.textContent.split(" · ")[0];
-    const texte = "Merci pour ton paiement ! Voici ton abonnement Canari (" + nom + ").\n\n" +
+    const nom = (conseil ? "Conseil " : "") + (choix.value === "autre" ? jours + " jours" : choix.textContent.split(" · ")[0]);
+    const texte = "Merci pour ton paiement ! Voici ton " + (conseil ? "option Conseil" : "abonnement") + " Canari (" + nom + ").\n\n" +
       "Touche ce lien pour l'activer :\n" + lien + "\n\n" +
       "Ou colle ce code dans Canari (Réglages → Mon abonnement) :\n" + code;
     $("message").value = texte;
@@ -171,7 +180,7 @@ $("fabriquer").addEventListener("click", function () {
     $("envoyer").textContent = $("whatsapp").value.replace(/\D/g, "").length >= 8
       ? "Envoyer sur WhatsApp" : "Ouvrir WhatsApp";
     const journal = lireJson(CLE_JOURNAL) || [];
-    journal.unshift({ t: Date.now(), id: id, formule: nom, prix: Number(choix.dataset.prix) || 0 });
+    journal.unshift({ t: Date.now(), id: id, formule: nom, prix: prixDemande || Number(choix.dataset.prix) || 0 });
     localStorage.setItem(CLE_JOURNAL, JSON.stringify(journal));
     afficherJournal();
     $("resultat").scrollIntoView({ behavior: "smooth" });
@@ -205,7 +214,9 @@ function lireDemande() {
   }
   const tel = (p.get("t") || "").replace(/\D/g, "");
   if (tel.length >= 8) $("whatsapp").value = tel;
+  $("option-conseil").checked = p.get("o") === "conseil";
   const boutique = p.get("b"), formule = p.get("f"), prix = p.get("p");
+  prixDemande = Number(prix) || 0;
   $("demande").hidden = false;
   $("demande").textContent = "Demande reçue" + (boutique ? " de « " + boutique + " »" : "") +
     (formule ? " : " + formule : "") + (prix ? " (" + franc(Number(prix)) + ")" : "") + ".";

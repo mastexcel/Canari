@@ -79,6 +79,13 @@ Fais attention à ces moments précis, ce sont les plus risqués :
 
 **Celui qui sort son téléphone pour payer vaut cent qui disent « c'est bien ».**
 
+### Deux questions en plus sur l'option Conseil
+
+6. Montre l'écran **« Demande à Canari »** et laisse-le poser **une vraie question**, la sienne. **→ Note-la mot pour mot.** C'est l'information la plus précieuse de tout le test : elle dit ce que l'IA devra savoir répondre.
+7. « Après les 5 questions offertes, c'est 500 F par mois. Tu prendrais ? » **→ note la première réaction.**
+
+Si moins de 2 sur 10 disent oui, le problème n'est pas le prix : c'est que le conseil ne leur paraît pas utile. On garde alors les réponses gratuites dans l'abonnement et on abandonne l'option payante. C'est aussi une bonne décision.
+
 ---
 
 ## 6. Fiche à remplir (une par commerçant)

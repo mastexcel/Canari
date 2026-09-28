@@ -1348,7 +1348,7 @@ input.qte {
 .matrice .marge td { font-weight: 700; font-family: "Fredoka", system-ui, sans-serif; font-size: 18px; }
 .matrice .marge.bonne td { color: var(--entre); }
 .matrice .marge.faible td { color: var(--credit); }
-.matrice .marge.perte td { color: var(--sort); }
+.matrice .marge.perte td { color: var(--sort-fonce); }
 .alerte-marge { margin: 10px 0 0; padding: 10px 12px; border-radius: 12px; background: #F6DDD6; color: #8E2F1E; font-weight: 600; }
 .alerte-marge.faible { background: #F4E6CC; color: #7A4F0C; }
 
@@ -1518,7 +1518,8 @@ a.bouton { text-decoration: none; }
 
   /* Couleurs de sens (mêmes rôles qu'avant, en versions sourdes) */
   --entre: #5A6B41;         --entre-fonce: #3C4A2D;  --entre-clair: #A8B58E;  --entre-100: #E6EBDB;
-  --sort: #9C5334;          --sort-fonce: #713A22;   --sort-clair: #D5A88B;   --sort-100: #F3E4D9;
+  /* Le rouge des décaissements et des nombres négatifs (demande du propriétaire) */
+  --sort: #B8412B;          --sort-fonce: #8E2F1E;   --sort-clair: #E0A294;   --sort-100: #FAE4DF;
   --credit: #8A6A2B;        --credit-fonce: #634A19; --credit-clair: #D3BC8A; --credit-100: #F4ECD9;
   --maison: #4F5A6B;        --maison-fonce: #3A4351; --maison-clair: #A9B3C1; --maison-100: #E7EAEE;
 
@@ -2008,3 +2009,36 @@ body {
 .abo-qr-nom { margin: 0; font-weight: 600; color: var(--olive-800); }
 .abo-qr-duo .bouton { min-height: 44px; font-size: 15px; }
 .abo-qr-duo .bouton svg { width: 20px; height: 20px; }
+
+/* =====================================================================
+   CHIFFRES NÉGATIFS ET DÉCAISSEMENTS  (demande du propriétaire)
+
+   Le rouge ne sert qu'à deux choses, pour qu'il garde son sens :
+     1. un nombre NÉGATIF : perte du jour ou du mois, caisse dans le
+        rouge, marge négative sur une fiche de coût ;
+     2. un DÉCAISSEMENT : l'argent qui sort — dépense, charge fixe,
+        impôt ou taxe, paiement au fournisseur, prix de revient.
+   Le rouge est celui de la marque (#B8412B) ; les petits textes
+   prennent sa version foncée (#8E2F1E), contraste 7,7:1 sur le fond
+   ivoire, donc lisible en plein soleil.
+   « Pris pour la maison » garde sa couleur ardoise : ce n'est pas une
+   perte, c'est de l'argent qui change de poche.
+   ===================================================================== */
+.m-sort, .m-negatif { color: var(--sort-fonce); font-weight: 600; }
+.bilan strong.m-negatif { color: var(--sort-fonce); }
+.gros-chiffre.negatif { color: var(--sort-fonce); }
+.chiffre.sort strong { color: var(--sort-fonce); }
+
+/* Bilan de la semaine : la valeur d'un jour perdant passe aussi en rouge. */
+.barre.negative .barre-valeur { color: var(--sort-fonce); }
+
+/* Le calcul du mois : chaque ligne « − quelque chose » est un décaissement. */
+.cascade-ligne.moins:not(.maison) b { color: var(--sort-fonce); font-weight: 600; }
+.cascade-ligne.moins.zero b { color: #6B5646; font-weight: 400; }
+.cascade-ligne.total.negatif b { color: var(--sort-fonce); }
+
+/* Une phrase entière passe en rouge quand son résultat est négatif : on ne
+   peut pas colorer le seul nombre sans couper la phrase en deux morceaux,
+   ce qui empêcherait la traduction anglaise de la reconnaître. */
+.ligne-carte.negatif, .ligne-carte.negatif b, .vendu.negatif, p.aide.negatif { color: var(--sort-fonce); }
+.ligne-carte.negatif { box-shadow: inset 3px 0 0 var(--sort); }

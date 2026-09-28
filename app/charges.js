@@ -142,8 +142,11 @@ function afficherMois() {
   const ref = moisAffiche || { annee: aujourdhui.getFullYear(), mois: aujourdhui.getMonth() };
   const t = bilanDuMois(ref.annee, ref.mois);
   const nomMois = new Date(ref.annee, ref.mois, 1).toLocaleDateString(LOCALE, { month: "long", year: "numeric" });
-  const signe = function (n) { return (n < 0 ? "− " : "") + franc(Math.abs(n)); };
+  const signe = function (n) { return (n < 0 ? "−\u00a0" : "") + franc(Math.abs(n)); };
   const pct = function (n) { return t.vendu ? " (" + Math.round(n / t.vendu * 100) + " %)" : ""; };
+  // Un décaissement s'écrit « − 4 000 F », mais un zéro reste « 0 F » :
+  // en rouge, un « − 0 F » attirerait l'œil pour rien.
+  const moins = function (n) { return (n ? "−\u00a0" : "") + franc(n); };
   const ligne = function (libelle, valeur, classe) {
     return '<li class="cascade-ligne ' + (classe || "") + '"><span>' + libelle + '</span><b>' + valeur + '</b></li>';
   };
@@ -167,24 +170,24 @@ function afficherMois() {
       '<p class="etiquette">Ventes du mois</p>' +
       '<p class="gros-chiffre">' + franc(t.vendu) + '</p>' +
       '<div class="trois-chiffres deux">' +
-        '<div class="chiffre entre"><span>Marge brute</span><strong>' + signe(t.margeBrute) + '</strong></div>' +
+        '<div class="chiffre ' + (t.margeBrute < 0 ? 'sort' : 'entre') + '"><span>Marge brute</span><strong' + (t.margeBrute < 0 ? ' class="m-sort"' : '') + '>' + signe(t.margeBrute) + '</strong></div>' +
         '<div class="chiffre ' + (t.net < 0 ? 'sort' : 'entre') + '"><span>Bénéfice net</span><strong' + (t.net < 0 ? ' class="m-sort"' : '') + '>' + signe(t.net) + '</strong></div>' +
       '</div>' +
     '</div>' +
     '<h2 class="titre-liste">Le calcul, pas à pas</h2>' +
     '<ul class="cascade">' +
       ligne("Ventes" + (t.aCredit ? " (dont " + franc(t.aCredit) + " à crédit)" : ""), franc(t.vendu)) +
-      ligne("− Prix de revient", "− " + franc(t.cout), "moins") +
-      ligne("= Marge brute" + pct(t.margeBrute), signe(t.margeBrute), "total") +
-      ligne("− Autres dépenses", "− " + franc(t.depenses), "moins") +
-      ligne("− Charges fixes" + (t.enCours && t.chargesFixes ? " (jusqu'à aujourd'hui)" : ""), "− " + franc(t.chargesFixes), "moins") +
-      ligne("= Résultat avant impôts", signe(t.avantImpots), "total") +
-      ligne("− Impôts et taxes", "− " + franc(t.impots), "moins") +
-      ligne("= Bénéfice net" + (t.net > 0 ? pct(t.net) : ""), signe(t.net), "total net" + (t.net < 0 ? " perte" : "")) +
-      (t.maison ? ligne("− Pris pour la maison", "− " + franc(t.maison), "moins maison") +
-        ligne("= Reste pour la boutique", signe(t.net - t.maison), "total") : "") +
+      ligne("− Prix de revient", moins(t.cout), "moins" + (t.cout ? "" : " zero")) +
+      ligne("= Marge brute" + pct(t.margeBrute), signe(t.margeBrute), "total" + (t.margeBrute < 0 ? " negatif" : "")) +
+      ligne("− Autres dépenses", moins(t.depenses), "moins" + (t.depenses ? "" : " zero")) +
+      ligne("− Charges fixes" + (t.enCours && t.chargesFixes ? " (jusqu'à aujourd'hui)" : ""), moins(t.chargesFixes), "moins" + (t.chargesFixes ? "" : " zero")) +
+      ligne("= Résultat avant impôts", signe(t.avantImpots), "total" + (t.avantImpots < 0 ? " negatif" : "")) +
+      ligne("− Impôts et taxes", moins(t.impots), "moins" + (t.impots ? "" : " zero")) +
+      ligne("= Bénéfice net" + (t.net > 0 ? pct(t.net) : ""), signe(t.net), "total net" + (t.net < 0 ? " perte negatif" : "")) +
+      (t.maison ? ligne("− Pris pour la maison", moins(t.maison), "moins maison") +
+        ligne("= Reste pour la boutique", signe(t.net - t.maison), "total" + (t.net - t.maison < 0 ? " negatif" : "")) : "") +
     '</ul>' +
-    '<p class="aide">Argent en caisse ce mois : ' + signe(t.encaisse - t.sorti - t.maison) +
+    '<p class="aide' + (t.encaisse - t.sorti - t.maison < 0 ? ' negatif' : '') + '">Argent en caisse ce mois : ' + signe(t.encaisse - t.sorti - t.maison) +
       ' (entré ' + franc(t.encaisse) + ', sorti ' + franc(t.sorti + t.maison) + ').</p>';
 
   const prevues = lignesActives("charge").concat(lignesActives("impot"));

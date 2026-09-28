@@ -67,6 +67,7 @@ Téléphone testé : ______________________  Version d'Android : ________  Date 
 41. ☐ Dans la conversation, appuie longuement sur la zone de texte : l'image de la facture doit pouvoir être collée.
 42. ☐ Réglages → Mon abonnement → choisis une formule → « Envoyer ta demande » : le message part et se termine par « Lien pour Canari : » suivi d'un lien.
 43. ☐ Sur ton téléphone de propriétaire, touche ce lien : `gerant.html` s'ouvre avec le bandeau « Demande reçue… », le numéro Canari, la formule et le numéro du client déjà remplis. Touche « Créer le code » puis « Envoyer sur WhatsApp » : le code part dans la conversation du client.
+44. ☐ Note une grosse dépense pour être en perte sur la journée : le bénéfice net, l'argent en caisse, le bilan du jour, les jours perdants de la semaine et les lignes « − … » du calcul du mois doivent être **en rouge**, et rester lisibles au soleil.
 
 ---
 

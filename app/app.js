@@ -457,11 +457,13 @@ function majPastilles() {
 function afficherJour() {
   const aujourdhui = cleJour(Date.now());
   const t = totauxDuJour(aujourdhui);
-  const signe = function (n) { return (n < 0 ? "− " : "") + franc(Math.abs(n)); };
+  const signe = function (n) { return (n < 0 ? "−\u00a0" : "") + franc(Math.abs(n)); };
   $("gain").textContent = franc(t.vendu);
   $("marge").textContent = signe(t.margeBrute);
+  $("marge").className = t.margeBrute < 0 ? "m-negatif" : "";
   $("charges-jour").textContent = franc(t.chargesEtTaxes);
   $("net").textContent = signe(t.benefice);
+  $("net").className = t.benefice < 0 ? "m-negatif" : "";
   $("case-net").className = "chiffre " + (t.benefice < 0 ? "sort" : "entre");
   const seuil = seuilDuJour();
   $("seuil").hidden = !seuil || t.vendu >= seuil;
@@ -470,15 +472,17 @@ function afficherJour() {
   $("rappel-parametrage").hidden = !!donnees.boutique.parametre || !$("rappel-sauvegarde").hidden;
   const bouge = t.encaisse || t.sorti || t.maison;
   $("caisse").hidden = !bouge;
+  $("caisse").className = "ligne-carte" + (t.caisse < 0 ? " negatif" : "");
   const parMoyen = caisseParMoyen(aujourdhui);
   const detail = Object.keys(parMoyen).length > 1 || (Object.keys(parMoyen)[0] && Object.keys(parMoyen)[0] !== "especes")
     ? '<small class="par-moyen">' + Object.keys(MOYENS).filter(function (k) { return parMoyen[k]; }).map(function (k) {
-        return MOYENS[k] + " " + (parMoyen[k] > 0 ? "+ " : "") + signe(parMoyen[k]);
+        return MOYENS[k] + " " + (parMoyen[k] > 0 ? "+\u00a0" : "") + signe(parMoyen[k]);
       }).join(" · ") + '</small>' : '';
-  $("caisse").innerHTML = '<span>Argent en caisse</span><b>' + (t.caisse > 0 ? "+ " : "") + signe(t.caisse) + '</b>' +
+  $("caisse").innerHTML = '<span>Argent en caisse</span><b>' + (t.caisse > 0 ? "+\u00a0" : "") + signe(t.caisse) + '</b>' +
     '<small>entré ' + franc(t.encaisse) + ' · sorti ' + franc(t.sorti + t.maison) + '</small>' + detail;
   const reste = t.benefice - t.maison;
   $("reste-boutique").hidden = t.maison === 0;
+  $("reste-boutique").className = "ligne-carte maison-carte" + (reste < 0 ? " negatif" : "");
   $("reste-boutique").innerHTML = '<span>Pris pour la maison ' + franc(t.maison) + '</span><b>Reste du bénéfice net ' + signe(reste) + '</b>';
 
   afficherBilan(t);
@@ -611,6 +615,8 @@ function afficherBilan(t) {
   const aRelancer = clients.filter(function (c) { return statutRelance(c).urgent; }).length;
   const phrases = [];
   const fort = function (x) { return "<strong>" + x + "</strong>"; };
+  // Un montant en perte : même mise en valeur, mais en rouge.
+  const fortRouge = function (x) { return '<strong class="m-negatif">' + x + "</strong>"; };
 
   if (LANGUE === "en") {
     $("bilan-texte").setAttribute("translate", "no"); // déjà écrit en anglais
@@ -625,14 +631,14 @@ function afficherBilan(t) {
     const apres = t.partCharges + t.partImpots ? "Après tes charges et taxes du jour, ton bénéfice net est d'environ " : "Ton bénéfice net est de ";
     phrases.push(t.benefice >= 0
       ? apres + fort(franc(t.benefice)) + "."
-      : "Après tes charges et taxes du jour, tu es en perte d'environ " + fort(franc(-t.benefice)) + ".");
+      : "Après tes charges et taxes du jour, tu es en perte d'environ " + fortRouge(franc(-t.benefice)) + ".");
   } else if (!t.encaisse && !t.sorti && !t.maison) {
     phrases.push("Rien de noté aujourd'hui pour l'instant.");
   }
   if (t.maison) {
     const reste = t.benefice - t.maison;
     phrases.push("Tu as pris " + franc(t.maison) + " pour la maison, il reste donc " +
-      fort((reste < 0 ? "− " : "") + franc(Math.abs(reste))) + " de bénéfice net pour la boutique.");
+      (reste < 0 ? fortRouge("− " + franc(-reste)) : fort(franc(reste))) + " de bénéfice net pour la boutique.");
   }
   if (clients.length) {
     const total = clients.reduce(function (s, c) { return s + c.du; }, 0);
@@ -725,7 +731,7 @@ function afficherSemaine() {
   const gain = somme("benefice"), maison = somme("maison"), vendu = somme("vendu"), aCredit = somme("aCredit");
   const caisse = somme("caisse");
   const reste = gain - maison;
-  const signe = function (n) { return (n < 0 ? "− " : "") + franc(Math.abs(n)); };
+  const signe = function (n) { return (n < 0 ? "−\u00a0" : "") + franc(Math.abs(n)); };
   const rien = jours.every(function (j) { return !j.totaux.encaisse && !j.totaux.sorti && !j.totaux.maison && !j.totaux.vendu; });
 
   if (rien) {
@@ -744,8 +750,8 @@ function afficherSemaine() {
         '<div class="chiffre ' + (gain < 0 ? 'sort' : 'entre') + '"><span>Bénéfice net</span><strong' + (gain < 0 ? ' class="m-sort"' : '') + '>' + signe(gain) + '</strong></div>' +
       '</div>' +
       (aCredit ? '<p class="vendu">Dont ' + franc(aCredit) + ' vendus à crédit</p>' : '') +
-      (maison ? '<p class="vendu">Pris pour la maison ' + franc(maison) + ' · reste ' + signe(reste) + '</p>' : '') +
-      '<p class="vendu">Argent en caisse sur 7 jours : ' + signe(caisse) + '</p>' +
+      (maison ? '<p class="vendu' + (reste < 0 ? ' negatif' : '') + '">Pris pour la maison ' + franc(maison) + ' · reste ' + signe(reste) + '</p>' : '') +
+      '<p class="vendu' + (caisse < 0 ? ' negatif' : '') + '">Argent en caisse sur 7 jours : ' + signe(caisse) + '</p>' +
     '</div>' +
     '<h2 class="titre-liste">Bénéfice net de chaque jour</h2>' +
     '<ul class="barres" aria-label="Bénéfice net de chaque jour">' + jours.map(function (j) {
@@ -768,7 +774,7 @@ function historiqueHtml(c, client) {
   return montrees.map(function (h) {
     const paye = h.montant < 0;
     return '<li><span>' + dateCourte(h.t) + ' · ' + echapper(h.texte) + '</span><span class="' + (paye ? (client ? 'm-entre' : 'm-sort') : 'm-credit') + '">' +
-      (paye ? '− ' : '+ ') + franc(Math.abs(h.montant)) + '</span></li>';
+      (paye ? '−\u00a0' : '+\u00a0') + franc(Math.abs(h.montant)) + '</span></li>';
   }).join("") + (lignes.length > montrees.length ? '<li class="aide">… et ' + (lignes.length - montrees.length) + ' opérations plus anciennes.</li>' : '');
 }
 // Remplit un historique au moment où on l'ouvre.

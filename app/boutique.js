@@ -203,6 +203,8 @@ function majMargeProduit() {
     (achatAutre && lot ? "Prix d'achat : " + franc(Math.round(lot * 100) / 100) + parUnite(u) + ". " : "") +
     (tape ? "" : "Marge habituelle (" + margeHabituelle() + " %) : ") +
     ((achatAutre && lot) || (avecFiche && parFiche) ? "Tu gagnes " : "tu gagnes ") + (b < 0 ? "− " : "") + franc(Math.abs(b)) + (u === "unite" ? " sur chaque vente." : " par " + nomUnite(u, 1) + ".");
+  // Une marge négative : toute la phrase passe en rouge (demande du propriétaire).
+  $("produit-marge").className = "aide" + (b < 0 ? " negatif" : "");
 }
 
 function ouvrirProduit(id) {

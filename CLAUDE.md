@@ -62,12 +62,11 @@ Concurrents étudiés : Djago (Côte d'Ivoire), Keiwa, NAFA ERP, OkCredit, Khata
   **« Pris pour la maison » garde l'ardoise** : ce n'est pas une perte, c'est de l'argent qui change de poche (c'est la séparation boutique / maison, un de nos avantages).
   **Comment le rouge est posé** : quand le montant est seul dans son élément (`<strong>`, `<b>`, `<td>`, `.barre-valeur`), il reçoit la classe `m-negatif` ou `m-sort`. Quand le montant est au milieu d'une phrase, c'est **toute la phrase** qui passe en rouge (classe `negatif` sur le `<p>`) : couper la phrase en deux pour colorer le seul nombre empêcherait la traduction anglaise (`EN_MOTIFS`) de la reconnaître. **Règle pour la suite** : tout nouveau montant négatif ou sortie d'argent suit cette règle ; ne jamais couper une phrase traduite pour colorer un nombre.
   Le signe moins est collé au montant par une espace insécable (`−\u00a0`) : sinon il se retrouve seul sur sa ligne dans les petites cases.
-- **Icône de l'appli** : `images/canari-joyeux.png` (jarre souriante, pièce qui tombe, fond vert). Une version simplifiée du personnage 3D pourra la remplacer.
-- **Mascotte « Petit Canari »** : `images/mascotte-canari-3d.png`. À utiliser sur l'écran d'accueil, les écrans vides, les messages de réussite. Humeurs :
-  - joyeux (`canari-joyeux.png`) : bon gain, vente enregistrée ;
-  - clin d'œil (`canari-clin-doeil.png`) : relances ;
-  - yeux fermés, grand sourire (`canari-yeux-fermes.png`) : bonne journée, objectif atteint ;
-  - tranquille (`canari-tranquille.png`) : écrans neutres.
+- **La mascotte « Petit Canari » (dessin fourni par le propriétaire, en place)** : une jarre en terre cuite souriante, frise en zigzag blanche sur le ventre, une pièce d'or qui tombe dans le goulot. La planche d'origine est gardée dans `store/planche-canari.png`.
+  - **Cinq humeurs**, dans `app/icones/` : **joyeux** (`mascotte-canari-3d.webp`, pouce levé, pièce en main, il marche — l'écran d'accueil et le questionnaire), **clin d'œil** (`canari-clin-doeil.webp` — les relances), **yeux fermés** (`canari-yeux-fermes.webp` — bonne journée, objectif atteint), **tranquille** (`canari-tranquille.webp` — écrans neutres et vides), **pensif** (`canari-pensif.webp` — journée en perte, stock vide).
+  - **Icône de l'appli** : la jarre joyeuse sur le vert de la marque `#174A3F` (celui du manifeste et de l'écran de démarrage) — `icone-180/192/512.png`, plus `icone-maskable-512.png` avec 14 % de marge, parce qu'Android rogne les bords des icônes adaptatives. `canari-joyeux.webp` est la version carrée à fond vert du petit avatar des messages.
+  - **Chaque mascotte garde les proportions de son cadre** (360 × 42x) : les `<img>` de l'appli fixent la largeur et laissent la hauteur suivre, donc un personnage plus étroit (bras repliés) est mis à l'échelle sur sa **hauteur**, sinon il paraîtrait plus grand que les autres.
+  - **Refabriquer les images** (si le propriétaire fournit un nouveau dessin) : tout est dans `store/`, avec son mode d'emploi (`store/LISEZ-MOI.md`). `detourer-mascotte.py` enlève le fond de la planche, `fabriquer-images.py` remplit `app/icones/`, `captures.mjs` et `composer.mjs` refont les visuels du Play Store. **Le détourage est le morceau délicat** : le fond de la planche est un dégradé chaud dont le halo doré est de la même famille de couleurs que la jarre, donc un filtre de couleur ne marche pas. On se sert de ce qu'un dégradé varie lentement : on floute très fort, on soustrait, et il ne reste que ce qui change vite. Le seuil suit la clarté locale (entre 11 et 18) parce que le pied du personnage tombe dans le coin sombre de la planche.
 
 ## Le prototype existant
 
@@ -174,7 +173,8 @@ Comment c'est fait : `app/boutique.js` (boutique, produits, stock, choix des pro
 
 - **Stockage** : les données sont dans la base du navigateur (IndexedDB), plus dans localStorage (limité à ~5 Mo, soit ~2 ans de ventes). Les anciennes données sont déplacées automatiquement au premier lancement. Repli sur localStorage si IndexedDB n'est pas disponible.
 - **Vitesse** : les calculs (ventes par jour, stocks, dettes, listes de clients) sont gardés en mémoire jusqu'au prochain changement (`memo()` dans `app.js`, invalidé par `sauver()`). Seul l'onglet affiché est dessiné. Les historiques des clients ne sont dessinés qu'à l'ouverture. Mesure avec 1 an de données (10 400 lignes) et un processeur 6× plus lent : ouverture < 1 s, onglets < 0,3 s.
-- Icônes compressées (appli ~0,7 Mo), petits textes plus foncés, boutons ✕ et « Modifier » à 48 px.
+- Icônes compressées, petits textes plus foncés, boutons ✕ et « Modifier » à 48 px. L'appli pèse ~2,7 Mo, dont 1,7 Mo pour le lecteur de PDF (`app/vendor/pdfjs`, qui sert à accepter un logo de boutique en PDF).
+- **Règle pour la suite** : ne jamais laisser une capture d'écran de test dans `app/` — tout ce qui est là est téléchargé par chaque commerçant. Douze captures oubliées y pesaient 740 Ko, retirées le 29/09/2026.
 - Liste de vérifications sur un vrai téléphone : `docs/tests-telephone.md`.
 
 ## Paiement mobile (fait, sans contrat opérateur)

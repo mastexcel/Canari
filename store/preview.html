@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Visuels de la fiche Play Store</title>
+<!-- Sert à fabriquer store/banniere-1024x500.png et store/capture-1..5.png
+     à partir des captures brutes store/ecran-*.png. Ne fait pas partie de l'appli. -->
+<style>
+  /* Les polices de l'appli, celles du dossier « polices » : pas d'internet ici. */
+  @font-face { font-family: "Fredoka"; src: url("../app/polices/fredoka.woff2") format("woff2"); font-weight: 300 700; }
+  @font-face { font-family: "Rubik"; src: url("../app/polices/rubik.woff2") format("woff2"); font-weight: 300 900; }
+  :root {
+    --olive-700: #4E5B39;
+    --olive-900: #2F3823;
+    --ivoire: #FBF8F1;
+    --sable: #F2EDE1;
+    --ocre-600: #A96F3E;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: #777; padding: 24px; display: flex; flex-direction: column; gap: 24px; align-items: flex-start; }
+
+  /* La bannière du haut de la fiche : 1024 × 500. */
+  #banniere {
+    width: 1024px; height: 500px;
+    background: var(--olive-700);
+    display: flex; align-items: center; gap: 48px;
+    padding: 0 72px;
+    overflow: hidden; position: relative;
+  }
+  #banniere::before {
+    content: ""; position: absolute; inset: 0;
+    background-image: radial-gradient(circle at 78% 22%, rgba(176, 138, 78, .35), transparent 55%);
+  }
+  #banniere img { width: 260px; height: auto; position: relative; filter: drop-shadow(0 16px 30px rgba(0, 0, 0, .35)); }
+  .b-texte { position: relative; color: var(--ivoire); }
+  .b-nom { font-family: "Fredoka", sans-serif; font-weight: 600; font-size: 104px; line-height: 1; }
+  .b-slogan { font-family: "Fredoka", sans-serif; font-weight: 500; font-size: 44px; color: #E9C98A; margin-top: 10px; }
+  .b-sous { font-family: "Rubik", sans-serif; font-size: 30px; margin-top: 22px; line-height: 1.4; opacity: .95; }
+
+  /* Les captures : 1080 × 1920, bandeau de titre puis l'écran de l'appli. */
+  .slide {
+    width: 1080px; height: 1920px;
+    background: var(--sable);
+    display: flex; flex-direction: column; align-items: center;
+    overflow: hidden;
+  }
+  .s-bandeau {
+    width: 100%; background: var(--olive-700); color: var(--ivoire);
+    padding: 54px 60px 58px; text-align: center;
+  }
+  .s-bandeau p {
+    font-family: "Fredoka", sans-serif; font-weight: 600; font-size: 62px; line-height: 1.15;
+    text-wrap: balance;
+  }
+  .s-ecran { width: 1080px; height: auto; display: block; }
+</style>
+</head>
+<body>
+
+<div id="banniere">
+  <img src="../app/icones/mascotte-canari-3d.webp" alt="">
+  <div class="b-texte">
+    <div class="b-nom">canari</div>
+    <div class="b-slogan">Tu vends. Canari compte.</div>
+    <div class="b-sous">Le carnet de caisse de ta boutique.<br>Sans internet. Sans publicité.</div>
+  </div>
+</div>
+
+<div class="slide" id="s1">
+  <div class="s-bandeau"><p>Ton bénéfice du jour, sans calculer</p></div>
+  <img class="s-ecran" src="ecran-1-jour.png" alt="">
+</div>
+
+<div class="slide" id="s2">
+  <div class="s-bandeau"><p>N'oublie plus qui te doit</p></div>
+  <img class="s-ecran" src="ecran-2-credits.png" alt="">
+</div>
+
+<div class="slide" id="s3">
+  <div class="s-bandeau"><p>Relance sans te fâcher</p></div>
+  <img class="s-ecran" src="ecran-3-relances.png" alt="">
+</div>
+
+<div class="slide" id="s4">
+  <div class="s-bandeau"><p>Tes chiffres, expliqués</p></div>
+  <img class="s-ecran" src="ecran-4-tableau.png" alt="">
+</div>
+
+<div class="slide" id="s5">
+  <div class="s-bandeau"><p>Une facture propre, en deux secondes</p></div>
+  <img class="s-ecran" src="ecran-5-facture.png" alt="">
+</div>
+
+</body>
+</html>

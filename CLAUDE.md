@@ -337,7 +337,9 @@ Demande : « lorsqu'un utilisateur s'abonne, il doit recevoir une facture d'abon
 - **Côté propriétaire** : `gerant.html` affiche la même facture écrite après la création du code, avec « Copier », « Envoyer sur WhatsApp » et « Envoyer par e-mail ». Il peut donc la renvoyer lui-même, sous le nom de BIP.
 - **Les mentions légales, fournies par le propriétaire le 29/09/2026** (déclaration fiscale d'existence + registre du commerce) : **SARL au capital de 3 000 000 F CFA**, **Cocody Riviera Faya, Abidjan**, **07 48 34 66 50** (fixe : 25 22 02 01 80), **RCCM CI-ABJ-03-2022-B12-00279**, **compte contribuable 2205980 D**. Elles sont dans `app/emetteur.js`.
 - **E-mail de BIP (fourni le 29/09/2026) : `jja@bridgeinvestmentpartners.net`**, dans `EMETTEUR.email` ; il paraît sous le logo BIP sur la facture dessinée et dans la facture écrite (WhatsApp, e-mail).
-- **Il manque encore deux choses** (`docs/informations-bip.md`) : la **mention de TVA** (la case TVA n'est pas cochée sur la déclaration, régime « IM » ; la phrase exacte vient du comptable, elle engage la responsabilité fiscale et Canari ne l'invente pas), et la **vérification des deux numéros à l'écran par le propriétaire**. À signaler aussi : le registre du commerce dit « BRIDGE INVESTMENT PARTNERS », le logo dit « BRIDGE INVESTMENT & PARTNERS » ; c'est la version du logo qui est écrite.
+- **Mention de TVA (donnée le 29/09/2026) : « TVA non applicable »**, dans `EMETTEUR.tva` ; elle paraît sous « Payé — merci ! ». Traduction anglaise : « VAT not applicable ».
+- **Le nom écrit sur la facture est celui du registre du commerce : « Bridge Investment Partners », sans le « & »** (choix du propriétaire le 29/09/2026 : c'est cette dénomination qui engage l'entreprise devant les impôts). Le **logo**, lui, garde son « & » : c'est une image du propriétaire, elle n'est pas retouchée.
+- **Il ne manque plus que** la **vérification des deux numéros à l'écran par le propriétaire** (`docs/informations-bip.md`).
 - **Ce qui demanderait un serveur** : l'envoi **automatique** de la facture par e-mail. Une page web ne peut ni envoyer un e-mail toute seule, ni joindre une image à un `mailto:` ou à un lien WhatsApp. Aujourd'hui, le commerçant a sa facture à coup sûr (elle est fabriquée sur son téléphone) et l'envoie en un geste ; le propriétaire peut la lui renvoyer. C'est la même limite que le paiement automatique et l'activation automatique.
 - **Règle pour la suite** : les coordonnées de l'émetteur vivent dans `app/emetteur.js` **et nulle part ailleurs** — le fichier est chargé par l'appli et par `gerant.html`, pour que les deux écrivent exactement la même facture.
 
@@ -365,6 +367,6 @@ Compte en ligne et synchronisation, plusieurs vendeurs par boutique, paiement mo
 
 ## Marque et droits
 
-- **Canari est une application de Bridge Investment & Partners (BIP).** Le logo de BIP n'apparaît que sur la facture d'abonnement (voir plus haut) : nulle part ailleurs dans l'appli.
+- **Canari est une application de Bridge Investment Partners (BIP)** — la dénomination du registre du commerce, celle qui est écrite sur la facture d'abonnement ; le logo, lui, porte « BRIDGE INVESTMENT & PARTNERS ». Le logo de BIP n'apparaît que sur la facture d'abonnement (voir plus haut) : nulle part ailleurs dans l'appli.
 - Le nom Canari n'a pas encore été déposé. Avant le lancement public : recherche d'antériorité puis dépôt à l'OAPI via l'OIPI (Abidjan-Plateau).
 - Ne jamais utiliser de personnages, logos ou noms d'autres marques.

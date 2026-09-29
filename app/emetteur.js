@@ -9,8 +9,10 @@
 // dénomination sociale, la forme juridique, le capital, le siège, le numéro du
 // registre du commerce et le numéro de compte contribuable.
 const EMETTEUR = {
-  nom: "Bridge Investment & Partners",
-  // Dénomination au registre du commerce : « BRIDGE INVESTMENT PARTNERS », SARL.
+  // Dénomination exacte du registre du commerce, choisie par le propriétaire
+  // le 29/09/2026 : c'est elle qui engage l'entreprise sur une facture. Le logo,
+  // lui, porte un « & » : c'est une image, elle n'est pas retouchée.
+  nom: "Bridge Investment Partners",
   forme: "SARL au capital de 3 000 000 F CFA",
   produit: "Canari",
   logo: "icones/bip.webp",
@@ -20,7 +22,6 @@ const EMETTEUR = {
   rccm: "CI-ABJ-03-2022-B12-00279",
   dfe: "2205980 D",               // compte contribuable (à revérifier sur le document)
   // La TVA n'est pas cochée parmi les obligations fiscales de la déclaration
-  // (régime « IM »). La phrase exacte doit venir du comptable : elle engage la
-  // responsabilité fiscale de l'entreprise, Canari ne l'invente pas.
-  tva: ""
+  // (régime « IM »). Phrase donnée par le propriétaire le 29/09/2026.
+  tva: "TVA non applicable"
 };

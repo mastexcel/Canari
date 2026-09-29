@@ -10,8 +10,9 @@ Object.assign(EN, {
   "Si tu as de l'argent que Canari ne connaît pas, écris-le dans Réglages → Argent en caisse.":
     "If you have money Canari doesn't know about, write it in Settings → Cash on hand.",
 
-  /* ---------- Facture d'abonnement (émise par Bridge Investment & Partners) ---------- */
+  /* ---------- Facture d'abonnement (émise par Bridge Investment Partners) ---------- */
   "FACTURE D'ABONNEMENT": "SUBSCRIPTION INVOICE",
+  "TVA non applicable": "VAT not applicable",
   "Facture": "Invoice",
   "Montant": "Amount",
   "Payé — merci !": "Paid — thank you!",

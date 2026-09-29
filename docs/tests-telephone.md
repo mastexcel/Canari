@@ -94,6 +94,14 @@ Téléphone testé : ______________________  Version d'Android : ________  Date 
 65. ☐ Une **vente** et un **remboursement** ne doivent **jamais** être bloqués, même avec une caisse à zéro.
 66. ☐ Éteins « M'empêcher de dépenser l'argent que je n'ai pas » dans les Réglages : tout doit redevenir comme avant.
 
+## La facture d'abonnement
+
+67. ☐ Réglages → **Mon abonnement** : écris ton e-mail à l'étape 3, choisis une formule, puis touche « Envoyer ta demande ». Le message WhatsApp doit contenir ton e-mail.
+68. ☐ Active un code : le message du bas doit proposer **« Ma facture »**. Touche-le : la facture s'affiche avec le **logo BIP** et le **logo Canari**.
+69. ☐ « Envoyer sur WhatsApp » doit ouvrir WhatsApp avec la facture écrite. « Envoyer par e-mail » doit ouvrir ta messagerie, déjà remplie.
+70. ☐ Ferme, rouvre **Mon abonnement** : la facture doit être dans « Mes factures d'abonnement », et se rouvrir en la touchant.
+71. ☐ Vérifie qu'**aucune facture de vente** (celles que tu envoies à tes clients) ne porte le logo BIP : elles ne doivent porter que le logo de ta boutique.
+
 ---
 
 **Ce que j'ai déjà vérifié sur un téléphone simulé** (processeur 6 fois plus lent, une année entière de ventes, soit plus de 10 000 lignes) : ouverture en moins d'une seconde, chaque onglet en moins de 0,3 seconde, enregistrement d'une vente en moins de 0,4 seconde, fonctionnement sans internet, sauvegarde et récupération. Les couleurs respectent les règles de lisibilité (contraste suffisant). Ce qui reste à vérifier en vrai : le ressenti au soleil, WhatsApp, l'installation, et surtout **si un commerçant s'en sert sans aide**.

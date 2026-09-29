@@ -323,6 +323,23 @@ Demande : « la caisse ne peut jamais être négative, donc paramètre de sorte 
 - **Règle pour la suite** : tout nouveau mouvement qui fait sortir de l'argent doit être ajouté à `SORTIES` et passer par `verifierSortie()` avant d'être enregistré.
 
 
+## La facture d'abonnement (fait, demande du propriétaire)
+
+Demande : « lorsqu'un utilisateur s'abonne, il doit recevoir une facture d'abonnement de Canari par WhatsApp et par e-mail. Canari est une application de **Bridge Investment & Partners** et je souhaite que sur la facture et **uniquement** sur la facture apparaissent le logo de BIP et celui de Canari. » Code : `app/facture-abo.js`, coordonnées dans `app/emetteur.js`, logo dans `app/icones/bip.webp`.
+
+- **Uniquement sur cette facture-là.** Les factures et reçus que le commerçant envoie à SES clients portent le logo de SA boutique et rien d'autre (`app/facture.js`, inchangé). Le logo BIP n'apparaît nulle part ailleurs dans l'appli.
+- **Quand.** Dès que le code d'activation est accepté, la facture est créée et le message du bas propose « Ma facture ». Elle se retrouve ensuite à tout moment dans **Mon abonnement → Mes factures d'abonnement** (les 60 dernières).
+- **Ce qu'elle porte** : les deux logos (BIP à gauche, l'éditeur ; Canari à droite, le produit), les coordonnées de l'émetteur, le numéro, la date, le client (boutique, numéro Canari, téléphone, e-mail), la ligne « Abonnement Canari — 3 mois » avec la période couverte, le total et la mention « Payé — merci ! ».
+- **Le numéro** : `CAN-` + le numéro Canari du téléphone + le rang (`CAN-K7P2QX9M-01`). Chaque commerçant compte de son côté, et le numéro Canari étant unique, deux clients ne peuvent pas avoir la même référence. La page `gerant.html` calcule le même numéro depuis son journal.
+- **Le prix** vient de la formule demandée sur ce téléphone, gardée dans `donnees.abonnement.demande` au moment où le commerçant touche « Envoyer ta demande » : le code d'activation, lui, ne contient que des jours. À défaut, le prix est déduit des jours (`FORMULES`).
+- **L'e-mail du commerçant** est demandé à l'écran d'abonnement (étape 3), gardé sur le téléphone, ajouté au message WhatsApp de la demande et au lien vers `gerant.html` (`&m=`).
+- **L'envoi** : bouton « Envoyer sur WhatsApp » (la facture **écrite**, comme pour les factures de vente : un lien WhatsApp ne peut pas transporter une image ; elle est copiée dans le presse-papier quand le téléphone le permet) et bouton « Envoyer par e-mail » (`mailto:` pré-rempli). « Enregistrer l'image » et « Partager » restent en dessous.
+- **Côté propriétaire** : `gerant.html` affiche la même facture écrite après la création du code, avec « Copier », « Envoyer sur WhatsApp » et « Envoyer par e-mail ». Il peut donc la renvoyer lui-même, sous le nom de BIP.
+- **Ce qui manque, et que seul le propriétaire peut donner** : `app/emetteur.js` attend l'**adresse**, le **téléphone**, l'**e-mail**, le **N° RCCM**, le **N° de DFE / NCC** et la mention de **TVA** de Bridge Investment & Partners. Sans le RCCM et le numéro de contribuable, la facture n'a pas de valeur administrative en Côte d'Ivoire. Les champs vides ne sont simplement pas écrits.
+- **Ce qui demanderait un serveur** : l'envoi **automatique** de la facture par e-mail. Une page web ne peut ni envoyer un e-mail toute seule, ni joindre une image à un `mailto:` ou à un lien WhatsApp. Aujourd'hui, le commerçant a sa facture à coup sûr (elle est fabriquée sur son téléphone) et l'envoie en un geste ; le propriétaire peut la lui renvoyer. C'est la même limite que le paiement automatique et l'activation automatique.
+- **Règle pour la suite** : les coordonnées de l'émetteur vivent dans `app/emetteur.js` **et nulle part ailleurs** — le fichier est chargé par l'appli et par `gerant.html`, pour que les deux écrivent exactement la même facture.
+
+
 ## Hors version 1 (plus tard)
 
 Compte en ligne et synchronisation, plusieurs vendeurs par boutique, paiement mobile automatique dans l'appli (voir ci-dessus), activation automatique de l'abonnement, autres langues (dioula, baoulé), autres pays.
@@ -346,5 +363,6 @@ Compte en ligne et synchronisation, plusieurs vendeurs par boutique, paiement mo
 
 ## Marque et droits
 
+- **Canari est une application de Bridge Investment & Partners (BIP).** Le logo de BIP n'apparaît que sur la facture d'abonnement (voir plus haut) : nulle part ailleurs dans l'appli.
 - Le nom Canari n'a pas encore été déposé. Avant le lancement public : recherche d'antériorité puis dépôt à l'OAPI via l'OIPI (Abidjan-Plateau).
 - Ne jamais utiliser de personnages, logos ou noms d'autres marques.

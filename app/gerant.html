@@ -72,6 +72,8 @@
     <p class="aide" id="aide-conseil">Coche seulement si le client a payé « Demande à Canari ». Les jours iront sur l'option Conseil.</p>
     <label for="whatsapp">Son numéro WhatsApp (facultatif)</label>
     <input id="whatsapp" type="tel" inputmode="tel" placeholder="ex. 07 00 00 00 00">
+    <label for="email">Son e-mail (facultatif, pour lui envoyer la facture)</label>
+    <input id="email" type="email" inputmode="email" placeholder="ex. awa@gmail.com">
     <p class="alerte" id="erreur" hidden></p>
     <button type="button" id="fabriquer">Créer le code</button>
   </section>
@@ -85,12 +87,25 @@
     </div>
   </section>
 
+  <section id="facture-carte" hidden>
+    <h2>Sa facture d'abonnement</h2>
+    <p class="aide">Le client la reçoit déjà tout seul dans Canari, dès qu'il active son code.
+      Sers-toi de ceci pour la lui renvoyer, ou pour garder une trace.</p>
+    <textarea id="facture-texte" rows="12" readonly></textarea>
+    <div class="ligne">
+      <button type="button" class="secondaire" id="copier-facture">Copier</button>
+      <a class="bouton whatsapp" id="facture-whatsapp" target="_blank" rel="noopener">Envoyer sur WhatsApp</a>
+    </div>
+    <a class="bouton secondaire" id="facture-email" target="_blank" rel="noopener">Envoyer par e-mail</a>
+  </section>
+
   <section id="journal-carte" hidden>
     <h2>Codes créés</h2>
     <p class="aide" id="total"></p>
     <table><thead><tr><th>Date</th><th>Numéro</th><th>Formule</th><th>Prix</th></tr></thead><tbody id="journal"></tbody></table>
   </section>
 </main>
+<script src="emetteur.js"></script>
 <script>
 const CLE_PRIVEE = "canari.gerant.cle";
 const CLE_JOURNAL = "canari.gerant.journal";
@@ -151,6 +166,7 @@ $("copier-message").addEventListener("click", function () { copier($("message").
 // Prix réellement demandé par le client (il vient du lien : l'option Conseil
 // n'a pas les mêmes prix que l'abonnement). Sert au journal des ventes.
 let prixDemande = 0;
+let boutiqueDemande = "";   // le nom de la boutique, pour l'écrire sur la facture
 $("formule").addEventListener("change", function () { $("jours-autre").hidden = $("formule").value !== "autre"; });
 
 $("fabriquer").addEventListener("click", function () {
@@ -179,13 +195,50 @@ $("fabriquer").addEventListener("click", function () {
     $("resultat").hidden = false;
     $("envoyer").textContent = $("whatsapp").value.replace(/\D/g, "").length >= 8
       ? "Envoyer sur WhatsApp" : "Ouvrir WhatsApp";
+    const prix = prixDemande || Number(choix.dataset.prix) || 0;
     const journal = lireJson(CLE_JOURNAL) || [];
-    journal.unshift({ t: Date.now(), id: id, formule: nom, prix: prixDemande || Number(choix.dataset.prix) || 0 });
+    journal.unshift({ t: Date.now(), id: id, formule: nom, prix: prix });
     localStorage.setItem(CLE_JOURNAL, JSON.stringify(journal));
     afficherJournal();
+    preparerFacture(id, nom, prix, tel);
     $("resultat").scrollIntoView({ behavior: "smooth" });
   });
 });
+
+/* La facture d'abonnement, écrite. C'est la même que celle que le client voit
+   dans Canari (facture-abo.js), avec le même numéro : « CAN- » + son numéro
+   Canari + le rang, ce qui la rend unique d'un client à l'autre. */
+function preparerFacture(id, nom, prix, tel) {
+  const rang = (lireJson(CLE_JOURNAL) || []).filter(function (l) { return l.id === id; }).length;
+  const numero = "CAN-" + id + "-" + String(rang).padStart(2, "0");
+  const l = [];
+  l.push("FACTURE D'ABONNEMENT " + numero);
+  l.push(EMETTEUR.nom);
+  if (EMETTEUR.rccm) l.push("RCCM : " + EMETTEUR.rccm);
+  if (EMETTEUR.dfe) l.push("DFE / NCC : " + EMETTEUR.dfe);
+  l.push("");
+  l.push("Date : " + new Date().toLocaleDateString("fr-FR"));
+  if (boutiqueDemande) l.push("Client : " + boutiqueDemande);
+  l.push("Numéro Canari : " + id.slice(0, 4) + "-" + id.slice(4));
+  l.push("");
+  l.push(($("option-conseil").checked ? "Option Conseil « Demande à Canari » — " : "Abonnement Canari — ") + nom +
+    " : " + franc(prix));
+  l.push("");
+  l.push("TOTAL : " + franc(prix));
+  l.push("Payé — merci !");
+  if (EMETTEUR.tva) l.push(EMETTEUR.tva);
+  l.push("");
+  l.push(EMETTEUR.produit + " est une application de " + EMETTEUR.nom + ".");
+  const texte = l.join("\n");
+  $("facture-texte").value = texte;
+  $("facture-whatsapp").href = "https://wa.me/" + (tel.length === 10 ? "225" + tel : tel) +
+    "?text=" + encodeURIComponent(texte);
+  $("facture-email").href = "mailto:" + encodeURIComponent($("email").value.trim()) +
+    "?subject=" + encodeURIComponent("Facture " + numero + " — " + EMETTEUR.produit) +
+    "&body=" + encodeURIComponent(texte);
+  $("facture-carte").hidden = false;
+}
+$("copier-facture").addEventListener("click", function () { copier($("facture-texte").value, "Facture"); });
 
 function afficherJournal() {
   const journal = lireJson(CLE_JOURNAL) || [];
@@ -214,9 +267,12 @@ function lireDemande() {
   }
   const tel = (p.get("t") || "").replace(/\D/g, "");
   if (tel.length >= 8) $("whatsapp").value = tel;
+  const mail = p.get("m");
+  if (mail) $("email").value = mail;
   $("option-conseil").checked = p.get("o") === "conseil";
   const boutique = p.get("b"), formule = p.get("f"), prix = p.get("p");
   prixDemande = Number(prix) || 0;
+  boutiqueDemande = boutique || "";
   $("demande").hidden = false;
   $("demande").textContent = "Demande reçue" + (boutique ? " de « " + boutique + " »" : "") +
     (formule ? " : " + formule : "") + (prix ? " (" + franc(Number(prix)) + ")" : "") + ".";

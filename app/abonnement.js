@@ -192,11 +192,14 @@ function activerCode(texte) {
       a.fin = Math.max(e.actif ? e.fin : t, a.fin || 0) + code.jours * JOUR;
     }
     a.codes.push(code.emis);
+    // La facture de l'abonnement qui vient d'être payé (voir facture-abo.js).
+    derniereFactureAbo = noterFactureAbonnement(code, code.conseil ? a.conseil : a.fin);
     garderMiroir();
     sauver();
     return "";
   });
 }
+let derniereFactureAbo = null;
 
 /* ---------- Écran « Mon abonnement » ---------- */
 
@@ -237,8 +240,10 @@ function ouvrirAbonnement(raison) {
   }).join("");
   $("abo-bientot").hidden = !$("abo-djamo").hidden || !!RECEPTION.carte || comptes.length > 0;
   $("abo-demande").hidden = !RECEPTION.whatsapp;
+  $("abo-email").value = donnees.abonnement.email || "";
   $("abo-code").value = "";
   $("abo-erreur").hidden = true;
+  afficherFacturesAbo();
   ouvrirFeuille("abonnement");
 }
 function choisirFormule(id) {
@@ -249,9 +254,14 @@ function choisirFormule(id) {
   });
   $("abo-montant").textContent = francCFA(f.prix);
   const b = donnees.boutique;
+  const email = ($("abo-email").value || "").trim();
+  // La formule demandée est gardée : à l'activation, c'est elle qui donne le prix
+  // à écrire sur la facture (le code d'activation ne contient que des jours).
+  donnees.abonnement.demande = { jours: f.jours, prix: f.prix, nom: f.nom, email: email, conseil: false };
   const texte = tr("Bonjour Canari, je veux l'abonnement " + f.nom + " (" + francCFA(f.prix) + ").") + "\n" +
     tr("Mon numéro Canari : " + idAffiche(donnees.abonnement.id)) + "\n" +
     (b.nom ? tr("Boutique : " + b.nom) + "\n" : "") +
+    (email ? tr("Mon e-mail : " + email) + "\n" : "") +
     tr(RECEPTION.carte
       ? "J'ai payé par (Wave, Orange Money, MTN, Moov, Djamo ou carte Visa) : "
       : "J'ai payé par (Wave, Orange Money, MTN, Moov ou Djamo) : ");
@@ -261,6 +271,7 @@ function choisirFormule(id) {
   const lienGerant = new URL("gerant.html", location.href).href + "#id=" + donnees.abonnement.id +
     "&j=" + f.jours + "&f=" + encodeURIComponent(f.nom) + "&p=" + f.prix +
     (b.nom ? "&b=" + encodeURIComponent(b.nom.slice(0, 40)) : "") +
+    (email ? "&m=" + encodeURIComponent(email) : "") +
     (b.tel ? "&t=" + b.tel : "");   // pour que la réponse parte dans la bonne conversation
   $("abo-demande").href = "https://wa.me/" + numeroWhatsApp(RECEPTION.whatsapp) +
     "?text=" + encodeURIComponent(texte + "\n\n" + tr("Lien pour Canari :") + "\n" + lienGerant);
@@ -275,7 +286,12 @@ function validerCode() {
     fermerFeuilles();
     afficher();
     if (!$("reglages").hidden) afficherAbonnementReglages();
-    message("Merci ! " + texteApresCode(texte), null, true);
+    // La facture du paiement s'affiche tout de suite : c'est elle que le
+    // commerçant envoie sur WhatsApp ou par e-mail (voir facture-abo.js).
+    const facture = derniereFactureAbo;
+    message("Merci ! " + texteApresCode(texte),
+      facture ? function () { ouvrirFactureAbonnement(facture); } : null,
+      true, facture ? "Ma facture" : null);
   });
 }
 
@@ -320,7 +336,10 @@ function codeDansLeLien() {
       $("abo-erreur").hidden = false;
     } else {
       afficher();
-      message("Merci ! " + texteApresCode(code), null, true);
+      const facture = derniereFactureAbo;
+      message("Merci ! " + texteApresCode(code),
+        facture ? function () { ouvrirFactureAbonnement(facture); } : null,
+        true, facture ? "Ma facture" : null);
     }
   });
 }
@@ -336,6 +355,13 @@ function initAbonnement() {
   });
   $("abo-activer").addEventListener("click", validerCode);
   $("abo-fermer").addEventListener("click", fermerFeuilles);
+  // L'e-mail est gardé sur le téléphone : il sert à la facture et au message du
+  // propriétaire, et il est remis d'office à la prochaine ouverture.
+  $("abo-email").addEventListener("input", function () {
+    donnees.abonnement.email = $("abo-email").value.trim();
+    choisirFormule(formuleChoisie);   // l'e-mail entre dans le message et le lien
+  });
+  $("abo-email").addEventListener("change", sauver);
   $("abo-copier-id").addEventListener("click", function () {
     const id = idAffiche(donnees.abonnement.id);
     if (navigator.clipboard) navigator.clipboard.writeText(id).then(function () { message("Numéro Canari copié : " + id); }, function () {});

@@ -1754,6 +1754,7 @@ chargerDonnees().then(function (d) {
   initIntrants();
   initBoutique();
   initFacture();
+  initFactureAbo();
   initContacts();
   initAbonnement();
   initVoix();

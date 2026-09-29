@@ -10,6 +10,34 @@ Object.assign(EN, {
   "Si tu as de l'argent que Canari ne connaît pas, écris-le dans Réglages → Argent en caisse.":
     "If you have money Canari doesn't know about, write it in Settings → Cash on hand.",
 
+  /* ---------- Facture d'abonnement (émise par Bridge Investment & Partners) ---------- */
+  "FACTURE D'ABONNEMENT": "SUBSCRIPTION INVOICE",
+  "Facture": "Invoice",
+  "Montant": "Amount",
+  "Payé — merci !": "Paid — thank you!",
+  "Numéro Canari": "Canari number",
+  "Mes factures d'abonnement": "My subscription invoices",
+  "Ta facture d'abonnement": "Your subscription invoice",
+  "Ma facture": "My invoice",
+  "Envoyer par e-mail": "Send by email",
+  "Enregistrer l'image": "Save the image",
+  "Partager": "Share",
+  "Ta facture part écrite. Pour joindre l'image, enregistre-la d'abord, puis ajoute-la au message.":
+    "Your invoice is sent as text. To attach the image, save it first, then add it to the message.",
+  "3. Ton e-mail (pour recevoir ta facture)": "3. Your email (to receive your invoice)",
+  "ex. awa@gmail.com": "e.g. awa@gmail.com",
+  "4. Envoie ta demande": "4. Send your request",
+  "5. Ton code d'activation": "5. Your activation code",
+  "Facture enregistrée dans « Téléchargements ».": "Invoice saved in “Downloads”.",
+  "Facture enregistrée. Envoie-la depuis WhatsApp (trombone, puis Galerie).":
+    "Invoice saved. Send it from WhatsApp (paperclip, then Gallery).",
+  "WhatsApp s'ouvre avec ta facture écrite. L'image est copiée : appuie longuement sur la zone de texte pour la coller.":
+    "WhatsApp opens with your invoice as text. The image is copied: press and hold the text box to paste it.",
+  "WhatsApp s'ouvre avec ta facture écrite. Pour l'image, reviens et touche « Enregistrer l'image ».":
+    "WhatsApp opens with your invoice as text. For the image, come back and tap “Save the image”.",
+  "Ta messagerie s'ouvre avec la facture écrite. Pour joindre l'image, enregistre-la d'abord.":
+    "Your mail app opens with the invoice as text. To attach the image, save it first.",
+
   /* ---------- Paiement mobile ---------- */
   "Espèces": "Cash",
   "Wave": "Wave",
@@ -109,6 +137,17 @@ function joursEnExtras(n) { return n + (Number(n) <= 1 ? " day" : " days"); }
 const COMPTES_EXTRAS = "Wave|Orange Money|MTN MoMo|Moov Money \\(Flooz\\)|Djamo";
 
 EN_MOTIFS.push(
+  /* ---------- Facture d'abonnement ---------- */
+  [/^Facture (CAN-[A-Z0-9-]+)$/, "Invoice $1"],
+  // La formule (« 3 mois ») est traduite elle aussi, d'où la fonction.
+  [/^Abonnement Canari — (.+)$/, function (t, f) { return "Canari subscription — " + tr(f); }],
+  [/^Option Conseil « Demande à Canari » — (.+)$/, function (t, f) { return "Advice option “Ask Canari” — " + tr(f); }],
+  [/^Période couverte jusqu'au (.+)$/, "Covers up to $1"],
+  [/^Facture (CAN-[A-Z0-9-]+) — (.+)$/, "Invoice $1 — $2"],
+  [/^(.+) est une application de (.+)\.$/, "$1 is an app by $2."],
+  [/^Mon e-mail : (.+)$/, "My email: $1"],
+  [/^(\d+) jours$/, function (t, n) { return n + (Number(n) <= 1 ? " day" : " days"); }],
+
   /* ---------- Argent en caisse ---------- */
   // « Espèces : tu n'as que 3 000 F. Il manque 2 000 F. »
   [new RegExp("^(Espèces|" + COMPTES_EXTRAS + ") : tu n'as que (.+)\\. Il manque (.+)\\.$"),

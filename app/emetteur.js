@@ -17,7 +17,11 @@ const EMETTEUR = {
   produit: "Canari",
   logo: "icones/bip.webp",
   adresse: "Cocody Riviera Faya, Abidjan",
-  tel: "0748346650",              // le fixe est le 25 22 02 01 80
+  // Numéro à afficher sur les documents, choisi par le propriétaire le
+  // 29/09/2026 : c'est son numéro WhatsApp, celui qui reçoit les demandes
+  // d'abonnement. Sur la déclaration figuraient aussi le 07 48 34 66 50 et
+  // le fixe 25 22 02 01 80 ; ils ne sont plus écrits sur la facture.
+  tel: "0584374848",
   email: "jja@bridgeinvestmentpartners.net",
   rccm: "CI-ABJ-03-2022-B12-00279",
   dfe: "2205980 D",               // compte contribuable (à revérifier sur le document)

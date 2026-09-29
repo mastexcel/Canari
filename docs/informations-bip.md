@@ -15,7 +15,7 @@ Tiré de ta **déclaration fiscale d'existence** et de ton **registre du commerc
 | Dénomination | Bridge Investment Partners *(le nom du registre, choisi par toi)* |
 | Forme et capital | SARL au capital de 3 000 000 F CFA |
 | Adresse | Cocody Riviera Faya, Abidjan |
-| Téléphone | 07 48 34 66 50 *(le fixe est le 25 22 02 01 80)* |
+| Téléphone | **05 84 37 48 48** *(ton numéro WhatsApp, choisi par toi le 29/09/2026 ; la déclaration portait aussi le 07 48 34 66 50 et le fixe 25 22 02 01 80)* |
 | **N° RCCM** | **CI-ABJ-03-2022-B12-00279** |
 | **N° de compte contribuable** | **2205980 D** |
 | E-mail | jja@bridgeinvestmentpartners.net *(donné le 29/09/2026)* |
@@ -46,7 +46,7 @@ const EMETTEUR = {
   produit: "Canari",
   logo: "icones/bip.webp",
   adresse: "Cocody Riviera Faya, Abidjan",
-  tel: "0748346650",
+  tel: "0584374848",
   email: "jja@bridgeinvestmentpartners.net",
   rccm: "CI-ABJ-03-2022-B12-00279",
   dfe: "2205980 D",

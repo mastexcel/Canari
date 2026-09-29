@@ -40,6 +40,10 @@ Object.assign(EN, {
   "La liste des mouvements seule, pour l'ouvrir dans un autre logiciel.":
     "The list of entries alone, to open in another program.",
 
+  /* ---- Mise à jour de l'appli ---- */
+  "Une nouvelle version de Canari est prête.": "A new version of Canari is ready.",
+  "Ouvrir": "Open",
+
   /* ---- Repartir à zéro ---- */
   "Repartir à zéro": "Start from scratch",
   "Tout effacer et repartir à zéro": "Erase everything and start from scratch",

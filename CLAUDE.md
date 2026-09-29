@@ -257,6 +257,15 @@ Demande : une option d'intelligence artificielle où le commerçant discute et p
 - **Prix proposés** : 1 mois 500 F, 3 mois 1 200 F, 1 an 4 000 F. Analyse complète dans `docs/analyse-conseil-ia.md` : une question coûte ~1,7 F avec Claude Haiku 4.5 (1 $ / 5 $ par million de mots-jetons, ~1 630 en entrée et ~250 en sortie, 1 $ ≈ 600 F à revérifier) ; marge de 76 % à l'usage normal, 52 % chez un gros utilisateur, avec une limite d'usage correct de **100 questions par mois à faire compter par le serveur**. Seuil de rentabilité : 9 abonnés avec un serveur à 3 000 F/mois, 1 seul avec une offre gratuite.
 - **Traductions** : les réponses sont découpées **en phrases**, chacune traduite séparément (`tr()` phrase par phrase) et la bulle porte `translate="no"` — sinon il faudrait un motif anglais par combinaison de chiffres. Dictionnaire : `app/langues/en-conseil.js`. **Règle pour la suite** : une nouvelle réponse s'écrit en phrases courtes et autonomes, jamais en un seul bloc avec plusieurs chiffres.
 
+## Mises à jour : prévenir l'utilisateur (fait)
+
+**Le problème, vécu plusieurs fois par le propriétaire** : il redemandait un travail déjà livré parce que son téléphone lui montrait encore l'ancienne version. C'est normal — l'appli s'ouvre depuis la copie gardée sur le téléphone (c'est ce qui la rend rapide et utilisable sans internet), donc une nouvelle version ne s'affiche qu'à l'ouverture **suivante**.
+
+- **Bandeau « Une nouvelle version de Canari est prête. » + bouton « Ouvrir »** sur l'écran principal, dès que le service worker a fini de télécharger la nouvelle version (`updatefound` → état `installed` avec un contrôleur déjà présent = c'est bien une mise à jour, pas une première installation). Un appui recharge : les fichiers sont déjà là.
+- **Vérification quand on revient sur l'appli** (`visibilitychange`), au plus une fois par heure.
+- **Le numéro de version est affiché** en bas des Réglages (« canari · Garde chaque franc. · Zéro publicité. · canari-v47 »). L'appli le demande au service worker par message (`{type:"version"}`) : aucune constante à tenir à jour en double, donc aucun risque d'afficher un faux numéro. Le numéro vit dans son propre élément avec `translate="no"`, pour que la phrase garde sa traduction anglaise.
+- **À dire au propriétaire quand il ne voit pas un changement** : ouvre l'appli, attends le bandeau, touche « Ouvrir ». S'il n'apparaît pas, vérifie le numéro de version en bas des Réglages.
+
 ## Repartir à zéro (fait, demande du propriétaire)
 
 Le propriétaire ne savait pas comment effacer ses essais avant de faire tester l'appli à un commerçant. Réglages → **Repartir à zéro** → « Tout effacer et repartir à zéro », avec **deux confirmations** (la seconde rappelle qu'on ne peut pas revenir en arrière) et un rappel de faire une sauvegarde d'abord.

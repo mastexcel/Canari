@@ -2421,3 +2421,5 @@ body {
 .cadre .graphe { height: 66px; margin: 8px 0 0; }
 .cadre .graphe-comparatif { height: 74px; }
 .cadre .legende-comparatif { font-size: 12px; margin-top: 4px; }
+.rappel-version { background: linear-gradient(100deg, var(--olive-100), var(--ivoire)); border-color: var(--olive-200); }
+.version-numero { color: var(--texte-doux); }

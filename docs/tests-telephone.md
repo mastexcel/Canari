@@ -83,6 +83,7 @@ Téléphone testé : ______________________  Version d'Android : ________  Date 
 57. ☐ **L'essentiel / Tout le détail** : la mosaïque tient presque sur un écran, le choix est gardé quand tu reviens.
 58. ☐ Bouton **Télécharger mes chiffres** (en bas du tableau de bord, et dans les Réglages) : les trois formats (Excel, PDF, CSV) s'enregistrent et s'ouvrent.
 59. ☐ Réglages → **Repartir à zéro** : deux questions, puis l'appli est vide. Vérifie que ton abonnement est toujours actif.
+60. ☐ Le numéro de version est écrit tout en bas des **Réglages**. Après une mise en ligne, le bandeau « Une nouvelle version est prête » doit apparaître, et « Ouvrir » doit faire changer ce numéro.
 
 ---
 

@@ -1553,6 +1553,8 @@ function afficherRappelSauvegarde() {
 }
 
 function afficherReglages() {
+  demanderVersion();
+  afficherVersion();
   remplirFormBoutique();
   remplirFormPaiements();
   afficherAbonnementReglages();
@@ -1642,6 +1644,8 @@ $("ouvrir-reglages").addEventListener("click", ouvrirReglages);
 $("rappel-bouton").addEventListener("click", ouvrirReglages);
 $("fermer-reglages").addEventListener("click", function () { montrer("principal"); window.scrollTo(0, 0); });
 $("repartir-zero").addEventListener("click", repartirDeZero);
+// Charger la nouvelle version : elle est déjà téléchargée, il suffit de rouvrir.
+$("version-charger").addEventListener("click", function () { location.reload(); });
 $("sauvegarde-partager").addEventListener("click", partagerSauvegarde);
 $("sauvegarde-telecharger").addEventListener("click", telechargerSauvegarde);
 $("sauvegarde-fichier").addEventListener("change", function (e) {
@@ -1735,8 +1739,59 @@ chargerDonnees().then(function (d) {
 });
 
 // Fonctionnement sans internet
+/* ---------- Mises à jour de l'appli ----------
+   L'appli s'ouvre depuis la copie gardée sur le téléphone : une nouvelle
+   version ne s'affiche donc qu'à l'ouverture SUIVANTE. Le propriétaire a cru
+   plusieurs fois que le travail n'était pas fait alors qu'il regardait
+   l'ancienne version. Canari prévient maintenant dès qu'une version est
+   prête, et un seul appui la charge. */
+function prevenirNouvelleVersion() {
+  $("rappel-version").hidden = false;
+}
+
 if ("serviceWorker" in navigator && location.protocol !== "file:") {
   window.addEventListener("load", function () {
-    navigator.serviceWorker.register("sw.js").catch(function () {});
+    navigator.serviceWorker.register("sw.js").then(function (inscription) {
+      if (!inscription) return;
+      // Une version déjà prête, en attente.
+      if (inscription.waiting && navigator.serviceWorker.controller) prevenirNouvelleVersion();
+      inscription.addEventListener("updatefound", function () {
+        const neuf = inscription.installing;
+        if (!neuf) return;
+        neuf.addEventListener("statechange", function () {
+          // « installed » avec un contrôleur déjà là = ce n'est pas la première
+          // installation, c'est bien une mise à jour.
+          if (neuf.state === "installed" && navigator.serviceWorker.controller) prevenirNouvelleVersion();
+        });
+      });
+      // Revenir sur l'appli déclenche une vérification (au plus une par heure).
+      let derniere = 0;
+      document.addEventListener("visibilitychange", function () {
+        if (document.hidden || Date.now() - derniere < 36e5) return;
+        derniere = Date.now();
+        inscription.update().catch(function () { /* pas de réseau */ });
+      });
+    }).catch(function () {});
+
+    // La version servie, pour l'afficher dans les Réglages.
+    navigator.serviceWorker.addEventListener("message", function (e) {
+      if (e.data && e.data.type === "version") {
+        versionServie = e.data.version;
+        afficherVersion();
+      }
+    });
   });
+}
+
+let versionServie = "";
+function demanderVersion() {
+  if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage({ type: "version" });
+  }
+}
+// Le numéro de version vit dans son propre élément : la phrase au-dessus
+// garde ainsi sa traduction anglaise, et le numéro n'est jamais traduit.
+function afficherVersion() {
+  const e = $("version-numero");
+  if (e) e.textContent = versionServie ? " · " + versionServie : "";
 }

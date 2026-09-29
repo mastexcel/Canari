@@ -355,8 +355,6 @@ function afficherEtape() {
   } else if (nom === "activites") {
     titre = "Que vends-tu ?";
     html = '<p class="aide">Tu peux en choisir plusieurs.</p>' + choixMultiplesHtml(ACTIVITES, b.activites, "data-activite");
-  } else if (nom === "caisse") {
-    brouillon.caisse = lireMontant($("param-caisse").value);
   } else if (nom === "marge") {
     image = "canari-joyeux";
     titre = "Ta marge habituelle";

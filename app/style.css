@@ -137,7 +137,7 @@ body {
   gap: 10px;
   margin-bottom: 14px;
 }
-.entete img { border-radius: 10px; }
+.entete img { flex-shrink: 0; }
 .logo-petit { font-size: 28px; color: var(--vert-foret); }
 .date {
   margin-left: auto;
@@ -442,7 +442,7 @@ body {
   box-shadow: 0 8px 24px rgba(0, 0, 0, .25);
   z-index: 20;
 }
-.message img { flex-shrink: 0; border-radius: 10px; }
+.message img { flex-shrink: 0; }
 .message span { flex: 1; }
 .message button {
   font: inherit;

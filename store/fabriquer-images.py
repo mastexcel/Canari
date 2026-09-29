@@ -6,8 +6,13 @@ Le personnage est mis à l'échelle sur sa HAUTEUR, pas sur le cadre : sinon
 celui qui a les bras repliés (plus étroit) paraîtrait plus grand que les autres
 alors que l'appli fixe la largeur et laisse la hauteur suivre.
 
-L'icône de l'appli reprend le fond vert de la marque (#174A3F, celui du
-manifeste et de l'écran de démarrage) avec la jarre qui lève le pouce.
+L'icône que le TÉLÉPHONE affiche garde le fond vert de la marque (#174A3F,
+celui du manifeste et de l'écran de démarrage) : sur un écran d'accueil, une
+image sans fond se perdrait dans le papier peint.
+
+Dans l'APPLI en revanche, plus aucun fond vert (demande du propriétaire) :
+le petit logo de l'en-tête et l'avatar des messages sont la jarre seule, posée
+sur l'ivoire de la page.
 """
 import os
 from PIL import Image
@@ -47,8 +52,8 @@ for nom, (decoupe, l, h) in MASCOTTES.items():
     im = poser(decoupes[decoupe], l, h, sur_hauteur=True)
     print(nom.ljust(20), f"{l}×{h}", round(enregistrer_webp(im, f"{CIBLE}/{nom}.webp") / 1024, 1), "Ko")
 
-# L'avatar carré des messages : fond vert, comme avant.
-joyeux = poser(decoupes["joyeux"], 360, 360, marge=0.04, fond=VERT).convert("RGB")
+# Le logo de l'en-tête et l'avatar des messages : la jarre seule, sans fond.
+joyeux = poser(decoupes["joyeux"], 360, 360, marge=0.02)
 print("canari-joyeux".ljust(20), "360×360", round(enregistrer_webp(joyeux, f"{CIBLE}/canari-joyeux.webp") / 1024, 1), "Ko")
 
 # Les icônes de l'appli : fond vert plein (Android arrondit lui-même).

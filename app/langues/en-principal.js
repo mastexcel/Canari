@@ -99,6 +99,7 @@ Object.assign(EN, {
   "Choisir le fichier": "Choose the file",
   "Revenir comme avant la récupération": "Go back to how it was before restoring",
   "canari · Garde chaque franc. · Zéro publicité.": "canari · Keep every franc. · Zero ads.",
+  "Tes données et ta vie privée": "Your data and your privacy",
   "ex. Boutique Awa": "e.g. Awa's Shop",
   "ex. 07 00 00 00 00": "e.g. 07 00 00 00 00",
   "ex. Yopougon Selmer, Abidjan": "e.g. Yopougon Selmer, Abidjan",

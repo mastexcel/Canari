@@ -1,0 +1,102 @@
+# Fabrique l'application Android (.aab) à envoyer au Play Store.
+#
+# À lancer à la main : onglet « Actions » du dépôt → « Fabriquer l'application
+# Android » → « Run workflow ». Le fichier apparaît ensuite en bas de la page,
+# dans « Artifacts ».
+#
+# Il faut d'abord avoir créé les deux secrets du dépôt (Settings → Secrets and
+# variables → Actions) :
+#   ANDROID_KEYSTORE      — le fichier de signature, encodé en base64
+#   ANDROID_KEYSTORE_PASS — son mot de passe
+# La toute première fois, lance la tâche SANS ces secrets : elle fabrique une
+# clé neuve et te la donne à télécharger. Voir docs/play-store.md.
+
+name: Fabriquer l'application Android
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Numéro de version affiché (ex. 1.0.1)"
+        required: false
+        default: ""
+
+jobs:
+  construire:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Installer Bubblewrap
+        run: npm install -g @bubblewrap/cli
+
+      - name: Préparer la clé de signature
+        id: cle
+        env:
+          KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
+          KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+        run: |
+          set -e
+          if [ -n "$KEYSTORE" ]; then
+            echo "$KEYSTORE" | base64 -d > android.keystore
+            echo "MOT_DE_PASSE=$KEYSTORE_PASS" >> "$GITHUB_ENV"
+            echo "neuve=non" >> "$GITHUB_OUTPUT"
+            echo "Clé de signature récupérée depuis les secrets."
+          else
+            MDP=$(head -c 24 /dev/urandom | base64 | tr -dc 'A-Za-z0-9' | head -c 24)
+            keytool -genkeypair -v -keystore android.keystore -alias canari \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass "$MDP" -keypass "$MDP" \
+              -dname "CN=Canari, O=Canari, L=Abidjan, C=CI"
+            echo "MOT_DE_PASSE=$MDP" >> "$GITHUB_ENV"
+            echo "neuve=oui" >> "$GITHUB_OUTPUT"
+            echo "$MDP" > mot-de-passe-de-la-cle.txt
+            base64 -w0 android.keystore > android.keystore.base64
+            echo "::warning::Une clé de signature NEUVE a été fabriquée. Télécharge-la plus bas, garde-la précieusement, puis mets-la dans les secrets du dépôt."
+          fi
+
+      - name: Fabriquer le projet Android
+        run: |
+          set -e
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            node -e "const f='twa-manifest.json';const m=JSON.parse(require('fs').readFileSync(f));m.appVersionName='${{ github.event.inputs.version }}';m.appVersionCode=Math.floor(Date.now()/60000);require('fs').writeFileSync(f,JSON.stringify(m,null,2));"
+          fi
+          yes | bubblewrap init --manifest="https://mastexcel.github.io/Canari/manifest.webmanifest" --directory=android || true
+          cp twa-manifest.json android/twa-manifest.json
+          cp android.keystore android/android.keystore
+          cd android
+          bubblewrap build --skipPwaValidation \
+            --signingKeyPath=./android.keystore \
+            --signingKeyAlias=canari <<< "$MOT_DE_PASSE
+          $MOT_DE_PASSE"
+
+      - name: Récupérer l'empreinte de la clé
+        run: |
+          keytool -list -v -keystore android.keystore -alias canari -storepass "$MOT_DE_PASSE" \
+            | grep -A1 "SHA256:" | head -2 | tee empreinte-sha256.txt
+
+      - name: Ranger les fichiers
+        run: |
+          mkdir -p resultat
+          cp android/app-release-bundle.aab resultat/canari.aab 2>/dev/null || cp android/*.aab resultat/ 2>/dev/null || true
+          cp empreinte-sha256.txt resultat/ 2>/dev/null || true
+          if [ "${{ steps.cle.outputs.neuve }}" = "oui" ]; then
+            cp android.keystore android.keystore.base64 mot-de-passe-de-la-cle.txt resultat/
+          fi
+          ls -la resultat
+
+      - name: Déposer le résultat
+        uses: actions/upload-artifact@v4
+        with:
+          name: canari-android
+          path: resultat/
+          retention-days: 30

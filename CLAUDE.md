@@ -292,6 +292,17 @@ Le propriétaire ne savait pas comment effacer ses essais avant de faire tester 
   - Réglages → **Voix** : « Canari lit ses messages à voix haute » (chaque message du bas) et « Parler plus lentement » (gardés sur le téléphone).
   - La reconnaissance vocale de Chrome a besoin d'internet ; la lecture à voix haute marche en général sans. Les langues locales (dioula, baoulé…) ne sont pas reconnues. Le micro du clavier du téléphone (Gboard) reste utilisable dans tous les champs.
 
+## Play Store (préparé, étape 8)
+
+Tout ce qui peut être fait sans compte Google est fait. Guide pas à pas pour le propriétaire : `docs/play-store.md`.
+- **Politique de confidentialité** : `app/confidentialite.html` (français + anglais), obligatoire pour le Play Store. Adresse publique : `https://mastexcel.github.io/Canari/confidentialite.html`. Lien en bas des Réglages. Contenu : tout reste sur le téléphone, aucune publicité, aucun traqueur ; la liste exacte des cas où une donnée sort (WhatsApp, sauvegarde, export, contacts, abonnement, micro, option Conseil) ; les autorisations, toutes refusables.
+- **Visuels de la fiche** : `store/` — icône 512, icône maskable 512, bannière 1024 × 500, et cinq captures 1080 × 1920 fabriquées depuis une vraie boutique de démonstration bénéficiaire, chacune avec sa phrase (« Ton bénéfice du jour, sans calculer », « N'oublie plus qui te doit », « Relance sans te fâcher », « Tes chiffres, expliqués », « Une facture propre, en deux secondes »).
+- **Technique** : l'appli part au Play Store en **TWA** (l'appli Android ouvre le site en plein écran, sans barre d'adresse : un seul code à maintenir). `twa-manifest.json` (réglages Bubblewrap, `packageId: ci.canari.app`), `android/` (dossier de fabrication), `.github/workflows/android.yml` (tâche manuelle qui fabrique le `.aab` — **jamais encore exécutée** : l'ordinateur de travail n'a pas accès aux outils Android de Google).
+- **Deux décisions attendues du propriétaire** (détaillées dans le guide) :
+  1. **12 testeurs pendant 14 jours** : pour un compte développeur personnel récent, Google l'exige avant d'autoriser la publication au grand public. Les 10 commerçants du test terrain sont exactement ces testeurs.
+  2. **L'adresse du fichier de vérification** : Google vérifie `https://mastexcel.github.io/.well-known/assetlinks.json`, à la **racine du domaine**, pas dans `/Canari/`. Deux solutions : un second dépôt GitHub gratuit nommé `mastexcel.github.io`, ou un nom de domaine à soi (`canari.ci`). Modèle prêt : `app/.well-known/assetlinks.json` (l'empreinte SHA-256 est donnée par le Play Console après le premier envoi).
+- **À garder précieusement** : le fichier de signature (keystore) et son mot de passe — sans eux, plus aucune mise à jour possible.
+
 ## Hors version 1 (plus tard)
 
 Compte en ligne et synchronisation, plusieurs vendeurs par boutique, paiement mobile automatique dans l'appli (voir ci-dessus), activation automatique de l'abonnement, autres langues (dioula, baoulé), autres pays.
@@ -309,7 +320,7 @@ Compte en ligne et synchronisation, plusieurs vendeurs par boutique, paiement mo
 7 bis. **Test avec de vrais commerçants (en cours)** : guide de terrain prêt dans `docs/test-terrain.md` — 10 commerçants, 6 gestes à faire seul, questions de prix, fiche à remplir, seuils de décision. Sert à répondre à deux questions : l'appli est-elle comprise sans aide, et paieront-ils 1 000 F par mois ? Les résultats décident de la suite (corriger l'appli, ou ajuster le prix, ou lancer).
 7 quater. **Export Excel** et **option Conseil** (« Demande à Canari »), payante (fait).
 7 ter. **Tableau de bord** : indicateurs d'activité, d'efficacité, de profitabilité et d'investissement, lus et expliqués, avec les trois gestes conseillés ; investissements et acquisitions (fait).
-8. Préparation pour le Play Store (icône, captures d'écran, description).
+8. **Play Store (préparé)** : politique de confidentialité, visuels de la fiche, réglages TWA, guide pas à pas (`docs/play-store.md`). Reste au propriétaire : le compte développeur, les 12 testeurs et le choix du domaine.
 
 À chaque étape : montrer le résultat, expliquer comment le tester, attendre l'avis du propriétaire avant de passer à la suite.
 

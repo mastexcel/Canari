@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "ci.canari.app",
+      "sha256_cert_fingerprints": [
+        "REMPLACER_PAR_L_EMPREINTE_SHA256_DONNEE_PAR_GOOGLE_PLAY"
+      ]
+    }
+  }
+]

@@ -107,9 +107,12 @@ function dessinerFactureAbo(doc) {
         }
         if (logoCanari) {
           const cote = 120, e = Math.min(cote / logoCanari.width, cote / logoCanari.height);
-          const larg = logoCanari.width * e;
-          if (vraiment) ctx.drawImage(logoCanari, L - marge - larg, y, larg, logoCanari.height * e);
-          bas = Math.max(bas, y + logoCanari.height * e);
+          const larg = logoCanari.width * e, haut = logoCanari.height * e;
+          if (vraiment) ctx.drawImage(logoCanari, L - marge - larg, y, larg, haut);
+          // Le nom de la marque sous la mascotte, en minuscules comme dans le logo.
+          const centre = L - marge - larg / 2;
+          texte("canari", centre, y + haut + 30, fredoka(32), C.vert, "center");
+          bas = Math.max(bas, y + haut + 40);
         }
         y = bas + 44;   // de l'air entre les logos et les mentions légales
 

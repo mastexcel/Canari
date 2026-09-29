@@ -16,7 +16,7 @@ const EMETTEUR = {
   logo: "icones/bip.webp",
   adresse: "Cocody Riviera Faya, Abidjan",
   tel: "0748346650",              // le fixe est le 25 22 02 01 80
-  email: "",                      // À CONFIRMER : illisible sur la déclaration manuscrite
+  email: "jja@bridgeinvestmentpartners.net",
   rccm: "CI-ABJ-03-2022-B12-00279",
   dfe: "2205980 D",               // compte contribuable (à revérifier sur le document)
   // La TVA n'est pas cochée parmi les obligations fiscales de la déclaration

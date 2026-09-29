@@ -216,6 +216,8 @@ function preparerFacture(id, nom, prix, tel) {
   l.push(EMETTEUR.nom);
   if (EMETTEUR.forme) l.push(EMETTEUR.forme);
   if (EMETTEUR.adresse) l.push(EMETTEUR.adresse);
+  if (EMETTEUR.tel) l.push("Tél. " + EMETTEUR.tel.replace(/(\d\d)(?=\d)/g, "$1 ").trim());
+  if (EMETTEUR.email) l.push(EMETTEUR.email);
   if (EMETTEUR.rccm) l.push("RCCM : " + EMETTEUR.rccm);
   if (EMETTEUR.dfe) l.push("DFE / NCC : " + EMETTEUR.dfe);
   l.push("");

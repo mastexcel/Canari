@@ -206,6 +206,8 @@ function factureAboEnTexte(doc) {
   l.push(EMETTEUR.nom);
   if (EMETTEUR.forme) l.push(EMETTEUR.forme);
   if (EMETTEUR.adresse) l.push(EMETTEUR.adresse);
+  if (EMETTEUR.tel) l.push(tr("Tél. " + afficherTel(EMETTEUR.tel)));
+  if (EMETTEUR.email) l.push(EMETTEUR.email);
   if (EMETTEUR.rccm) l.push(tr("RCCM : " + EMETTEUR.rccm));
   if (EMETTEUR.dfe) l.push(tr("DFE / NCC : " + EMETTEUR.dfe));
   l.push("");

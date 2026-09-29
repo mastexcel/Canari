@@ -17,19 +17,16 @@ Tiré de ta **déclaration fiscale d'existence** et de ton **registre du commerc
 | Téléphone | 07 48 34 66 50 *(le fixe est le 25 22 02 01 80)* |
 | **N° RCCM** | **CI-ABJ-03-2022-B12-00279** |
 | **N° de compte contribuable** | **2205980 D** |
+| E-mail | jja@bridgeinvestmentpartners.net *(donné le 29/09/2026)* |
 
-## Ce qui manque encore — trois choses
+## Ce qui manque encore — deux choses
 
-1. **L'e-mail.** Sur ta déclaration il est écrit à la main et je n'arrive pas à
-   le lire avec certitude (« jja@bipexp… »). Je ne l'invente pas : une adresse
-   fausse sur une facture, ce sont des clients qui écrivent dans le vide.
-   **Écris-la-moi.**
-2. **La mention de TVA.** Sur ta déclaration, la case TVA n'est pas cochée parmi
+1. **La mention de TVA.** Sur ta déclaration, la case TVA n'est pas cochée parmi
    tes obligations fiscales (ton régime est « IM »). La phrase exacte à écrire
    dépend de ton régime, et c'est la seule ligne de la facture qui engage ta
    responsabilité fiscale : **demande-la à ton comptable.** Souvent :
    « TVA non applicable — article 355 du Code général des impôts ».
-3. **Une vérification de ta part.** Relis les deux numéros ci-dessus sur ta
+2. **Une vérification de ta part.** Relis les deux numéros ci-dessus sur ta
    facture, à l'écran. Un chiffre de travers sur un numéro fiscal, et la facture
    ne vaut rien. **C'est toi qui confirmes, pas moi.**
 
@@ -50,16 +47,16 @@ const EMETTEUR = {
   nom: "Bridge Investment & Partners",
   produit: "Canari",
   logo: "icones/bip.webp",
-  adresse: "",     // ← ici
-  tel: "",         // ← ici
-  email: "",       // ← ici
-  rccm: "",        // ← ici
-  dfe: "",         // ← ici
-  tva: ""          // ← ici
+  adresse: "Cocody Riviera Faya, Abidjan",
+  tel: "0748346650",
+  email: "jja@bridgeinvestmentpartners.net",
+  rccm: "CI-ABJ-03-2022-B12-00279",
+  dfe: "2205980 D",
+  tva: ""          // ← la seule case encore vide
 };
 ```
 
-Tu peux aussi me donner les six lignes en message : je les mets moi-même, je
+Tu peux aussi me donner la ligne qui manque en message : je les mets moi-même, je
 vérifie le rendu et je remets l'appli en ligne.
 
 ## Pourquoi un seul fichier

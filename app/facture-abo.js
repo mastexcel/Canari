@@ -111,10 +111,12 @@ function dessinerFactureAbo(doc) {
           if (vraiment) ctx.drawImage(logoCanari, L - marge - larg, y, larg, logoCanari.height * e);
           bas = Math.max(bas, y + logoCanari.height * e);
         }
-        y = bas + 26;
+        y = bas + 44;   // de l'air entre les logos et les mentions légales
 
-        // Coordonnées de l'émetteur.
+        // Coordonnées de l'émetteur. La forme juridique et le capital sont
+        // obligatoires sur une facture de société en Côte d'Ivoire.
         const lignesEmetteur = [];
+        if (EMETTEUR.forme) lignesEmetteur.push(EMETTEUR.forme);
         if (EMETTEUR.adresse) lignesEmetteur.push(EMETTEUR.adresse);
         if (EMETTEUR.tel) lignesEmetteur.push(tr("Tél. " + afficherTel(EMETTEUR.tel)));
         if (EMETTEUR.email) lignesEmetteur.push(EMETTEUR.email);
@@ -202,6 +204,8 @@ function factureAboEnTexte(doc) {
   const l = [];
   l.push(tr("FACTURE D'ABONNEMENT") + " " + doc.numero);
   l.push(EMETTEUR.nom);
+  if (EMETTEUR.forme) l.push(EMETTEUR.forme);
+  if (EMETTEUR.adresse) l.push(EMETTEUR.adresse);
   if (EMETTEUR.rccm) l.push(tr("RCCM : " + EMETTEUR.rccm));
   if (EMETTEUR.dfe) l.push(tr("DFE / NCC : " + EMETTEUR.dfe));
   l.push("");

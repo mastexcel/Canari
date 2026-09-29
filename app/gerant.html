@@ -214,6 +214,8 @@ function preparerFacture(id, nom, prix, tel) {
   const l = [];
   l.push("FACTURE D'ABONNEMENT " + numero);
   l.push(EMETTEUR.nom);
+  if (EMETTEUR.forme) l.push(EMETTEUR.forme);
+  if (EMETTEUR.adresse) l.push(EMETTEUR.adresse);
   if (EMETTEUR.rccm) l.push("RCCM : " + EMETTEUR.rccm);
   if (EMETTEUR.dfe) l.push("DFE / NCC : " + EMETTEUR.dfe);
   l.push("");

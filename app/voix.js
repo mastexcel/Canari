@@ -518,7 +518,9 @@ function phraseDansSaisie(alternatives) {
     // Si l'appli a refusé (numéro manquant…), Canari lit l'erreur et réécoute.
     setTimeout(function () {
       if (!$("saisie").hidden && !$("erreur").hidden) {
-        parler($("erreur").textContent, function () { toursConversation++; ecouterVoix(true, phraseDansSaisie); });
+        // Le conseil qui accompagne un refus est dit lui aussi (caisse trop juste…).
+        const aide = $("erreur-aide").hidden ? "" : " " + $("erreur-aide").textContent;
+        parler($("erreur").textContent + aide, function () { toursConversation++; ecouterVoix(true, phraseDansSaisie); });
       }
     }, 150);
     return;

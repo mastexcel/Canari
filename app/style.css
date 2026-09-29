@@ -1391,6 +1391,13 @@ input.qte {
 .compte-details[hidden] { display: none; }
 .par-moyen { opacity: 1 !important; font-weight: 600; }
 
+/* Argent en caisse : un solde par moyen de paiement (Réglages), et le
+   solde rappelé sur chaque bouton quand on choisit avec quoi on paie. */
+.liste-soldes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.ligne-solde { display: flex; flex-direction: column; gap: 4px; }
+.solde-moyen { font-weight: 600; color: var(--texte-doux); }
+.aide.a-compter { color: var(--credit-fonce); font-weight: 600; }
+
 #arrivage-moyen { display: flex; flex-direction: column; gap: 8px; }
 #arrivage-moyen[hidden] { display: none; }
 #choix-moyen-achat .suggestion[aria-pressed="true"] { border-color: var(--entre); background: #EAF4EE; }
@@ -1968,7 +1975,7 @@ body {
 .total-credits strong, .client-haut strong, .barre-valeur, .stock-quantite b,
 .note.quantite, .ligne-carte b, .lc-montant, .lc-f, .cascade-ligne b,
 .fiche-total b, .matrice .marge td, .conso li b, .abo-prix, .rapide,
-.client-tel, .ligne-fiche .lf-qte, .ligne-fiche .lf-prix, .date {
+.client-tel, .ligne-fiche .lf-qte, .ligne-fiche .lf-prix, .date, .solde-moyen {
   font-family: var(--chiffres);
   font-variant-numeric: tabular-nums lining-nums;
 }

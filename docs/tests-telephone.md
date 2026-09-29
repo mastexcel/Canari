@@ -85,6 +85,15 @@ Téléphone testé : ______________________  Version d'Android : ________  Date 
 59. ☐ Réglages → **Repartir à zéro** : deux questions, puis l'appli est vide. Vérifie que ton abonnement est toujours actif.
 60. ☐ Le numéro de version est écrit tout en bas des **Réglages**. Après une mise en ligne, le bandeau « Une nouvelle version est prête » doit apparaître, et « Ouvrir » doit faire changer ce numéro.
 
+## Argent en caisse (le garde-fou)
+
+61. ☐ **Réglages → Argent en caisse** : compte ton argent et écris-le. Le chiffre « Argent en caisse » de l'écran Jour doit montrer exactement la même chose.
+62. ☐ Essaie une **dépense plus grande que ton argent** : Canari doit refuser en écrivant combien il manque, et **ne rien enregistrer**.
+63. ☐ Si un compte mobile (Wave, Orange…) a assez, son bouton doit montrer son solde. Touche-le : le refus disparaît et l'enregistrement passe.
+64. ☐ Un **arrivage payé comptant** trop cher doit être refusé de la même façon ; le même arrivage **« Tout à crédit »** doit passer.
+65. ☐ Une **vente** et un **remboursement** ne doivent **jamais** être bloqués, même avec une caisse à zéro.
+66. ☐ Éteins « M'empêcher de dépenser l'argent que je n'ai pas » dans les Réglages : tout doit redevenir comme avant.
+
 ---
 
 **Ce que j'ai déjà vérifié sur un téléphone simulé** (processeur 6 fois plus lent, une année entière de ventes, soit plus de 10 000 lignes) : ouverture en moins d'une seconde, chaque onglet en moins de 0,3 seconde, enregistrement d'une vente en moins de 0,4 seconde, fonctionnement sans internet, sauvegarde et récupération. Les couleurs respectent les règles de lisibilité (contraste suffisant). Ce qui reste à vérifier en vrai : le ressenti au soleil, WhatsApp, l'installation, et surtout **si un commerçant s'en sert sans aide**.

@@ -33,7 +33,7 @@ Concurrents étudiés : Djago (Côte d'Ivoire), Keiwa, NAFA ERP, OkCredit, Khata
 ## Identité visuelle
 
 - **Nom** : Canari (la jarre traditionnelle en terre cuite qui garde l'eau précieuse). Écrit en minuscules dans le logo : « canari ».
-- **Slogan** : « Garde chaque franc. »
+- **Slogan** : « Tu vends. Canari compte. » (choisi par le propriétaire en remplacement de « Garde chaque franc. », qui ne voulait plus rien dire hors zone FCFA depuis l'ajout des monnaies : naira, franc guinéen…). Il dit le partage du travail, ne nomme aucune monnaie, et fait entendre le nom de la marque. Anglais : « You sell. Canari counts. »
 - **Couleurs**
   - Vert forêt `#174A3F` (couleur principale, fond de l'icône)
   - Terre cuite `#C8643A` (la jarre)
@@ -302,6 +302,24 @@ Tout ce qui peut être fait sans compte Google est fait. Guide pas à pas pour l
   1. **12 testeurs pendant 14 jours** : pour un compte développeur personnel récent, Google l'exige avant d'autoriser la publication au grand public. Les 10 commerçants du test terrain sont exactement ces testeurs.
   2. **L'adresse du fichier de vérification** : Google vérifie `https://mastexcel.github.io/.well-known/assetlinks.json`, à la **racine du domaine**, pas dans `/Canari/`. Deux solutions : un second dépôt GitHub gratuit nommé `mastexcel.github.io`, ou un nom de domaine à soi (`canari.ci`). Modèle prêt : `app/.well-known/assetlinks.json` (l'empreinte SHA-256 est donnée par le Play Console après le premier envoi).
 - **À garder précieusement** : le fichier de signature (keystore) et son mot de passe — sans eux, plus aucune mise à jour possible.
+
+## La caisse ne peut pas être négative (fait, décision du propriétaire)
+
+Demande : « la caisse ne peut jamais être négative, donc paramètre de sorte que s'il n'y a pas d'argent dans la caisse elle ne peut pas effectuer de dépenses en espèces, à moins de suggérer le règlement par le compte mobile money qui a un solde suffisant. » Code : `app/paiements.js`.
+
+- **Un solde par moyen** (espèces, Wave, Orange Money, MTN, Moov, Djamo) : `soldeMoyen(k)` = argent du départ + tout ce qui est entré − tout ce qui est sorti, depuis le premier jour. `caisseTotale()` (tableau de bord, « ce que vaut ta boutique », « ce qu'on peut investir ») passe maintenant par ce même calcul : **un seul argent en caisse pour toute l'appli**.
+- **L'argent du départ est indispensable.** Sans lui, une boutique qui commence Canari avec 40 000 F dans son tiroir partirait de zéro et ne pourrait pas noter sa première dépense. Il est donc demandé **dans le questionnaire de départ** (nouvelle étape « L'argent que tu as maintenant », après « Ta boutique ») et corrigeable à tout moment dans **Réglages → Argent en caisse**, où le commerçant **compte son argent et écrit ce qu'il a** : Canari en déduit le départ (`poserSolde()`). C'est le même principe que le stock de départ.
+- **Le garde-fou** : toute sortie d'argent (dépense, pris pour la maison, investissement, paiement fournisseur, part versée d'une dette, arrivage ou achat d'intrant payé) est refusée si elle dépasse le solde du moyen choisi. Types concernés : `SORTIES` dans `paiements.js`. Une **vente, un remboursement ou un achat à crédit ne sont jamais bloqués** : rien ne sort.
+- **Trois sorties honnêtes, jamais « note-le quand même »** :
+  1. **payer avec un compte qui a assez** — c'est la suggestion demandée. Chaque bouton « Payé avec… » affiche son solde (« Espèces 5 000 F · Wave 20 000 F ») : on choisit en voyant. Toucher un autre compte efface le refus ;
+  2. **prendre la marchandise à crédit** chez le fournisseur (conseillé pour une dépense ou un arrivage) ;
+  3. **corriger son argent** dans Réglages, si le commerçant a de l'argent que Canari ne connaît pas.
+- **Le message** : une phrase rouge (« Espèces : tu n'as que 5 000 F. Il manque 3 000 F. ») et, en dessous, un conseil fixe selon le cas (`#erreur-aide`, `#arrivage-erreur-aide`). Le conseil est **une phrase entière sans chiffre**, pour qu'une seule entrée de dictionnaire suffise ; seule la phrase chiffrée a un motif `EN_MOTIFS`. La voix lit les deux.
+- **C'est un paramètre** (demande du propriétaire) : Réglages → Argent en caisse → « M'empêcher de dépenser l'argent que je n'ai pas », actif par défaut (`donnees.boutique.gardeCaisse`). Éteint, l'appli se comporte comme avant.
+- **L'écran Jour montre maintenant ce qui reste vraiment** (« Argent en caisse 25 000 F », détail du jour en dessous) et non plus l'entrée moins la sortie du jour : sinon le chiffre affiché et le chiffre qui bloque seraient différents, et le refus passerait pour un bug. Les vues 7 jours et Mois, qui sont bien des flux, s'appellent désormais « Entré moins sorti sur 7 jours / ce mois ».
+- **Deux bugs corrigés au passage** : un **investissement** ne sortait pas de la caisse par moyen (`caisseParMoyen`) et n'avait pas de choix « Payé avec… ».
+- **Règle pour la suite** : tout nouveau mouvement qui fait sortir de l'argent doit être ajouté à `SORTIES` et passer par `verifierSortie()` avant d'être enregistré.
+
 
 ## Hors version 1 (plus tard)
 

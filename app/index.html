@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>canari</title>
-<meta name="description" content="Canari, le carnet de caisse de ta boutique. Garde chaque franc.">
+<meta name="description" content="Canari, le carnet de caisse de ta boutique. Tu vends. Canari compte.">
 <meta name="theme-color" content="#174A3F">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icones/icone-192.png">
@@ -19,7 +19,7 @@
   <div class="accueil-centre">
     <img class="accueil-mascotte" src="icones/mascotte-canari-3d.webp" width="180" height="230" alt="Petit Canari, la jarre souriante">
     <h1 class="logo">canari</h1>
-    <p class="slogan">Garde chaque franc.</p>
+    <p class="slogan">Tu vends. Canari compte.</p>
     <p class="accueil-texte">Ton carnet de caisse sur le téléphone. Ventes, dépenses, crédits : tout est noté, même sans internet.</p>
   </div>
   <button type="button" class="bouton-ecouter bouton-ecouter-accueil voix-lire" id="voix-accueil">
@@ -211,6 +211,19 @@
     <p class="aide">Canari ne reçoit pas l'argent lui-même : tu vérifies sur ton téléphone que le paiement est bien arrivé, puis tu le notes.</p>
   </form>
 
+  <form class="carte-reglage" id="form-caisse" novalidate autocomplete="off">
+    <h2>Argent en caisse</h2>
+    <p class="aide">Compte ton argent maintenant et écris ce que tu as. Canari s'en sert pour t'empêcher de sortir de l'argent que tu n'as pas.</p>
+    <p class="aide a-compter" id="caisse-pas-comptee" hidden>Tu n'as pas encore dit combien tu as. Écris-le puis enregistre : Canari pourra alors t'empêcher de sortir de l'argent que tu n'as pas.</p>
+    <ul class="liste-soldes" id="liste-soldes"></ul>
+    <div class="choix-cartes">
+      <button type="button" class="choix-carte" id="garde-caisse" aria-pressed="true"><b>M'empêcher de dépenser l'argent que je n'ai pas</b><small>Canari refuse une sortie plus grande que ce qui reste, et propose un compte qui a assez.</small></button>
+    </div>
+    <button type="submit" class="bouton bouton-sauver">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>Enregistrer
+    </button>
+  </form>
+
   <form class="carte-reglage" id="form-boutique" novalidate autocomplete="off">
     <h2>Ma boutique</h2>
     <p class="aide">Ces infos apparaissent sur tes factures et tes reçus.</p>
@@ -319,7 +332,7 @@
     </button>
   </section>
 
-  <p class="aide version">canari · Garde chaque franc. · Zéro publicité.<span class="version-numero" id="version-numero" translate="no"></span><br>
+  <p class="aide version">canari · Tu vends. Canari compte. · Zéro publicité.<span class="version-numero" id="version-numero" translate="no"></span><br>
     <a href="confidentialite.html" target="_blank" rel="noopener">Tes données et ta vie privée</a></p>
 </section>
 
@@ -572,6 +585,7 @@
   <input id="note" class="note" enterkeyhint="done">
 
   <p class="erreur" id="erreur" hidden></p>
+  <p class="aide" id="erreur-aide" hidden></p>
   <div class="saisie-boutons">
     <button type="button" class="bouton bouton-annuler" id="saisie-annuler">Annuler</button>
     <button type="submit" class="bouton bouton-ok" id="saisie-ok">
@@ -744,6 +758,7 @@
   <p class="aide paiement-resume" id="arrivage-paye-aide"></p>
   </div>
   <p class="erreur" id="arrivage-erreur" hidden></p>
+  <p class="aide" id="arrivage-erreur-aide" hidden></p>
   <div class="saisie-boutons">
     <button type="button" class="bouton bouton-annuler" id="arrivage-annuler">Annuler</button>
     <button type="submit" class="bouton bouton-ok">

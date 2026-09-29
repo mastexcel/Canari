@@ -66,7 +66,7 @@ function choisirDansContacts() {
     reconnaitreClient(); // un client déjà connu garde le nom de Canari
     if (nom && $("client-reconnu").hidden) $("client").value = nom;
     afficherSuggestions();
-    $("erreur").hidden = true;
+    cacherErreur();
   }).catch(function () { /* fenêtre fermée ou refusée */ });
 }
 

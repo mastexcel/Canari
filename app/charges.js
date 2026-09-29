@@ -188,7 +188,7 @@ function afficherMois() {
       (t.maison ? ligne("− Pris pour la maison", moins(t.maison), "moins maison") +
         ligne("= Reste pour la boutique", signe(t.net - t.maison), "total" + (t.net - t.maison < 0 ? " negatif" : "")) : "") +
     '</ul>' +
-    '<p class="aide' + (t.encaisse - t.sorti - t.maison < 0 ? ' negatif' : '') + '">Argent en caisse ce mois : ' + signe(t.encaisse - t.sorti - t.maison) +
+    '<p class="aide' + (t.encaisse - t.sorti - t.maison < 0 ? ' negatif' : '') + '">Entré moins sorti ce mois : ' + signe(t.encaisse - t.sorti - t.maison) +
       ' (entré ' + franc(t.encaisse) + ', sorti ' + franc(t.sorti + t.maison) + ').</p>';
 
   const prevues = lignesActives("charge").concat(lignesActives("impot"));
@@ -212,7 +212,7 @@ function afficherMois() {
 
 /* ---------- Questionnaire de départ ---------- */
 
-const ETAPES = ["intro", "boutique", "canaux", "activites", "marge", "charges", "impots", "fin"];
+const ETAPES = ["intro", "boutique", "caisse", "canaux", "activites", "marge", "charges", "impots", "fin"];
 let etape = 0;
 let brouillon = null; // réponses en cours, enregistrées à la fin
 let retourApres = "principal";
@@ -242,7 +242,7 @@ function ouvrirParametrage(depart, retour) {
   brouillon = {
     nom: b.nom || "", tel: b.tel || "", rccm: b.rccm || "", dfe: b.dfe || "", devise: b.devise || "XOF", symbole: b.symbole || "",
     canaux: (b.canaux || []).slice(), activites: (b.activites || []).slice(),
-    marge: margeHabituelle(), joursTravail: joursTravail(),
+    marge: margeHabituelle(), joursTravail: joursTravail(), caisse: soldeMoyen("especes"),
     charges: JSON.parse(JSON.stringify(donnees.charges || []))
   };
   etape = depart || 0;
@@ -261,6 +261,8 @@ function lireEtape() {
     brouillon.devise = $("param-devise").value;
     brouillon.symbole = $("param-symbole").value.trim();
     deviseCourante = lireDevise(brouillon); // les étapes suivantes montrent déjà la bonne monnaie
+  } else if (nom === "caisse") {
+    brouillon.caisse = lireMontant($("param-caisse").value);
   } else if (nom === "marge") {
     const m = parseInt($("param-marge").value.replace(/\D/g, ""), 10);
     if (!isNaN(m) && m < 100) brouillon.marge = m;
@@ -337,12 +339,24 @@ function afficherEtape() {
       '<input id="param-rccm" class="note" placeholder="ex. CI-ABJ-2024-A-12345" autocapitalize="characters" value="' + echapper(b.rccm) + '">' +
       '<label class="champ-etiquette" for="param-dfe">N° de DFE / compte contribuable (NCC)</label>' +
       '<input id="param-dfe" class="note" placeholder="ex. 2401234 A" autocapitalize="characters" value="' + echapper(b.dfe) + '">';
+  } else if (nom === "caisse") {
+    /* Sans cette question, une boutique qui commence Canari avec de l'argent dans
+       son tiroir partirait de zéro, et le garde-fou de la caisse refuserait sa
+       première dépense. Voir paiements.js. */
+    titre = "L'argent que tu as maintenant";
+    html = '<p>Compte l\'argent de la boutique, celui que tu as sur toi et dans le tiroir. Écris-le ici.</p>' +
+      '<label class="champ-etiquette" for="param-caisse">En espèces</label>' +
+      '<div class="montant-boite petite"><input id="param-caisse" class="montant" inputmode="numeric" placeholder="0" value="' + (brouillon.caisse ? nombre(brouillon.caisse) : "") + '">' +
+      '<span class="montant-f">' + echapper(deviseCourante.symbole) + '</span></div>' +
+      '<p class="aide">Canari s\'en sert pour t\'empêcher de sortir de l\'argent que tu n\'as pas. Tes comptes Wave ou Orange Money se règlent plus tard, dans Réglages.</p>';
   } else if (nom === "canaux") {
     titre = "Comment vends-tu ?";
     html = '<p class="aide">Tu peux en choisir plusieurs.</p>' + choixMultiplesHtml(CANAUX, b.canaux, "data-canal");
   } else if (nom === "activites") {
     titre = "Que vends-tu ?";
     html = '<p class="aide">Tu peux en choisir plusieurs.</p>' + choixMultiplesHtml(ACTIVITES, b.activites, "data-activite");
+  } else if (nom === "caisse") {
+    brouillon.caisse = lireMontant($("param-caisse").value);
   } else if (nom === "marge") {
     image = "canari-joyeux";
     titre = "Ta marge habituelle";
@@ -412,6 +426,7 @@ function terminerParametrage() {
   b.marge = brouillon.marge;
   b.joursTravail = brouillon.joursTravail;
   b.parametre = true;
+  poserSolde("especes", brouillon.caisse || 0); // l'argent déjà là au premier jour
   // On ne garde que les lignes remplies.
   donnees.charges = brouillon.charges.filter(function (l) { return l.mode === "pourcent" ? l.taux > 0 : l.montant > 0; });
   sauver();

@@ -189,7 +189,7 @@ ou 9 000 F l'année. Même sans abonnement, tu gardes l'accès à tous tes chiff
 tu peux relancer tes clients, noter leurs remboursements et faire tes
 sauvegardes : seules les nouvelles ventes demandent un abonnement.
 
-Canari. Garde chaque franc.
+Tu vends. Canari compte.
 ```
 
 ### Catégorie et type

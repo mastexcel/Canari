@@ -71,7 +71,7 @@ function resumeBoutique() {
   l.push("Bénéfice net : " + f(r.benefice) + (r.tauxNet !== null ? " (" + r.tauxNet + " %)" : "") +
     ", soit " + f(r.beneficeParJour) + " par jour de vente.");
   l.push("Argent entré : " + f(r.recettes) + ". Argent sorti : " + f(r.sorties) + ".");
-  l.push("Argent en caisse depuis le début : " + f(r.caisse) + ".");
+  l.push("Argent en caisse maintenant : " + f(r.caisse) + ".");
   if (r.seuil) l.push("Seuil de rentabilité : " + f(r.seuil) + " de ventes par jour, dépassé " + r.joursAuSeuil + " jours sur " + r.joursNotes + ".");
   l.push("On lui doit " + f(r.onMeDoit) + " (" + r.nbClientsDoivent + " clients, " + r.ageCredits + " jours en moyenne, " + r.aRelancer + " à relancer).");
   l.push("Il doit " + f(r.jeDois) + " à ses fournisseurs.");

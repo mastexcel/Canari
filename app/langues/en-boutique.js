@@ -59,6 +59,14 @@
   function fournisseurEn(qui) { return qui === "ton fournisseur" ? "your supplier" : qui; }
 
   Object.assign(EN, {
+    /* ---- Questionnaire : l'argent déjà en caisse au premier jour ---- */
+    "L'argent que tu as maintenant": "The money you have now",
+    "Compte l'argent de la boutique, celui que tu as sur toi et dans le tiroir. Écris-le ici.":
+      "Count the shop's money \u2014 what you have on you and in the drawer. Write it here.",
+    "En espèces": "In cash",
+    "Canari s'en sert pour t'empêcher de sortir de l'argent que tu n'as pas. Tes comptes Wave ou Orange Money se règlent plus tard, dans Réglages.":
+      "Canari uses it to stop you spending money you don't have. Your Wave or Orange Money accounts are set up later, in Settings.",
+
     /* ---- Unités seules (listes de choix, petits textes) ---- */
     "unité": "unit", "unités": "units", "kg": "kg", "cl": "cl", "litre": "litre", "litres": "litres",
     "mètre": "metre", "mètres": "metres", "sac": "bag", "sacs": "bags", "carton": "carton", "cartons": "cartons",
@@ -225,7 +233,7 @@
     [/^Ventes \(dont (.+ F) à crédit\)$/, "Sales ($1 on credit)"],
     [/^= Marge brute \((-?\d+) %\)$/, "= Gross margin ($1 %)"],
     [/^= Bénéfice net \((-?\d+) %\)$/, "= Net profit ($1 %)"],
-    [/^Argent en caisse ce mois : (.+) \(entré (.+ F), sorti (.+ F)\)\.$/, "Cash on hand this month: $1 (in $2, out $3)."],
+    [/^Entré moins sorti ce mois : (.+) \(entré (.+ F), sorti (.+ F)\)\.$/, "In minus out this month: $1 (in $2, out $3)."],
     [/^(\d+) % des ventes$/, "$1 % of sales"],
     [/^payé (.+ F)$/, "paid $1"],
     [/^Sur 1 000 F vendus, il te reste (.+ F)\.$/, "Out of 1 000 F of sales, you keep $1."],

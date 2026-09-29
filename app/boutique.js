@@ -350,10 +350,22 @@ function afficherSuggestionsAchat() {
   }).join("");
 }
 
-// Vérifie le paiement d'un achat avant d'enregistrer. Rend un message d'erreur, ou "".
+/* Vérifie le paiement d'un achat avant d'enregistrer. Rend un message d'erreur, ou "".
+   Le conseil qui va avec est posé dans « arrivage-erreur-aide » (voir paiements.js). */
 function verifierPaiementAchat(total) {
+  cacherErreurAchat();
   if (arrivagePaye === "non") return "";
   if (!total) return "Écris le prix pour noter le paiement.";
+  // L'argent qui sort ne peut pas dépasser ce qui reste sur le compte choisi.
+  const sort = arrivagePaye === "tout" ? total
+    : arrivagePaye === "partiel" ? lireMontant($("arrivage-donne").value) : 0;
+  const moyen = $("arrivage-moyen").hidden ? "especes" : moyenAchat;
+  const manque = verifierSortie(moyen, sort);
+  if (manque) {
+    $("arrivage-erreur-aide").textContent = aideManque(manque, "depense");
+    $("arrivage-erreur-aide").hidden = false;
+    return texteManque(manque);
+  }
   if (arrivagePaye === "tout") return "";
   if (!$("arrivage-fournisseur").value.trim()) return "Écris le nom du fournisseur, pour savoir à qui tu dois.";
   if (arrivagePaye === "partiel") {
@@ -428,7 +440,6 @@ function ouvrirArrivage(id) {
   $("arrivage-donne").value = "";
   $("arrivage-fournisseur").value = "";
   moyenAchat = "especes";
-  $("choix-moyen-achat").dataset.pret = "";
   choisirArrivagePaye("non");
   $("arrivage-conso").innerHTML = "";
   if (fabrique) {
@@ -437,7 +448,7 @@ function ouvrirArrivage(id) {
     if (produitArrivage.fiche && produitArrivage.fiche.rendement > 0) $("arrivage-quantite").value = String(produitArrivage.fiche.rendement).replace(".", ",");
     majArrivage();
   }
-  $("arrivage-erreur").hidden = true;
+  cacherErreurAchat();
   ouvrirFeuille("arrivage-form");
 }
 function enregistrerArrivage(e) {
@@ -758,10 +769,10 @@ function initBoutique() {
   $("arrivage-donne").addEventListener("input", function (e) {
     const chiffres = e.target.value.replace(/\D/g, "").slice(0, 9);
     e.target.value = chiffres ? nombre(Number(chiffres)) : "";
-    $("arrivage-erreur").hidden = true;
+    cacherErreurAchat();
     majArrivage();
   });
-  $("arrivage-fournisseur").addEventListener("input", function () { $("arrivage-erreur").hidden = true; afficherSuggestionsAchat(); majArrivage(); });
+  $("arrivage-fournisseur").addEventListener("input", function () { cacherErreurAchat(); afficherSuggestionsAchat(); majArrivage(); });
   $("arrivage-suggestions").addEventListener("click", function (e) {
     const b = e.target.closest("[data-fournisseur-achat]");
     if (!b) return;
@@ -771,7 +782,7 @@ function initBoutique() {
   });
   $("arrivage-paye").addEventListener("click", function (e) {
     const b = e.target.closest("[data-arrivage-paye]");
-    if (b) { $("arrivage-erreur").hidden = true; choisirArrivagePaye(b.dataset.arrivagePaye); }
+    if (b) { cacherErreurAchat(); choisirArrivagePaye(b.dataset.arrivagePaye); }
   });
   $("arrivage-quantite").addEventListener("input", majArrivage);
   $("arrivage-prix").addEventListener("input", function (e) {
@@ -824,7 +835,7 @@ function initBoutique() {
       panier[moins.dataset.moins] = Math.round(((panier[moins.dataset.moins] || 0) - 1) * 1000) / 1000;
       if (panier[moins.dataset.moins] <= 0) delete panier[moins.dataset.moins];
     } else return;
-    $("erreur").hidden = true;
+    cacherErreur();
     afficherChoixProduits();
   });
 

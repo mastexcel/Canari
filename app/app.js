@@ -477,16 +477,21 @@ function afficherJour() {
   $("seuil").innerHTML = '<span>Pour couvrir tes charges, vends au moins</span><b>' + franc(seuil) + '</b>' +
     '<small>Encore ' + franc(Math.max(0, seuil - t.vendu)) + ' à vendre aujourd\'hui.</small>';
   $("rappel-parametrage").hidden = !!donnees.boutique.parametre || !$("rappel-sauvegarde").hidden;
+  /* L'argent en caisse est ce qu'il reste MAINTENANT (l'argent du départ, plus tout
+     ce qui est entré, moins tout ce qui est sorti depuis le premier jour) : c'est le
+     chiffre que le garde-fou des sorties utilise, il doit donc être celui qu'on voit.
+     Le détail du jour (entré, sorti) reste en dessous. */
+  const enCaisse = caisseTotale();
   const bouge = t.encaisse || t.sorti || t.maison;
-  $("caisse").hidden = !bouge;
-  $("caisse").className = "ligne-carte" + (t.caisse < 0 ? " negatif" : "");
-  const parMoyen = caisseParMoyen(aujourdhui);
-  const detail = Object.keys(parMoyen).length > 1 || (Object.keys(parMoyen)[0] && Object.keys(parMoyen)[0] !== "especes")
-    ? '<small class="par-moyen">' + Object.keys(MOYENS).filter(function (k) { return parMoyen[k]; }).map(function (k) {
-        return MOYENS[k] + " " + (parMoyen[k] > 0 ? "+\u00a0" : "") + signe(parMoyen[k]);
+  $("caisse").hidden = !bouge && !enCaisse;
+  $("caisse").className = "ligne-carte" + (enCaisse < 0 ? " negatif" : "");
+  const parMoyen = soldesAffichables();
+  const detail = parMoyen.length > 1
+    ? '<small class="par-moyen">' + parMoyen.map(function (k) {
+        return MOYENS[k] + " " + signe(soldeMoyen(k));
       }).join(" · ") + '</small>' : '';
-  $("caisse").innerHTML = '<span>Argent en caisse</span><b>' + (t.caisse > 0 ? "+\u00a0" : "") + signe(t.caisse) + '</b>' +
-    '<small>entré ' + franc(t.encaisse) + ' · sorti ' + franc(t.sorti + t.maison) + '</small>' + detail;
+  $("caisse").innerHTML = '<span>Argent en caisse</span><b>' + signe(enCaisse) + '</b>' +
+    '<small>aujourd\'hui : entré ' + franc(t.encaisse) + ' · sorti ' + franc(t.sorti + t.maison) + '</small>' + detail;
   const reste = t.benefice - t.maison;
   $("reste-boutique").hidden = t.maison === 0;
   $("reste-boutique").className = "ligne-carte maison-carte" + (reste < 0 ? " negatif" : "");
@@ -758,7 +763,7 @@ function afficherSemaine() {
       '</div>' +
       (aCredit ? '<p class="vendu">Dont ' + franc(aCredit) + ' vendus à crédit</p>' : '') +
       (maison ? '<p class="vendu' + (reste < 0 ? ' negatif' : '') + '">Pris pour la maison ' + franc(maison) + ' · reste ' + signe(reste) + '</p>' : '') +
-      '<p class="vendu' + (caisse < 0 ? ' negatif' : '') + '">Argent en caisse sur 7 jours : ' + signe(caisse) + '</p>' +
+      '<p class="vendu' + (caisse < 0 ? ' negatif' : '') + '">Entré moins sorti sur 7 jours : ' + signe(caisse) + '</p>' +
     '</div>' +
     '<h2 class="titre-liste">Bénéfice net de chaque jour</h2>' +
     '<ul class="barres" aria-label="Bénéfice net de chaque jour">' + jours.map(function (j) {
@@ -909,7 +914,7 @@ function ouvrirSaisie(mode, client) {
   $("fournisseur").value = "";
   $("tel-f").value = "";
   $("note").value = "";
-  $("erreur").hidden = true;
+  cacherErreur();
 
   let rapides = montantsRapides(M.rapides || RAPIDES).map(function (v) {
     return '<button type="button" class="rapide" data-rapide="' + v + '">' + franc(v) + '</button>';
@@ -1072,13 +1077,13 @@ function formaterChamp(e) {
   if (e.target.readOnly) return;
   const chiffres = e.target.value.replace(/\D/g, "").slice(0, 9);
   e.target.value = chiffres ? nombre(Number(chiffres)) : "";
-  $("erreur").hidden = true;
+  cacherErreur();
   majReste();
 }
 $("montant").addEventListener("input", formaterChamp);
 $("donne").addEventListener("input", formaterChamp);
-$("client").addEventListener("input", function () { $("erreur").hidden = true; afficherSuggestions(); });
-$("tel").addEventListener("input", function () { $("erreur").hidden = true; reconnaitreClient(); afficherSuggestions(); });
+$("client").addEventListener("input", function () { cacherErreur(); afficherSuggestions(); });
+$("tel").addEventListener("input", function () { cacherErreur(); reconnaitreClient(); afficherSuggestions(); });
 $("suggestions").addEventListener("click", function (e) {
   const b = e.target.closest("[data-client]");
   if (!b) return;
@@ -1089,7 +1094,7 @@ $("suggestions").addEventListener("click", function (e) {
   reconnaitreClient();
   afficherSuggestions();
 });
-$("fournisseur").addEventListener("input", function () { $("erreur").hidden = true; afficherSuggestionsF(); });
+$("fournisseur").addEventListener("input", function () { cacherErreur(); afficherSuggestionsF(); });
 $("suggestions-f").addEventListener("click", function (e) {
   const b = e.target.closest("[data-fournisseur]");
   if (!b) return;
@@ -1102,7 +1107,7 @@ $("rapides").addEventListener("click", function (e) {
   const b = e.target.closest("[data-rapide]");
   if (!b) return;
   $("montant").value = nombre(Number(b.dataset.rapide));
-  $("erreur").hidden = true;
+  cacherErreur();
   majReste();
 });
 $("cout-changer").addEventListener("click", function () {
@@ -1134,7 +1139,13 @@ $("fond-saisie").addEventListener("click", fermerFeuilles);
 function erreur(texte, champ) {
   $("erreur").textContent = texte;
   $("erreur").hidden = false;
+  $("erreur-aide").hidden = true;
   if (champ) champ.focus();
+}
+// Cache le reproche et le conseil qui va avec.
+function cacherErreur() {
+  $("erreur").hidden = true;
+  $("erreur-aide").hidden = true;
 }
 
 $("saisie").addEventListener("submit", function (e) {
@@ -1145,6 +1156,14 @@ $("saisie").addEventListener("submit", function (e) {
   if (parProduits && !lignes.length) return erreur("Appuie sur + à côté des produits vendus.");
   const montant = parProduits ? totalPanier() : lireMontant($("montant").value);
   if (!montant) return erreur("Écris un montant, par exemple 1 500.", $("montant"));
+
+  /* Décision du propriétaire : la caisse ne peut jamais être négative.
+     On ne sort pas l'argent qu'on n'a pas ; Canari propose un compte qui a assez.
+     Pour une dette fournisseur, c'est la part versée qui sort : vérifiée plus bas. */
+  if (SORTIES.indexOf(modeSaisie) !== -1 && modeSaisie !== "fdette") {
+    const manque = verifierSortie(moyenActuel(), montant);
+    if (manque) return refuserSortie(manque, modeSaisie);
+  }
 
   const note = $("note").value.trim();
   let mouvement, texte, joyeux = false, nouveauClient = null;
@@ -1202,6 +1221,8 @@ $("saisie").addEventListener("submit", function (e) {
     const nom = $("fournisseur").value.trim().replace(/\s+/g, " ");
     const tel = normaliserTel($("tel-f").value);
     if (verse > montant) return erreur("Tu as donné plus que le prix. Vérifie les montants.", $("donne"));
+    const manque = verifierSortie(moyenActuel(), verse);
+    if (manque) return refuserSortie(manque, "fdette");
     if (!nom) return erreur("Écris le nom du fournisseur.", $("fournisseur"));
     if (tel && tel.length < 8) return erreur("Ce numéro semble incomplet.", $("tel-f"));
     const id = cleFournisseur(nom);
@@ -1557,6 +1578,7 @@ function afficherReglages() {
   afficherVersion();
   remplirFormBoutique();
   remplirFormPaiements();
+  remplirFormCaisse();
   afficherAbonnementReglages();
   const parJour = Math.round((fixeMensuel("charge") + fixeMensuel("impot")) / joursTravail());
   const taux = tauxVentes("charge") + tauxVentes("impot");

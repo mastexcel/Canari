@@ -3,6 +3,13 @@
 // contacts.js (fiches contact), abonnement.js (essai gratuit, abonnement).
 
 Object.assign(EN, {
+  /* ---------- Argent en caisse : le garde-fou des sorties ---------- */
+  "Touche un compte qui a assez, juste au-dessus.": "Tap an account that has enough, just above.",
+  "Prends-la à crédit chez ton fournisseur, ou corrige ton argent dans Réglages → Argent en caisse.":
+    "Take it on credit from your supplier, or fix your money in Settings → Cash on hand.",
+  "Si tu as de l'argent que Canari ne connaît pas, écris-le dans Réglages → Argent en caisse.":
+    "If you have money Canari doesn't know about, write it in Settings → Cash on hand.",
+
   /* ---------- Paiement mobile ---------- */
   "Espèces": "Cash",
   "Wave": "Wave",
@@ -102,6 +109,12 @@ function joursEnExtras(n) { return n + (Number(n) <= 1 ? " day" : " days"); }
 const COMPTES_EXTRAS = "Wave|Orange Money|MTN MoMo|Moov Money \\(Flooz\\)|Djamo";
 
 EN_MOTIFS.push(
+  /* ---------- Argent en caisse ---------- */
+  // « Espèces : tu n'as que 3 000 F. Il manque 2 000 F. »
+  [new RegExp("^(Espèces|" + COMPTES_EXTRAS + ") : tu n'as que (.+)\\. Il manque (.+)\\.$"),
+    function (t, compte, reste, manque) { return tr(compte) + ": you only have " + reste + ". " + manque + " short."; }],
+  [/^Argent en caisse enregistré : (.+) en espèces\.$/, "Cash on hand saved: $1 in cash."],
+
   /* ---------- Paiement mobile ---------- */
   // Lignes « Wave : 07 11 22 33 44 (lien) » (factures et relances)
   [new RegExp("^(" + COMPTES_EXTRAS + ") : (.+)$"), "$1: $2"],

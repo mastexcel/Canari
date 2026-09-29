@@ -186,16 +186,13 @@ function aDesInvestissements() { return listeInvestissements().length > 0; }
 
 /* ---------- Les chiffres ---------- */
 
-// Argent en caisse depuis le tout premier jour noté dans Canari.
+/* Argent en caisse maintenant : l'argent du départ, plus tout ce qui est entré,
+   moins tout ce qui est sorti, tous moyens confondus (espèces, Wave, Orange…).
+   Un seul calcul pour toute l'appli : c'est aussi lui qui décide si une sortie
+   d'argent est possible. Voir paiements.js. */
 function caisseTotale() {
   return memo("caisseTotale", function () {
-    let entre = 0, sorti = 0;
-    donnees.mouvements.forEach(function (m) {
-      if (m.type === "vente" || m.type === "paye") entre += encaisseDe(m);
-      else if (m.type === "depense" || m.type === "fpaye" || m.type === "maison" || m.type === "invest") sorti += m.montant;
-      else if (m.type === "fdette") sorti += m.verse || 0;
-    });
-    return entre - sorti;
+    return soldesAffichables().reduce(function (s, k) { return s + soldeMoyen(k); }, 0);
   });
 }
 

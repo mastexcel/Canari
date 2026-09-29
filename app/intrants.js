@@ -282,11 +282,10 @@ function ouvrirAchatIntrant(id) {
   const prixConnu = ua ? i.prixAchatLot : i.cout;
   $("arrivage-prix").value = typeof prixConnu === "number" ? nombre(Math.round(prixConnu)) : "";
   $("arrivage-quantite").value = "1";
-  $("arrivage-erreur").hidden = true;
+  cacherErreurAchat();
   $("arrivage-donne").value = "";
   $("arrivage-fournisseur").value = "";
   moyenAchat = "especes";
-  $("choix-moyen-achat").dataset.pret = "";
   choisirArrivagePaye("non");
   ouvrirFeuille("arrivage-form");
 }

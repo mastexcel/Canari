@@ -1,4 +1,4 @@
-# canari · Garde chaque franc.
+# canari · Tu vends. Canari compte.
 
 Carnet de caisse sur téléphone pour les petits commerçants de Côte d'Ivoire.
 Toutes les décisions du projet sont dans [CLAUDE.md](CLAUDE.md).

@@ -276,7 +276,7 @@ function donneesExcel(bornes) {
     ligne("Argent entré", total.encaisse),
     ligne("Argent sorti", -(total.sorti + total.maison)),
     ligne("dont pris pour la maison", -total.maison),
-    ligne("= Argent en caisse sur la période", total.encaisse - total.sorti - total.maison),
+    ligne("= Entré moins sorti sur la période", total.encaisse - total.sorti - total.maison),
     ["", ""],
     ligne("On me doit (aujourd'hui)", clientsQuiDoivent().reduce(function (s, c) { return s + c.du; }, 0)),
     ligne("Je dois (aujourd'hui)", fournisseursQueJeDois().reduce(function (s, c) { return s + c.du; }, 0)),

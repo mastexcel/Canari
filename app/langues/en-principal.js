@@ -24,7 +24,7 @@ function enP_depuis(s) {
 Object.assign(EN, {
   /* ---------- index.html : accueil et écran principal ---------- */
   "canari": "canari",
-  "Garde chaque franc.": "Keep every franc.",
+  "Tu vends. Canari compte.": "You sell. Canari counts.",
   "Ton carnet de caisse sur le téléphone. Ventes, dépenses, crédits : tout est noté, même sans internet.": "Your cash book on your phone. Sales, expenses, credits: everything is recorded, even without internet.",
   "Commencer": "Start",
   "Petit Canari, la jarre souriante": "Little Canari, the smiling jar",
@@ -98,7 +98,7 @@ Object.assign(EN, {
   "Sur un nouveau téléphone : ouvre Canari, puis choisis le fichier de sauvegarde. Attention, cela remplace ce qui est noté sur ce téléphone.": "On a new phone: open Canari, then choose the backup file. Careful: this replaces what is recorded on this phone.",
   "Choisir le fichier": "Choose the file",
   "Revenir comme avant la récupération": "Go back to how it was before restoring",
-  "canari · Garde chaque franc. · Zéro publicité.": "canari · Keep every franc. · Zero ads.",
+  "canari · Tu vends. Canari compte. · Zéro publicité.": "canari · You sell. Canari counts. · Zero ads.",
   "Tes données et ta vie privée": "Your data and your privacy",
   "ex. Boutique Awa": "e.g. Awa's Shop",
   "ex. 07 00 00 00 00": "e.g. 07 00 00 00 00",
@@ -246,6 +246,13 @@ Object.assign(EN, {
   /* ---------- app.js : écran Jour ---------- */
   "Pour couvrir tes charges, vends au moins": "To cover your costs, sell at least",
   "Argent en caisse": "Cash on hand",
+  "Compte ton argent maintenant et écris ce que tu as. Canari s'en sert pour t'empêcher de sortir de l'argent que tu n'as pas.":
+    "Count your money now and write down what you have. Canari uses it to stop you spending money you don't have.",
+  "M'empêcher de dépenser l'argent que je n'ai pas": "Stop me spending money I don't have",
+  "Tu n'as pas encore dit combien tu as. Écris-le puis enregistre : Canari pourra alors t'empêcher de sortir de l'argent que tu n'as pas.":
+    "You haven't said how much you have yet. Write it, then save: Canari will then be able to stop you spending money you don't have.",
+  "Canari refuse une sortie plus grande que ce qui reste, et propose un compte qui a assez.":
+    "Canari refuses any payment bigger than what is left, and offers an account that has enough.",
   "Auj.": "Today",
   "Attention : impossible d'enregistrer sur ce téléphone. Fais une sauvegarde (Réglages ⚙).": "Careful: cannot save on this phone. Make a backup (Settings ⚙).",
   "Retirer cette ligne": "Remove this line",
@@ -367,8 +374,9 @@ EN_MOTIFS.push(
   /* ---------- Écran Jour ---------- */
   [/^Encore (.+ F) à vendre aujourd'hui\.$/, "$1 more to sell today."],
   [/^entré (.+ F) · sorti (.+ F)$/, "in $1 · out $2"],
-  // Détail de la caisse par moyen : « Espèces + 1 500 F · Wave + 5 000 F »
-  [/^(Espèces|Wave|Orange Money|MTN MoMo|Moov Money \(Flooz\)|Moov Money|Djamo) [+−] .+ F( · .+)?$/, function (s) {
+  [/^aujourd'hui : entré (.+ F) · sorti (.+ F)$/, "today: in $1 · out $2"],
+  // Détail de la caisse par moyen : « Espèces 5 000 F · Wave 12 000 F »
+  [/^(Espèces|Wave|Orange Money|MTN MoMo|Moov Money \(Flooz\)|Moov Money|Djamo) [^·]*F( · .+)?$/, function (s) {
     return s.replace(/Espèces/g, "Cash");
   }],
   [/^Reste du bénéfice net (.+ F)$/, "Net profit left $1"],
@@ -421,7 +429,7 @@ EN_MOTIFS.push(
 
   /* ---------- Semaine ---------- */
   [/^Dont (.+ F) vendus à crédit$/, "Including $1 sold on credit"],
-  [/^Argent en caisse sur 7 jours : (.+ F)$/, "Cash on hand over 7 days: $1"],
+  [/^Entré moins sorti sur 7 jours : (.+ F)$/, "In minus out over 7 days: $1"],
 
   /* ---------- Saisie ---------- */
   [/^Remboursement de (.+)$/, "Repayment from $1"],

@@ -108,7 +108,7 @@ function afficherIntrants() {
   const bas = liste.filter(intrantARacheter);
   if (!liste.length) {
     $("stock-intrants").innerHTML =
-      '<div class="vide"><img src="icones/canari-pensif.webp" width="96" height="114" alt="">' +
+      '<div class="vide"><img src="icones/canari-pensif.webp" width="96" height="101" alt="">' +
       '<p>Les intrants sont ce que tu utilises pour fabriquer : farine, sucre, huile, mèches, sachets…<br>' +
       'Ils se créent tout seuls quand tu remplis la recette d\'un produit que tu fabriques. Tu peux aussi en ajouter un ici.</p></div>' +
       '<button type="button" class="bouton bouton-sauver" data-nouvel-intrant>' +

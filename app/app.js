@@ -609,7 +609,7 @@ function afficherRelances() {
   const aRecuperer = groupes.retard.reduce(function (s, c) { return s + c.du; }, 0);
   $("vue-relances").innerHTML =
     (urgents
-      ? '<div class="total-credits total-relances"><img src="icones/canari-clin-doeil.webp" width="72" height="84" alt="">' +
+      ? '<div class="total-credits total-relances"><img src="icones/canari-clin-doeil.webp" width="72" height="76" alt="">' +
         '<div><span>À récupérer en priorité</span><strong>' + franc(aRecuperer) + '</strong>' +
         '<small>' + urgents + ' client' + (urgents > 1 ? 's' : '') + ' à relancer aujourd\'hui</small></div></div>'
       : videHtml("canari-yeux-fermes", "Personne à relancer aujourd'hui. Bien joué !")) +
@@ -799,7 +799,7 @@ document.addEventListener("toggle", function (e) {
 }, true);
 
 function videHtml(image, texte) {
-  return '<div class="vide"><img src="icones/' + image + '.webp" width="96" height="114" alt=""><p>' + texte + '</p></div>';
+  return '<div class="vide"><img src="icones/' + image + '.webp" width="96" height="101" alt=""><p>' + texte + '</p></div>';
 }
 function totalHtml(titre, liste, mot, classe) {
   const total = liste.reduce(function (s, c) { return s + c.du; }, 0);

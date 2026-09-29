@@ -17,7 +17,7 @@
 <!-- Écran d'accueil (première ouverture) -->
 <section id="accueil" class="ecran accueil" hidden>
   <div class="accueil-centre">
-    <img class="accueil-mascotte" src="icones/mascotte-canari-3d.webp" width="180" height="217" alt="Petit Canari, la jarre souriante">
+    <img class="accueil-mascotte" src="icones/mascotte-canari-3d.webp" width="180" height="190" alt="Petit Canari, la jarre souriante">
     <h1 class="logo">canari</h1>
     <p class="slogan">Tu vends. Canari compte.</p>
     <p class="accueil-texte">Ton carnet de caisse sur le téléphone. Ventes, dépenses, crédits : tout est noté, même sans internet.</p>
@@ -38,7 +38,7 @@
 <!-- Écran principal -->
 <section id="principal" class="ecran principal" hidden>
   <header class="entete">
-    <img src="icones/canari-joyeux.webp" width="44" height="44" alt="">
+    <img src="icones/canari-joyeux.webp" width="44" height="46" alt="">
     <span class="logo logo-petit">canari</span>
     <span id="date-du-jour" class="date"></span>
     <button type="button" class="bouton-reglages voix-lire" id="voix-ecran" aria-label="Lire cet écran à voix haute">
@@ -50,7 +50,7 @@
   </header>
 
   <div class="rappel-sauvegarde rappel-parametrage" id="rappel-parametrage" hidden>
-    <img src="icones/canari-clin-doeil.webp" width="44" height="52" alt="">
+    <img src="icones/canari-clin-doeil.webp" width="44" height="46" alt="">
     <span>Calcule ton vrai bénéfice net : 6 petites questions.</span>
     <button type="button" class="bouton" id="rappel-parametrage-bouton">Commencer</button>
     <button type="button" class="retirer" id="rappel-parametrage-fermer" aria-label="Plus tard">
@@ -58,7 +58,7 @@
   </div>
 
   <div class="rappel-sauvegarde rappel-abonnement" id="rappel-abonnement" hidden>
-    <img src="icones/canari-tranquille.webp" width="44" height="52" alt="">
+    <img src="icones/canari-tranquille.webp" width="44" height="46" alt="">
     <span id="rappel-abonnement-texte"></span>
     <button type="button" class="bouton" id="rappel-abonnement-bouton">S'abonner</button>
   </div>
@@ -113,7 +113,7 @@
 
 
     <div class="bilan" id="bilan">
-      <img id="bilan-image" src="icones/canari-tranquille.webp" width="64" height="76" alt="">
+      <img id="bilan-image" src="icones/canari-tranquille.webp" width="64" height="68" alt="">
       <p id="bilan-texte"></p>
       <button type="button" class="bouton-ecouter" id="voix-bilan" aria-label="Lire à voix haute" hidden>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg>Écouter
@@ -124,7 +124,7 @@
     <ul class="liste" id="liste"></ul>
 
     <div class="vide" id="vide">
-      <img src="icones/canari-tranquille.webp" width="96" height="114" alt="">
+      <img src="icones/canari-tranquille.webp" width="96" height="101" alt="">
       <p>Rien de noté aujourd'hui.<br>Appuie sur <strong>Vente</strong> quand un client achète.</p>
     </div>
   </div>
@@ -279,7 +279,7 @@
 
   <section class="carte-reglage">
     <div class="reglage-haut">
-      <img src="icones/canari-tranquille.webp" width="64" height="76" alt="">
+      <img src="icones/canari-tranquille.webp" width="64" height="68" alt="">
       <div>
         <h2>Sauvegarde</h2>
         <p>Tes chiffres sont gardés seulement sur ce téléphone. Fais une sauvegarde pour ne rien perdre si tu changes de téléphone.</p>
@@ -392,7 +392,7 @@
 
   <div id="conseil-offre" hidden>
     <div class="conseil-presentation">
-      <img src="icones/canari-clin-doeil.webp" width="96" height="114" alt="">
+      <img src="icones/canari-clin-doeil.webp" width="96" height="101" alt="">
       <p>Pose tes questions sur ta boutique, et Canari répond avec <strong>tes chiffres</strong> : qui te doit de l'argent, ce que tu gagnes vraiment, quel produit te rapporte, si tu peux acheter ce congélateur.</p>
     </div>
     <h2 class="titre-liste">Choisis ta formule</h2>
@@ -407,7 +407,7 @@
     <p class="abo-etat ok" id="conseil-etat"></p>
     <ul class="fil" id="conseil-fil"></ul>
     <div class="vide" id="conseil-vide">
-      <img src="icones/canari-clin-doeil.webp" width="96" height="114" alt="">
+      <img src="icones/canari-clin-doeil.webp" width="96" height="101" alt="">
       <p>Pose-moi une question sur ta boutique.<br>Touche une question toute prête, ou écris la tienne.</p>
     </div>
     <div class="suggestions conseil-suggestions" id="conseil-suggestions"></div>
@@ -434,7 +434,7 @@
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
   </header>
   <div class="param-corps">
-    <img id="param-image" src="icones/mascotte-canari-3d.webp" width="120" height="145" alt="">
+    <img id="param-image" src="icones/mascotte-canari-3d.webp" width="120" height="127" alt="">
     <h1 class="titre-ecran" id="param-titre"></h1>
     <div id="param-contenu"></div>
   </div>
@@ -802,7 +802,7 @@
 <!-- Relancer un client -->
 <form class="saisie" id="relance" hidden novalidate autocomplete="off" style="--couleur-saisie: var(--credit)">
   <div class="relance-haut">
-    <img src="icones/canari-clin-doeil.webp" width="64" height="75" alt="">
+    <img src="icones/canari-clin-doeil.webp" width="64" height="68" alt="">
     <div>
       <h2 class="saisie-titre" id="relance-titre">Relancer</h2>
       <p class="relance-historique" id="relance-historique"></p>
@@ -930,7 +930,7 @@
 </div>
 
 <div id="message" class="message" role="status" hidden>
-  <img id="message-image" src="icones/canari-joyeux.webp" width="40" height="40" alt="" hidden>
+  <img id="message-image" src="icones/canari-joyeux.webp" width="40" height="42" alt="" hidden>
   <span id="message-texte"></span>
   <button type="button" id="message-autre" hidden>Contacts</button>
   <button type="button" id="message-annuler" hidden>Annuler</button>

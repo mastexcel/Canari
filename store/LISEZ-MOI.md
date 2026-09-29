@@ -13,11 +13,11 @@ Ce dossier contient ce qu'on envoie à Google, et de quoi le refabriquer.
 
 ## Comment c'est fabriqué
 
-1. **Détourer la mascotte** — `detourer-mascotte.py` découpe la planche de dessins
-   fournie par le propriétaire et enlève son fond, ce qui donne cinq images
-   transparentes (le personnage joyeux, clin d'œil, yeux fermés, tranquille,
-   pensif). Le fichier explique en détail pourquoi un simple filtre de couleur ne
-   suffit pas ici.
+1. **Découper les vignettes** — `detourer-mascotte.py` découpe les cinq vignettes
+   de la planche fournie par le propriétaire (joyeux, clin d'œil, yeux fermés,
+   tranquille, pensif). Les vignettes servent **telles qu'elles se présentent**,
+   avec leur carte crème : on n'ôte que le blanc de la planche autour d'elles,
+   pour que leurs coins arrondis restent arrondis.
 2. **Fabriquer les images de l'appli** — `fabriquer-images.py` met chaque
    découpe dans le cadre attendu par `app/icones/`, et compose les icônes sur le
    vert de la marque.

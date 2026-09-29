@@ -27,9 +27,14 @@ const DUREES = [1, 2, 3, 5, 10]; // durées d'usage proposées, en années
 const PERIODES = {
   semaine: { nom: "Semaine", detail: "7 jours", jours: 7, avant: "aux 7 jours d'avant" },
   mois: { nom: "Mois", detail: "30 jours", jours: 30, avant: "aux 30 jours d'avant" },
-  annee: { nom: "Année", detail: "12 mois", jours: 365, avant: "à l'année d'avant" }
+  annee: { nom: "Année", detail: "12 mois", jours: 365, avant: "à l'année d'avant" },
+  annees: { nom: "Années", detail: "plusieurs années", jours: 0, avant: "à la même période l'an dernier" }
 };
+const ANNEES_MAX = 5; // on ne remonte pas plus loin : les colonnes deviennent illisibles
 const CLE_PERIODE = "canari.periodeTableau";
+const CLE_VUE = "canari.vueTableau";
+// « resume » : la mosaïque sur un écran. « detail » : toutes les cartes.
+let vueTableau = "resume";
 // La valeur gardée sur le téléphone est lue au démarrage (initTableau) :
 // ce fichier se charge avant app.js, où vit lire().
 let periodeTableau = "mois";
@@ -39,10 +44,28 @@ function periode() { return PERIODES[periodeTableau]; }
 // civils entiers (du 1er du mois, il y a 11 mois, jusqu'à aujourd'hui) :
 // sinon le premier mois serait coupé en deux et la courbe mentirait.
 function joursDePeriode() {
-  if (periodeTableau !== "annee") return periode().jours;
   const a = new Date();
-  const debut = new Date(a.getFullYear(), a.getMonth() - 11, 1, 12);
-  return Math.round((debutJour(a) - debutJour(debut)) / JOUR) + 1;
+  if (periodeTableau === "annee") {
+    const debut = new Date(a.getFullYear(), a.getMonth() - 11, 1, 12);
+    return Math.round((debutJour(a) - debutJour(debut)) / JOUR) + 1;
+  }
+  if (periodeTableau === "annees") {
+    // Depuis le 1er janvier de la première année notée, sans dépasser 5 ans.
+    const premier = donnees.mouvements.reduce(function (min, m) { return Math.min(min, m.t); }, Infinity);
+    const anneePremiere = premier === Infinity ? a.getFullYear() : new Date(premier).getFullYear();
+    const depart = Math.max(anneePremiere, a.getFullYear() - ANNEES_MAX + 1);
+    const debut = new Date(depart, 0, 1, 12);
+    return Math.max(1, Math.round((debutJour(a) - debutJour(debut)) / JOUR) + 1);
+  }
+  return periode().jours;
+}
+
+// Combien d'années civiles la vue « Années » couvre.
+function nombreAnnees() {
+  const a = new Date().getFullYear();
+  const premier = donnees.mouvements.reduce(function (min, m) { return Math.min(min, m.t); }, Infinity);
+  const anneePremiere = premier === Infinity ? a : new Date(premier).getFullYear();
+  return Math.min(ANNEES_MAX, a - Math.max(anneePremiere, a - ANNEES_MAX + 1) + 1);
 }
 
 // Les jours d'une tranche : `nombre` jours qui se terminent il y a `decalage` jours.
@@ -56,6 +79,22 @@ function joursEntre(decalage, nombre) {
     jours.push({ date: d, cle: cle, totaux: totauxDuJour(cle), aujourdhui: i === 0 });
   }
   return jours;
+}
+
+// Les mêmes chiffres, regroupés par année civile (pour « Années »).
+function parAnneeCivile(jours) {
+  const annees = [];
+  let courante = null;
+  jours.forEach(function (j) {
+    const cle = j.date.getFullYear();
+    if (!courante || courante.cle !== cle) {
+      courante = { cle: cle, date: j.date, jours: [], totaux: { vendu: 0, benefice: 0, encaisse: 0, sorti: 0, maison: 0 } };
+      annees.push(courante);
+    }
+    courante.jours.push(j);
+    ["vendu", "benefice", "encaisse", "sorti", "maison"].forEach(function (k) { courante.totaux[k] += j.totaux[k]; });
+  });
+  return annees;
 }
 
 // Les mêmes chiffres, mais regroupés par mois civil (pour l'année).
@@ -74,13 +113,25 @@ function parMoisCivil(jours) {
   return mois;
 }
 
-// Les points à dessiner : un par jour, ou un par mois pour l'année.
+// Les points à dessiner : un par jour, un par mois pour l'année, un par
+// année pour « Années ». Chaque point garde sa date, pour pouvoir écrire
+// les repères de temps sous les graphiques.
 function pointsDe(jours) {
+  if (periodeTableau === "annees") {
+    return parAnneeCivile(jours).map(function (an) {
+      return {
+        nom: String(an.cle), court: String(an.cle).slice(2), date: an.date, pleine: String(an.cle),
+        vendu: an.totaux.vendu, benefice: an.totaux.benefice,
+        recettes: an.totaux.encaisse, sorties: an.totaux.sorti + an.totaux.maison
+      };
+    });
+  }
   if (periodeTableau !== "annee") {
     return jours.map(function (j) {
       return {
         nom: j.date.toLocaleDateString(LOCALE, { day: "numeric" }),
         court: j.date.toLocaleDateString(LOCALE, { weekday: "narrow" }),
+        date: j.date, pleine: j.date.toLocaleDateString(LOCALE, { day: "numeric", month: "short" }),
         vendu: j.totaux.vendu, benefice: j.totaux.benefice,
         recettes: j.totaux.encaisse, sorties: j.totaux.sorti + j.totaux.maison
       };
@@ -89,7 +140,8 @@ function pointsDe(jours) {
   return parMoisCivil(jours).map(function (m) {
     const nom = m.date.toLocaleDateString(LOCALE, { month: "short" }).replace(".", "");
     return {
-      nom: nom, court: nom.charAt(0).toUpperCase(),
+      nom: nom, court: nom.charAt(0).toUpperCase(), date: m.date,
+      pleine: m.date.toLocaleDateString(LOCALE, { month: "long", year: "numeric" }),
       vendu: m.totaux.vendu, benefice: m.totaux.benefice,
       recettes: m.totaux.encaisse, sorties: m.totaux.sorti + m.totaux.maison
     };
@@ -181,16 +233,36 @@ function calculIndicateurs() {
 
   /* --- Activité --- */
   // La tendance compare la période affichée à la même durée juste avant.
-  const avant = joursEntre(nbJours, nbJours);
+  // En vue « Années », on ne recalcule pas cinq années de plus pour rien.
+  const avant = periodeTableau === "annees" ? [] : joursEntre(nbJours, nbJours);
   const v0 = avant.reduce(function (s, j) { return s + j.totaux.vendu; }, 0);
   const joursVenteAvant = avant.filter(function (j) { return j.totaux.vendu > 0; }).length;
   r.venduAvant = v0;
   r.joursVenteAvant = joursVenteAvant;
   r.venteMoyenne = r.joursVente ? Math.round(r.vendu / r.joursVente) : 0;
-  // Pas de tendance tant que la période d'avant est trop vide : « + 611 % »
-  // parce qu'on vient d'installer l'appli n'apprend rien à personne.
-  r.tendance = v0 && joursVenteAvant >= Math.max(2, Math.round(r.joursVente / 2))
-    ? Math.round((r.vendu - v0) / v0 * 100) : null;
+  if (periodeTableau === "annees") {
+    // L'année en cours n'est pas finie : la comparer à une année entière
+    // ferait croire à une chute. On compare donc le même nombre de jours,
+    // du 1er janvier à aujourd'hui, avec la même tranche l'an dernier.
+    const maintenant = new Date();
+    const debutCette = new Date(maintenant.getFullYear(), 0, 1).getTime();
+    const debutAvant = new Date(maintenant.getFullYear() - 1, 0, 1).getTime();
+    const memeJourAvant = new Date(maintenant.getFullYear() - 1, maintenant.getMonth(), maintenant.getDate(), 23, 59).getTime();
+    let cette = 0, precedente = 0;
+    jours.forEach(function (j) {
+      const t = j.date.getTime();
+      if (t >= debutCette) cette += j.totaux.vendu;
+      else if (t >= debutAvant && t <= memeJourAvant) precedente += j.totaux.vendu;
+    });
+    r.venduCetteAnnee = cette;
+    r.venduAnneeAvant = precedente;
+    r.tendance = precedente ? Math.round((cette - precedente) / precedente * 100) : null;
+  } else {
+    // Pas de tendance tant que la période d'avant est trop vide : « + 611 % »
+    // parce qu'on vient d'installer l'appli n'apprend rien à personne.
+    r.tendance = v0 && joursVenteAvant >= Math.max(2, Math.round(r.joursVente / 2))
+      ? Math.round((r.vendu - v0) / v0 * 100) : null;
+  }
 
   let nbVentes = 0;
   jours.forEach(function (j) {
@@ -323,6 +395,35 @@ function calculIndicateurs() {
   r.investissements = listeInvestissements();
   r.usureJour = usureDuJour(cleJour(Date.now()));
   return r;
+}
+
+/* ---------- Les repères de temps (demande du propriétaire) ---------- */
+
+// Les dates de début et de fin d'une période, écrites en toutes lettres :
+// « du 30 août au 28 septembre 2026 ». Sans ça, on ne sait pas de quand
+// parle le graphique qu'on regarde.
+function texteDeAA(jours) {
+  if (!jours.length) return "";
+  const d1 = jours[0].date, d2 = jours[jours.length - 1].date;
+  const memeAnnee = d1.getFullYear() === d2.getFullYear();
+  const court = { day: "numeric", month: "long" };
+  const long = { day: "numeric", month: "long", year: "numeric" };
+  return "Du " + d1.toLocaleDateString(LOCALE, memeAnnee ? court : long) +
+    " au " + d2.toLocaleDateString(LOCALE, long);
+}
+
+// La ligne de repères posée sous un graphique : le premier point, le
+// dernier, et celui du milieu quand il y a la place.
+function reperesHtml(points) {
+  if (points.length < 2) return "";
+  const milieu = points[Math.floor((points.length - 1) / 2)];
+  const bouts = [points[0], milieu, points[points.length - 1]];
+  const noms = bouts.map(function (p) { return p.pleine || p.nom; });
+  // Si le milieu répète un bout, on ne le montre pas.
+  const montrerMilieu = points.length >= 5 && noms[1] !== noms[0] && noms[1] !== noms[2];
+  return '<p class="graphe-reperes"><span>' + echapper(noms[0]) + '</span>' +
+    (montrerMilieu ? '<span>' + echapper(noms[1]) + '</span>' : '<span></span>') +
+    '<span>' + echapper(noms[2]) + '</span></p>';
 }
 
 /* ---------- Les dessins (SVG écrits à la main) ---------- */
@@ -478,12 +579,61 @@ function pluriel(n, mot) { return n + " " + mot + (n > 1 ? "s" : ""); }
 
 // Les trois boutons Semaine · Mois · Année, en haut du tableau de bord.
 function choixPeriodeHtml() {
-  return '<div class="trois-choix periodes" role="group" aria-label="Période regardée">' +
+  return '<div class="quatre-periodes" role="group" aria-label="Période regardée">' +
     Object.keys(PERIODES).map(function (k) {
       return '<button type="button" class="choix" data-periode="' + k + '" aria-pressed="' +
         (k === periodeTableau) + '">' + PERIODES[k].nom + '</button>';
     }).join("") + '</div>' +
-    '<p class="aide periode-aide">' + periode().detail + ' détaillés.</p>';
+    '<p class="aide periode-aide">' + texteDeAA(indicateurs().jours) + '</p>' +
+    '<div class="deux-choix vues-tableau" role="group" aria-label="Façon de voir">' +
+      '<button type="button" class="choix" data-vue-tableau="resume" aria-pressed="' + (vueTableau === "resume") + '">L\'essentiel</button>' +
+      '<button type="button" class="choix" data-vue-tableau="detail" aria-pressed="' + (vueTableau === "detail") + '">Tout le détail</button>' +
+    '</div>';
+}
+
+/* ---------- La vue « L'essentiel » : une mosaïque, peu de défilement ---------- */
+
+// Une tuile : un nom court, un chiffre, et la couleur du verdict.
+function tuile(nom, valeur, verdict, petit) {
+  return '<li class="tuile tuile-' + (verdict || "neutre") + (petit ? " tuile-petite" : "") + '">' +
+    '<span class="tuile-nom">' + nom + '</span>' +
+    '<b class="tuile-valeur">' + valeur + '</b></li>';
+}
+
+function mosaiqueHtml(r) {
+  const ecart = r.recettes - r.sorties;
+  const t = [];
+  t.push(tuile("Ventes", franc(r.vendu),
+    r.tendance === null ? "neutre" : r.tendance >= 0 ? "bon" : r.tendance >= -15 ? "attention" : "alerte"));
+  t.push(tuile("Bénéfice net", sommeF(r.benefice),
+    r.tauxNet === null ? "neutre" : r.tauxNet >= 15 ? "bon" : r.tauxNet >= 5 ? "attention" : "alerte"));
+  t.push(tuile("On me doit", franc(r.onMeDoit),
+    r.partCredit === null ? "neutre" : r.partCredit <= 20 ? "bon" : r.partCredit <= 40 ? "attention" : "alerte"));
+  t.push(tuile("En caisse", sommeF(r.caisse), r.caisse >= 0 ? "bon" : "alerte"));
+
+  const p = [];
+  p.push(tuile("Marge", pourcent(r.tauxMarge),
+    r.tauxMarge === null ? "neutre" : r.tauxMarge >= 30 ? "bon" : r.tauxMarge >= 15 ? "attention" : "alerte", true));
+  p.push(tuile("À crédit", pourcent(r.partCredit),
+    r.partCredit === null ? "neutre" : r.partCredit <= 20 ? "bon" : r.partCredit <= 40 ? "attention" : "alerte", true));
+  p.push(tuile("Stock", r.joursDeStock === null ? "—" : r.joursDeStock + " j",
+    r.joursDeStock === null ? "neutre" : r.joursDeStock <= 15 ? "bon" : r.joursDeStock <= 30 ? "attention" : "alerte", true));
+  p.push(tuile("Je dois", franc(r.jeDois), r.jeDois ? "attention" : "bon", true));
+
+  const cadre = function (titre, dedans, lecture) {
+    return '<section class="cadre">' +
+      '<h3 class="cadre-titre">' + titre + '</h3>' + dedans +
+      (lecture ? '<p class="cadre-lecture">' + lecture + '</p>' : '') + '</section>';
+  };
+
+  return '<ul class="mosaique">' + t.join("") + '</ul>' +
+    '<ul class="mosaique mosaique-petite">' + p.join("") + '</ul>' +
+    cadre("Tes ventes", courbeSvg(r.points.map(function (x) { return x.vendu; })) + reperesHtml(r.points),
+      r.tendance === null ? "" : r.tendance > 100 ? "Tes ventes ont plus que doublé par rapport " + r.periode.avant + "."
+        : r.tendance >= 0 ? "Tes ventes montent de " + r.tendance + " % par rapport " + r.periode.avant + "."
+        : "Tes ventes baissent de " + Math.abs(r.tendance) + " % par rapport " + r.periode.avant + ".") +
+    cadre("Ce qui rentre et ce qui sort", comparatifSvg(r.points) + reperesHtml(r.points),
+      "Il est rentré " + franc(r.recettes) + " et il est sorti " + franc(r.sorties) + ".");
 }
 
 function afficherTableau() {
@@ -496,13 +646,23 @@ function afficherTableau() {
 
   const cartes = [choixPeriodeHtml()];
 
+  // Vue « L'essentiel » : la mosaïque, les trois gestes, et c'est tout.
+  if (vueTableau === "resume") {
+    cartes.push(mosaiqueHtml(r));
+    cartes.push(strategieHtml(r));
+    cartes.push('<button type="button" class="bouton bouton-excel" id="tableau-exporter">' +
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M5 21h14"/></svg>Télécharger mes chiffres</button>');
+    $("vue-tableau").innerHTML = cartes.join("");
+    return;
+  }
+
   /* ---------------- Activité ---------------- */
   const act = [];
   act.push(carteIndicateur({
     nom: "Ventes sur " + r.periode.detail,
     valeur: franc(r.vendu),
     verdict: r.tendance === null ? "neutre" : r.tendance >= 0 ? "bon" : r.tendance >= -15 ? "attention" : "alerte",
-    dessin: courbeSvg(r.points.map(function (p) { return p.vendu; })),
+    dessin: courbeSvg(r.points.map(function (p) { return p.vendu; })) + reperesHtml(r.points),
     lecture: r.tendance === null
       ? "Tu as vendu en moyenne " + franc(r.venteMoyenne) + " par jour de vente."
       : r.tendance > 100
@@ -521,7 +681,7 @@ function afficherTableau() {
     nom: "Ce qui rentre et ce qui sort",
     valeur: sommeF(ecart),
     verdict: ecart > 0 ? "bon" : ecart === 0 ? "attention" : "alerte",
-    dessin: comparatifSvg(r.points),
+    dessin: comparatifSvg(r.points) + reperesHtml(r.points),
     lecture: "Il est rentré " + franc(r.recettes) + " et il est sorti " + franc(r.sorties) + ".",
     conseil: ecart >= 0
       ? "Ta caisse se remplit. Mets de côté une part de cet écart chaque semaine."
@@ -644,7 +804,7 @@ function afficherTableau() {
       nom: "Bénéfice net",
       valeur: pourcent(r.tauxNet),
       verdict: r.tauxNet >= 15 ? "bon" : r.tauxNet >= 5 ? "attention" : "alerte",
-      dessin: courbeSvg(r.jours.map(function (j) { return j.totaux.benefice; }), "graphe-benefice"),
+      dessin: courbeSvg(r.points.map(function (p) { return p.benefice; }), "graphe-benefice") + reperesHtml(r.points),
       lecture: r.benefice >= 0
         ? "Tu gagnes environ " + franc(r.beneficeParJour) + " par jour de vente, soit " + franc(r.benefice) + " au total."
         : "Tu perds environ " + franc(Math.abs(r.beneficeParJour)) + " par jour de vente, soit " + franc(Math.abs(r.benefice)) + " au total.",
@@ -792,6 +952,8 @@ function strategieHtml(r) {
 function initTableau() {
   const gardee = lire(CLE_PERIODE);
   if (PERIODES[gardee]) periodeTableau = gardee;
+  const vue = lire(CLE_VUE);
+  if (vue === "resume" || vue === "detail") vueTableau = vue;
   $("vue-tableau").addEventListener("click", function (e) {
     const p = e.target.closest("[data-periode]");
     if (p) {
@@ -801,6 +963,15 @@ function initTableau() {
       $("vue-tableau").scrollIntoView({ block: "start" });
       return;
     }
+    const v = e.target.closest("[data-vue-tableau]");
+    if (v) {
+      vueTableau = v.dataset.vueTableau;
+      ecrire(CLE_VUE, vueTableau);
+      afficherTableau();
+      $("vue-tableau").scrollIntoView({ block: "start" });
+      return;
+    }
+    if (e.target.closest("#tableau-exporter")) { ouvrirExport(periodeTableau === "annees" ? "tout" : periodeTableau); return; }
     if (e.target.closest("#ouvrir-conseil")) { ouvrirConseil(); return; }
     if (e.target.closest("#noter-invest")) { ouvrirSaisie("invest"); return; }
     const sup = e.target.closest("[data-retirer-invest]");

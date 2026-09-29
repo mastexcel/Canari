@@ -2322,3 +2322,102 @@ body {
 /* Les formules de l'option Conseil : même mise en page que l'abonnement. */
 .conseil-formule { padding-right: 110px; }
 .conseil-formule .abo-conseil { margin-bottom: 4px; }
+
+/* ---------- Repartir à zéro ---------- */
+.carte-danger { border-color: var(--sort-clair); }
+.carte-danger h2 { color: var(--sort-fonce); }
+.carte-danger h2::before { background: var(--sort) !important; }
+.bouton-danger {
+  background: linear-gradient(160deg, #fff, var(--sort-100));
+  border: 1px solid var(--sort-clair);
+  color: var(--sort-fonce);
+  box-shadow: var(--ombre);
+}
+
+/* ---------- Tableau de bord : périodes, vue « L'essentiel », repères ---------- */
+
+.quatre-periodes {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+  background: var(--ivoire-2);
+  border: 1px solid var(--bord);
+  border-radius: 16px;
+  padding: 4px;
+}
+.quatre-periodes .choix { font-size: 14px; padding: 10px 2px; }
+.vues-tableau { margin-top: 8px; }
+.periode-aide { margin: 8px 0 0; text-align: center; font-weight: 600; color: var(--olive-700); }
+
+/* Les repères de temps sous un graphique. */
+.graphe-reperes {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--texte-doux);
+}
+.graphe-reperes span:nth-child(2) { text-align: center; }
+.graphe-reperes span:last-child { text-align: right; }
+
+/* La mosaïque : tout l'essentiel sans défiler. */
+.mosaique { list-style: none; margin: 14px 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.mosaique-petite { grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 8px; }
+.tuile {
+  background: rgba(255, 255, 255, .96);
+  border: 1px solid var(--bord);
+  border-top: 3px solid var(--olive-200);
+  border-radius: 14px;
+  box-shadow: var(--ombre);
+  padding: 9px 10px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.tuile-nom {
+  font-size: 12.5px;
+  color: var(--texte-doux);
+  font-weight: 600;
+  letter-spacing: .2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tuile-valeur {
+  font-family: var(--chiffres);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -.5px;
+  color: var(--olive-800);
+  white-space: nowrap;
+}
+.tuile-petite { padding: 7px 8px 8px; border-radius: 12px; }
+.tuile-petite .tuile-nom { font-size: 11px; }
+.tuile-petite .tuile-valeur { font-size: 15px; }
+.tuile-bon { border-top-color: var(--entre); }
+.tuile-bon .tuile-valeur { color: var(--entre-fonce); }
+.tuile-attention { border-top-color: var(--credit-clair); }
+.tuile-attention .tuile-valeur { color: var(--credit-fonce); }
+.tuile-alerte { border-top-color: var(--sort); }
+.tuile-alerte .tuile-valeur { color: var(--sort-fonce); }
+
+/* Les cadres qui portent un graphique dans la mosaïque. */
+.cadre {
+  margin-top: 12px;
+  background: rgba(255, 255, 255, .96);
+  border: 1px solid var(--bord);
+  border-radius: var(--arrondi);
+  box-shadow: var(--ombre);
+  padding: 12px 14px 14px;
+}
+.cadre-titre { font-family: var(--titre); font-size: 15px; color: var(--olive-800); margin: 0; font-weight: 500; }
+.cadre-lecture { margin: 6px 0 0; font-size: 14px; line-height: 1.45; color: var(--brun); }
+.cadre .camembert { margin-top: 8px; }
+.cadre .camembert-dessin { width: 112px; height: 112px; margin-bottom: 8px; }
+.cadre .barres-produits { margin-top: 8px; }
+/* Dans « L'essentiel », les graphiques sont ramassés : tout doit tenir à l'écran. */
+.cadre .graphe { height: 66px; margin: 8px 0 0; }
+.cadre .graphe-comparatif { height: 74px; }
+.cadre .legende-comparatif { font-size: 12px; margin-top: 4px; }

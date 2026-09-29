@@ -1511,6 +1511,29 @@ function enregistrerFicheFournisseur(ancien, nom, tel, oups) {
 
 /* ---------- Sauvegarde et récupération ---------- */
 
+/* ---------- Repartir à zéro ---------- */
+
+// Efface tout ce qui est noté sur ce téléphone. Demandé par le propriétaire
+// pour nettoyer ses essais avant de faire tester l'appli à un commerçant.
+// L'abonnement, lui, n'est pas touché : il est payé, il reste.
+function repartirDeZero() {
+  const lignes = donnees.mouvements.length;
+  if (!confirm(tr("Tout effacer ? Les " + lignes + " lignes notées sur ce téléphone seront perdues.") + "\n\n" +
+      tr("Si tu n'as pas fait de sauvegarde, touche Annuler et fais-la d'abord."))) return;
+  if (!confirm(tr("Dernière question : es-tu sûr ? On ne peut pas revenir en arrière."))) return;
+
+  const abonnement = donnees.abonnement; // payé : on le garde
+  donnees = { mouvements: [], clients: {}, fournisseurs: {}, meta: {} };
+  if (abonnement) donnees.abonnement = abonnement;
+  completerDonnees();
+  try { localStorage.removeItem(CLE_DERNIERE_SAUVEGARDE); } catch (e) { /* rien */ }
+  sauver();
+  fermerFeuilles();
+  montrer("principal");
+  afficher();
+  message("Tout est effacé. L'appli est comme neuve.", null, true);
+}
+
 function joursDepuisSauvegarde() {
   const t = Number(lire(CLE_DERNIERE_SAUVEGARDE));
   return t ? joursDepuis(t) : null;
@@ -1618,6 +1641,7 @@ function ouvrirReglages() {
 $("ouvrir-reglages").addEventListener("click", ouvrirReglages);
 $("rappel-bouton").addEventListener("click", ouvrirReglages);
 $("fermer-reglages").addEventListener("click", function () { montrer("principal"); window.scrollTo(0, 0); });
+$("repartir-zero").addEventListener("click", repartirDeZero);
 $("sauvegarde-partager").addEventListener("click", partagerSauvegarde);
 $("sauvegarde-telecharger").addEventListener("click", telechargerSauvegarde);
 $("sauvegarde-fichier").addEventListener("change", function (e) {
@@ -1698,7 +1722,7 @@ chargerDonnees().then(function (d) {
   initPaiements();
   initCharges();
   initTableau();
-  initExcel();
+  initExport();
   initConseil();
   initFiches();
   initIntrants();

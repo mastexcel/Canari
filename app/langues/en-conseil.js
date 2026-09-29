@@ -24,6 +24,49 @@ Object.assign(EN, {
   "Résumé": "Summary", "Mouvements": "Entries", "Jour par jour": "Day by day",
   "Produits": "Products", "Clients": "Customers", "Fournisseurs": "Suppliers",
 
+  /* ---- L'écran « Télécharger mes chiffres » ---- */
+  "Télécharger mes chiffres": "Download my figures",
+  "Tes chiffres en Excel, en PDF ou en CSV, sur la période que tu veux : pour ton comptable, ta banque, ou pour garder une trace.":
+    "Your figures in Excel, PDF or CSV, over the period you choose: for your accountant, your bank, or just to keep a record.",
+  "Quel format ?": "Which format?",
+  "Période du fichier": "Period of the file",
+  "Excel (.xlsx)": "Excel (.xlsx)",
+  "PDF": "PDF",
+  "CSV": "CSV",
+  "Six feuilles : résumé, mouvements, jour par jour, produits, clients, fournisseurs. Pour trier et calculer.":
+    "Six sheets: summary, entries, day by day, products, customers, suppliers. For sorting and calculating.",
+  "Un document prêt à imprimer ou à envoyer, avec les mêmes tableaux.":
+    "A document ready to print or send, with the same tables.",
+  "La liste des mouvements seule, pour l'ouvrir dans un autre logiciel.":
+    "The list of entries alone, to open in another program.",
+
+  /* ---- Repartir à zéro ---- */
+  "Repartir à zéro": "Start from scratch",
+  "Tout effacer et repartir à zéro": "Erase everything and start from scratch",
+  "Efface tout ce qui est noté sur ce téléphone : ventes, dépenses, crédits, produits, clients. L'appli redevient neuve, comme au premier jour.":
+    "Erases everything recorded on this phone: sales, expenses, credit, products, customers. The app becomes new again, as on day one.",
+  "Sers-toi de ça pour effacer des essais avant de faire tester l'appli à quelqu'un. Fais d'abord une sauvegarde si tu veux pouvoir tout récupérer.":
+    "Use this to clear your trials before letting someone test the app. Make a backup first if you want to be able to get it all back.",
+  "Si tu n'as pas fait de sauvegarde, touche Annuler et fais-la d'abord.":
+    "If you have not made a backup, tap Cancel and do it first.",
+  "Dernière question : es-tu sûr ? On ne peut pas revenir en arrière.":
+    "Last question: are you sure? There is no going back.",
+  "Tout est effacé. L'appli est comme neuve.": "Everything is erased. The app is like new.",
+
+  /* ---- Tableau de bord : périodes et façon de voir ---- */
+  "Années": "Years",
+  "Façon de voir": "How to view",
+  "L'essentiel": "The essentials",
+  "Tout le détail": "Full detail",
+  "Tes ventes": "Your sales",
+  "Marge": "Margin",
+  "À crédit": "On credit",
+  "En caisse": "In the till",
+  "On me doit": "Owed to me",
+  "Je dois": "I owe",
+  "Stock": "Stock",
+  "Ventes": "Sales",
+
   /* ---- L'écran « Demande à Canari » ---- */
   "Demande à Canari": "Ask Canari",
   "Pose ta question à Canari": "Ask Canari your question",

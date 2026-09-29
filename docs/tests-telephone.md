@@ -79,6 +79,10 @@ Téléphone testé : ______________________  Version d'Android : ________  Date 
 53. ☐ Tableau de bord → **Pose ta question à Canari** : les 5 questions offertes marchent, les réponses parlent de tes vrais chiffres, et l'avertissement arrive à la dernière.
 54. ☐ Bouton **micro** dans « Demande à Canari » : dis « qui me doit de l'argent », la réponse arrive.
 55. ☐ Mets le téléphone en **mode avion** : les réponses de Canari marchent toujours.
+56. ☐ Tableau de bord → **Semaine · Mois · Année · Années** : la ligne « Du … au … » change, et chaque graphique a ses dates en dessous.
+57. ☐ **L'essentiel / Tout le détail** : la mosaïque tient presque sur un écran, le choix est gardé quand tu reviens.
+58. ☐ Bouton **Télécharger mes chiffres** (en bas du tableau de bord, et dans les Réglages) : les trois formats (Excel, PDF, CSV) s'enregistrent et s'ouvrent.
+59. ☐ Réglages → **Repartir à zéro** : deux questions, puis l'appli est vide. Vérifie que ton abonnement est toujours actif.
 
 ---
 

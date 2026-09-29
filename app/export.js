@@ -1,5 +1,5 @@
 /* =====================================================================
-   EXPORT EXCEL  ·  un vrai fichier .xlsx, fabriqué sur le téléphone
+   EXPORTER SES CHIFFRES  ·  Excel, PDF ou CSV, sur le téléphone
    ---------------------------------------------------------------------
    Un fichier Excel est un dossier ZIP qui contient des fichiers XML.
    Canari l'écrit lui-même, sans aucune bibliothèque à télécharger :
@@ -10,7 +10,11 @@
    (quelques centaines de kilo-octets pour une année).
 
    Six feuilles : Résumé, Mouvements, Jour par jour, Produits,
-   Clients, Fournisseurs. La période se choisit dans les Réglages.
+   Clients, Fournisseurs. La période se choisit avant de télécharger.
+
+   Les mêmes données sortent aussi en PDF (écrit à la main lui aussi,
+   avec les polices standard du format, rien à embarquer) et en CSV
+   (pour ouvrir ailleurs ou importer dans un autre logiciel).
    ===================================================================== */
 
 /* ---------- Le ZIP (méthode « stored », sans compression) ---------- */
@@ -353,29 +357,184 @@ function donneesExcel(bornes) {
   ];
 }
 
-/* ---------- Le bouton ---------- */
+/* ---------- Le PDF (écrit à la main, sans bibliothèque) ---------- */
 
-function nomFichierExcel(bornes) {
-  const B = (donnees.boutique.nom || "Canari").replace(/[^\w\- ]+/g, "").trim().replace(/\s+/g, "-") || "Canari";
-  const d = function (t) { return cleJour(t); };
-  return B + "_" + (bornes.debut ? d(bornes.debut) : "debut") + "_" + d(bornes.fin) + ".xlsx";
+// Un PDF ne sait lire que 256 caractères (WinAnsi). On y ramène le texte.
+const PDF_SPECIAUX = { "’": "'", "‘": "'", "“": '"', "”": '"',
+  "–": "-", "—": "-", "…": "...", " ": " ", " ": " ",
+  "−": "-", "œ": "oe", "Œ": "OE", "€": "EUR" };
+function pdfTexte(t) {
+  return String(t === null || t === undefined ? "" : t).replace(/[Œœ–—‘’“”…  −€]/g,
+    function (c) { return PDF_SPECIAUX[c]; })
+    .split("").map(function (c) { return c.charCodeAt(0) < 256 ? c : "?"; }).join("")
+    .replace(/[\\()]/g, function (c) { return "\\" + c; });
+}
+// Largeur approchée d'un texte en Helvetica (les chiffres font tous 0,556 em).
+function pdfLargeur(t, taille) {
+  let l = 0;
+  for (let i = 0; i < t.length; i++) {
+    const c = t.charCodeAt(i);
+    l += c >= 48 && c <= 57 ? 0.556 : c === 32 ? 0.278 : c === 46 || c === 44 ? 0.278 : 0.52;
+  }
+  return l * taille;
 }
 
-function telechargerExcel() {
-  const bornes = bornesExcel();
-  if (bornes.debut > bornes.fin) {
-    message("La date de début est après la date de fin.");
-    return;
-  }
-  const feuilles = donneesExcel(bornes);
-  const lignes = feuilles[1].lignes.length - 1;
-  if (!lignes) {
-    message("Aucun mouvement sur cette période.");
-    return;
-  }
-  const blob = fabriquerClasseur(feuilles);
-  const fichier = new File([blob], nomFichierExcel(bornes),
-    { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+// Construit le PDF à partir des mêmes feuilles que l'Excel.
+function fabriquerPdf(feuilles, titre, sousTitre) {
+  const L = 595, H = 842, MARGE = 32;
+  const pages = [];
+  let contenu = "", y = 0, numero = 0;
+
+  const nouvellePage = function () {
+    if (contenu) pages.push(contenu);
+    contenu = "";
+    numero++;
+    y = H - MARGE;
+  };
+  // `max` : la largeur de la colonne. Un texte trop long est coupé, sinon
+  // il déborderait sur la colonne d'à côté.
+  const ecrire = function (texte, x, taille, gras, droite, max) {
+    let t = pdfTexte(texte);
+    if (!t) return;
+    if (max && pdfLargeur(t, taille) > max) {
+      while (t.length > 1 && pdfLargeur(t + "…", taille) > max) t = t.slice(0, -1);
+      t = pdfTexte(t.replace(/[\s,;]+$/, "") + "…");
+    }
+    const px = droite ? x - pdfLargeur(t, taille) : x;
+    contenu += "BT /" + (gras ? "F2" : "F1") + " " + taille + " Tf " +
+      px.toFixed(1) + " " + y.toFixed(1) + " Td (" + t + ") Tj ET\n";
+  };
+  const trait = function (yy) {
+    contenu += "0.85 0.83 0.78 RG 0.7 w " + MARGE + " " + yy.toFixed(1) + " m " + (L - MARGE) + " " + yy.toFixed(1) + " l S\n";
+  };
+  const place = function (hauteur) {
+    if (y - hauteur < MARGE + 24) nouvellePage();
+  };
+
+  nouvellePage();
+  ecrire(titre, MARGE, 20, true); y -= 22;
+  ecrire(sousTitre, MARGE, 11, false); y -= 24;
+
+  feuilles.forEach(function (feuille) {
+    const lignes = feuille.lignes;
+    if (lignes.length < 2) return;
+    place(70);
+    y -= 10;
+    ecrire(feuille.nom, MARGE, 14, true);
+    y -= 6; trait(y); y -= 14;
+
+    const formats = feuille.formats || [];
+    const entete = lignes[0];
+    // Largeur des colonnes : les nombres et les dates prennent moins de place.
+    const poids = entete.map(function (nom, i) {
+      const f = formats[i] || "texte";
+      return f === "nombre" ? 1.05 : f === "date" ? 1.05 : f === "pourcent" ? 0.8 : 1.6;
+    });
+    // Beaucoup de colonnes : on écrit plus petit pour que tout tienne.
+    const taille = entete.length > 8 ? 7.5 : entete.length > 5 ? 8.5 : 9.5;
+    const total = poids.reduce(function (a, b) { return a + b; }, 0);
+    const large = (L - 2 * MARGE) / total;
+    const x = []; let acc = MARGE;
+    poids.forEach(function (p) { x.push(acc); acc += p * large; });
+    const fin = function (i) { return x[i] + poids[i] * large - 6; };
+    const place_dispo = function (i) { return poids[i] * large - 7; };
+
+    const dessinerEntete = function () {
+      entete.forEach(function (nom, i) {
+        const f = formats[i] || "texte";
+        const droite = f === "nombre" || f === "pourcent";
+        ecrire(nom, droite ? fin(i) : x[i], taille, true, droite, place_dispo(i));
+      });
+      y -= 4; trait(y); y -= 11;
+    };
+    dessinerEntete();
+
+    const MAX = 400; // au-delà, le PDF devient illisible : l'Excel prend le relais
+    const corps = lignes.slice(1, MAX + 1);
+    corps.forEach(function (ligne) {
+      if (y - taille - 4 < MARGE + 24) { nouvellePage(); dessinerEntete(); }
+      ligne.forEach(function (v, i) {
+        if (v === "" || v === null || v === undefined) return;
+        const f = formats[i] || "texte";
+        let t = v;
+        if (f === "date" && typeof v === "number") t = new Date(v).toLocaleDateString(LOCALE);
+        else if (f === "nombre" && typeof v === "number") t = nombre(v);
+        else if (f === "pourcent" && typeof v === "number") t = Math.round(v * 100) + " %";
+        const droite = f === "nombre" || f === "pourcent";
+        ecrire(t, droite ? fin(i) : x[i], taille, false, droite, place_dispo(i));
+      });
+      y -= taille + 3.5;
+    });
+    if (lignes.length - 1 > MAX) {
+      y -= 4;
+      ecrire("… et " + (lignes.length - 1 - MAX) + " lignes plus anciennes : voir le fichier Excel.", MARGE, 9, false);
+      y -= 12;
+    }
+    y -= 8;
+  });
+  pages.push(contenu);
+
+  // Assemblage : objets, table des positions, fin de fichier.
+  const objets = [];
+  const nbPages = pages.length;
+  objets.push("<</Type/Catalog/Pages 2 0 R>>");
+  const idsPages = pages.map(function (p, i) { return (5 + i * 2) + " 0 R"; });
+  objets.push("<</Type/Pages/Kids[" + idsPages.join(" ") + "]/Count " + nbPages + ">>");
+  objets.push("<</Type/Font/Subtype/Type1/BaseFont/Helvetica/Encoding/WinAnsiEncoding>>");
+  objets.push("<</Type/Font/Subtype/Type1/BaseFont/Helvetica-Bold/Encoding/WinAnsiEncoding>>");
+  pages.forEach(function (flux, i) {
+    objets.push("<</Type/Page/Parent 2 0 R/MediaBox[0 0 " + L + " " + H + "]" +
+      "/Resources<</Font<</F1 3 0 R/F2 4 0 R>>>>/Contents " + (6 + i * 2) + " 0 R>>");
+    objets.push("<</Length " + flux.length + ">>\nstream\n" + flux + "endstream");
+  });
+
+  let pdf = "%PDF-1.4\n";
+  const positions = [];
+  objets.forEach(function (o, i) {
+    positions.push(pdf.length);
+    pdf += (i + 1) + " 0 obj\n" + o + "\nendobj\n";
+  });
+  const debutXref = pdf.length;
+  pdf += "xref\n0 " + (objets.length + 1) + "\n0000000000 65535 f \n";
+  positions.forEach(function (p) { pdf += String(p).padStart(10, "0") + " 00000 n \n"; });
+  pdf += "trailer\n<</Size " + (objets.length + 1) + "/Root 1 0 R>>\nstartxref\n" + debutXref + "\n%%EOF";
+
+  // Chaque caractère vaut un octet (WinAnsi) : les positions restent justes.
+  const octets = new Uint8Array(pdf.length);
+  for (let i = 0; i < pdf.length; i++) octets[i] = pdf.charCodeAt(i) & 0xFF;
+  return new Blob([octets], { type: "application/pdf" });
+}
+
+/* ---------- Le CSV ---------- */
+
+// Un CSV ne contient qu'un seul tableau : on prend les mouvements, c'est
+// celui qu'on réutilise ailleurs. Point-virgule et virgule décimale :
+// c'est ce qu'attend un Excel réglé en français.
+function fabriquerCsv(feuille) {
+  const champ = function (v, format) {
+    if (v === null || v === undefined || v === "") return "";
+    if (format === "date" && typeof v === "number") return new Date(v).toLocaleDateString(LOCALE);
+    if (typeof v === "number") return String(v).replace(".", ",");
+    const t = String(v);
+    return /[";\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
+  };
+  const lignes = feuille.lignes.map(function (ligne, i) {
+    return ligne.map(function (v, c) { return champ(v, i === 0 ? "texte" : (feuille.formats || [])[c]); }).join(";");
+  });
+  // Le « BOM » dit à Excel que le fichier est en UTF-8 : sinon les accents sautent.
+  return new Blob(["﻿" + lignes.join("\r\n")], { type: "text/csv;charset=utf-8" });
+}
+
+/* ---------- Le bouton ---------- */
+
+function nomFichierExport(bornes, extension) {
+  const B = (donnees.boutique.nom || "Canari").replace(/[^\w\- ]+/g, "").trim().replace(/\s+/g, "-") || "Canari";
+  const d = function (t) { return cleJour(t); };
+  return B + "_" + (bornes.debut ? d(bornes.debut) : "debut") + "_" + d(bornes.fin) + "." + extension;
+}
+
+// Enregistre ou partage le fichier, comme la sauvegarde.
+function livrerFichier(fichier, quoi) {
   const enregistrer = function () {
     const lien = document.createElement("a");
     lien.href = URL.createObjectURL(fichier);
@@ -384,15 +543,43 @@ function telechargerExcel() {
     lien.click();
     lien.remove();
     setTimeout(function () { URL.revokeObjectURL(lien.href); }, 10000);
-    message("Fichier Excel enregistré dans « Téléchargements » : " + fichier.name, null, true);
+    message("Fichier " + quoi + " enregistré dans « Téléchargements » : " + fichier.name, null, true);
   };
   if (navigator.canShare && navigator.canShare({ files: [fichier] })) {
     navigator.share({ files: [fichier], title: tr("Chiffres Canari") })
-      .then(function () { message("Fichier Excel envoyé.", null, true); })
+      .then(function () { message("Fichier " + quoi + " envoyé.", null, true); })
       .catch(function (err) { if (!err || err.name !== "AbortError") enregistrer(); });
   } else {
     enregistrer();
   }
+}
+
+// Point d'entrée commun aux trois formats.
+function telechargerChiffres(format) {
+  const bornes = bornesExcel();
+  if (bornes.debut > bornes.fin) {
+    message("La date de début est après la date de fin.");
+    return;
+  }
+  const feuilles = donneesExcel(bornes);
+  if (feuilles[1].lignes.length < 2) {
+    message("Aucun mouvement sur cette période.");
+    return;
+  }
+  const du = bornes.debut ? new Date(bornes.debut).toLocaleDateString(LOCALE) : tr("le premier jour noté");
+  const au = new Date(bornes.fin).toLocaleDateString(LOCALE);
+  if (format === "csv") {
+    livrerFichier(new File([fabriquerCsv(feuilles[1])], nomFichierExport(bornes, "csv"), { type: "text/csv" }), "CSV");
+    return;
+  }
+  if (format === "pdf") {
+    const titre = donnees.boutique.nom || "Canari";
+    const blob = fabriquerPdf(feuilles, titre, tr("Chiffres Canari") + " — " + tr("du " + du + " au " + au));
+    livrerFichier(new File([blob], nomFichierExport(bornes, "pdf"), { type: "application/pdf" }), "PDF");
+    return;
+  }
+  livrerFichier(new File([fabriquerClasseur(feuilles)], nomFichierExport(bornes, "xlsx"),
+    { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }), "Excel");
 }
 
 function choisirPeriodeExcel(cle) {
@@ -408,13 +595,23 @@ function choisirPeriodeExcel(cle) {
       " au " + new Date(b.fin).toLocaleDateString(LOCALE) + ".";
 }
 
-function initExcel() {
+// Ouvre l'écran d'export, éventuellement sur une période déjà choisie.
+function ouvrirExport(cle) {
+  montrer("exporter");
+  choisirPeriodeExcel(cle && PERIODES_EXCEL[cle] ? cle : periodeExcel);
+}
+
+function initExport() {
   document.querySelectorAll("[data-excel]").forEach(function (b) {
     b.addEventListener("click", function () { choisirPeriodeExcel(b.dataset.excel); });
   });
   ["excel-du", "excel-au"].forEach(function (id) {
     $(id).addEventListener("change", function () { choisirPeriodeExcel(periodeExcel); });
   });
-  $("excel-telecharger").addEventListener("click", telechargerExcel);
+  document.querySelectorAll("[data-format]").forEach(function (b) {
+    b.addEventListener("click", function () { telechargerChiffres(b.dataset.format); });
+  });
+  $("exporter-fermer").addEventListener("click", function () { montrer("principal"); });
+  $("reglages-exporter").addEventListener("click", function () { ouvrirExport(); });
   choisirPeriodeExcel(periodeExcel);
 }

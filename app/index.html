@@ -286,25 +286,10 @@
   </section>
 
   <section class="carte-reglage">
-    <h2>Télécharger en Excel</h2>
-    <p>Tes chiffres dans un tableur, pour ton comptable, ta banque ou pour garder une trace. Six feuilles : résumé, mouvements, jour par jour, produits, clients, fournisseurs.</p>
-    <p class="champ-etiquette">Quelle période ?</p>
-    <div class="quatre-choix periodes-excel" role="group" aria-label="Période du fichier Excel">
-      <button type="button" class="choix" data-excel="semaine" aria-pressed="false">7 derniers jours</button>
-      <button type="button" class="choix" data-excel="mois" aria-pressed="true">30 derniers jours</button>
-      <button type="button" class="choix" data-excel="annee" aria-pressed="false">12 derniers mois</button>
-      <button type="button" class="choix" data-excel="tout" aria-pressed="false">Depuis le début</button>
-      <button type="button" class="choix" data-excel="dates" aria-pressed="false">Choisir les dates</button>
-    </div>
-    <div id="excel-dates" hidden>
-      <div class="deux-champs">
-        <label class="champ-date">Du<input type="date" id="excel-du"></label>
-        <label class="champ-date">Au<input type="date" id="excel-au"></label>
-      </div>
-    </div>
-    <p class="aide" id="excel-resume"></p>
-    <button type="button" class="bouton bouton-excel" id="excel-telecharger">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12h6M9 16h6"/></svg>Télécharger le fichier Excel
+    <h2>Télécharger mes chiffres</h2>
+    <p>Tes chiffres en Excel, en PDF ou en CSV, sur la période que tu veux : pour ton comptable, ta banque, ou pour garder une trace.</p>
+    <button type="button" class="bouton bouton-excel" id="reglages-exporter">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M5 21h14"/></svg>Télécharger mes chiffres
     </button>
   </section>
 
@@ -320,10 +305,63 @@
     </button>
   </section>
 
+  <section class="carte-reglage carte-danger">
+    <h2>Repartir à zéro</h2>
+    <p>Efface tout ce qui est noté sur ce téléphone : ventes, dépenses, crédits, produits, clients. L'appli redevient neuve, comme au premier jour.</p>
+    <p class="aide">Sers-toi de ça pour effacer des essais avant de faire tester l'appli à quelqu'un. Fais d'abord une sauvegarde si tu veux pouvoir tout récupérer.</p>
+    <button type="button" class="bouton bouton-danger" id="repartir-zero">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M9 7V5h6v2M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>Tout effacer et repartir à zéro
+    </button>
+  </section>
+
   <p class="aide version">canari · Garde chaque franc. · Zéro publicité.</p>
 </section>
 
 <!-- Questionnaire de départ -->
+<!-- Écran « Télécharger mes chiffres » -->
+<section id="exporter" class="ecran reglages" hidden>
+  <header class="entete">
+    <button type="button" class="bouton-retour" id="exporter-fermer" aria-label="Retour">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H6m5-6-6 6 6 6"/></svg>
+    </button>
+    <h1 class="titre-ecran">Télécharger mes chiffres</h1>
+  </header>
+
+  <section class="carte-reglage">
+    <h2>Quelle période ?</h2>
+    <div class="quatre-choix periodes-excel" role="group" aria-label="Période du fichier">
+      <button type="button" class="choix" data-excel="semaine" aria-pressed="false">7 derniers jours</button>
+      <button type="button" class="choix" data-excel="mois" aria-pressed="true">30 derniers jours</button>
+      <button type="button" class="choix" data-excel="annee" aria-pressed="false">12 derniers mois</button>
+      <button type="button" class="choix" data-excel="tout" aria-pressed="false">Depuis le début</button>
+      <button type="button" class="choix" data-excel="dates" aria-pressed="false">Choisir les dates</button>
+    </div>
+    <div id="excel-dates" hidden>
+      <div class="deux-champs">
+        <label class="champ-date">Du<input type="date" id="excel-du"></label>
+        <label class="champ-date">Au<input type="date" id="excel-au"></label>
+      </div>
+    </div>
+    <p class="aide" id="excel-resume"></p>
+  </section>
+
+  <section class="carte-reglage">
+    <h2>Quel format ?</h2>
+    <button type="button" class="bouton bouton-excel" data-format="excel">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12h6M9 16h6"/></svg>Excel (.xlsx)
+    </button>
+    <p class="aide">Six feuilles : résumé, mouvements, jour par jour, produits, clients, fournisseurs. Pour trier et calculer.</p>
+    <button type="button" class="bouton bouton-annuler" data-format="pdf">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 13h6M9 17h4"/></svg>PDF
+    </button>
+    <p class="aide">Un document prêt à imprimer ou à envoyer, avec les mêmes tableaux.</p>
+    <button type="button" class="bouton bouton-annuler" data-format="csv">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M4 12h16M4 19h16"/></svg>CSV
+    </button>
+    <p class="aide">La liste des mouvements seule, pour l'ouvrir dans un autre logiciel.</p>
+  </section>
+</section>
+
 <!-- Écran « Demande à Canari » (option Conseil, payante) -->
 <section id="conseil" class="ecran conseil" hidden>
   <header class="entete">
@@ -888,7 +926,7 @@
 <script src="paiements.js"></script>
 <script src="charges.js"></script>
 <script src="tableau.js"></script>
-<script src="excel.js"></script>
+<script src="export.js"></script>
 <script src="conseil.js"></script>
 <script src="fiches.js"></script>
 <script src="intrants.js"></script>

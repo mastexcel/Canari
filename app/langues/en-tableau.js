@@ -205,6 +205,13 @@ EN_MOTIFS.push(
   [/^Tes ventes ont plus que doublé par rapport aux 7 jours d'avant\.$/, "Your sales have more than doubled compared with the 7 days before."],
   [/^Tes ventes ont plus que doublé par rapport aux 30 jours d'avant\.$/, "Your sales have more than doubled compared with the 30 days before."],
   [/^Tes ventes ont plus que doublé par rapport à l'année d'avant\.$/, "Your sales have more than doubled compared with the year before."],
+  [/^Tes ventes montent de (\d+) % par rapport à la même période l'an dernier\.$/, "Your sales are up $1% compared with the same period last year."],
+  [/^Tes ventes baissent de (\d+) % par rapport à la même période l'an dernier\.$/, "Your sales are down $1% compared with the same period last year."],
+  [/^Tes ventes ont plus que doublé par rapport à la même période l'an dernier\.$/, "Your sales have more than doubled compared with the same period last year."],
+  /* ---- Les repères de temps sous les graphiques ---- */
+  [/^Du (.+) au (.+)$/, "From $1 to $2"],
+  [/^Tout effacer \? Les (\d+) lignes notées sur ce téléphone seront perdues\.$/,
+    "Erase everything? The $1 entries recorded on this phone will be lost."],
   /* ---- Ce qui rentre et ce qui sort ---- */
   [/^Il est rentré (.+ F) et il est sorti (.+ F)\.$/, "$1 came in and $2 went out."],
   /* ---- Les camemberts ---- */

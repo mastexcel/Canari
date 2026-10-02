@@ -203,9 +203,6 @@ body {
   font-size: 20px;
 }
 .action svg { width: 32px; height: 32px; stroke-width: 3; }
-.action.vente { background: var(--entre); }
-.action.depense { background: var(--sort); }
-.action.credit { background: var(--credit); }
 
 .petits-boutons {
   display: grid;
@@ -222,8 +219,6 @@ body {
   line-height: 1.15;
 }
 .secondaire svg { width: 22px; height: 22px; }
-.secondaire.maison { color: var(--maison); }
-.secondaire.fournisseur { color: var(--credit); }
 
 .principal { padding-bottom: calc(110px + env(safe-area-inset-bottom)); }
 .vide {
@@ -1570,7 +1565,8 @@ a.bouton { text-decoration: none; }
   --arrondi: 16px;
 
   /* Couleurs de sens (mêmes rôles qu'avant, en versions sourdes) */
-  --entre: #2F7A52;         --entre-fonce: #1D5B3B;  --entre-clair: #8FC4A7;  --entre-100: #E2F1E8;
+  /* Vert OLIVE (choix du propriétaire) : l'argent qui entre. */
+  --entre: #5E7033;         --entre-fonce: #44521F;  --entre-clair: #A9B97B;  --entre-100: #EBF0DB;
   /* Le rouge des décaissements et des nombres négatifs (demande du propriétaire) */
   --sort: #B8412B;          --sort-fonce: #8E2F1E;   --sort-clair: #E0A294;   --sort-100: #FAE4DF;
   --credit: #96701F;        --credit-fonce: #6B4F11; --credit-clair: #DCC48B; --credit-100: #F7EFDA;
@@ -1783,32 +1779,8 @@ body::after {
   box-shadow: var(--ombre);
 }
 
-/* ---------- Gros boutons : sobres, pastille d'icône teintée ---------- */
-.action {
-  border-radius: 16px;
-  color: var(--olive-900);
-  text-shadow: none;
-  border: 1px solid var(--bord);
-  box-shadow: var(--ombre);
-}
-.action svg {
-  width: 44px;
-  height: 44px;
-  padding: 9px;
-  border-radius: 50%;
-  color: #fff;
-  box-sizing: border-box;
-}
-.action.vente { background: linear-gradient(160deg, #fff 0%, var(--entre-100) 100%); border-color: var(--entre-clair); color: var(--entre-fonce); }
-.action.vente svg { background: var(--entre); }
-.action.depense { background: linear-gradient(160deg, #fff 0%, var(--sort-100) 100%); border-color: var(--sort-clair); color: var(--sort-fonce); }
-.action.depense svg { background: var(--sort); }
-.action.credit { background: linear-gradient(160deg, #fff 0%, var(--credit-100) 100%); border-color: var(--credit-clair); color: var(--credit-fonce); }
-.action.credit svg { background: var(--credit); }
-.action:active { transform: translateY(1px); box-shadow: none; }
-.secondaire { border: 1px solid; box-shadow: var(--ombre); font-weight: 600; }
-.secondaire.maison { background: linear-gradient(160deg, #fff, var(--maison-100)); border-color: var(--maison-clair); color: var(--maison-fonce); }
-.secondaire.fournisseur { background: linear-gradient(160deg, #fff, var(--credit-100)); border-color: var(--credit-clair); color: var(--credit-fonce); }
+/* Les gros boutons et les boutons secondaires sont dessinés dans la
+   section « LES BOUTONS », tout en bas : un seul dessin pour l'appli. */
 
 /* ---------- Bandeaux ---------- */
 .rappel-sauvegarde {
@@ -2829,3 +2801,186 @@ body { overflow-wrap: break-word; }
 .cadre .legende-comparatif { font-size: 12px; margin-top: 4px; }
 .rappel-version { background: linear-gradient(100deg, var(--olive-100), var(--ivoire)); border-color: var(--olive-200); }
 .version-numero { color: var(--texte-doux); }
+
+/* =====================================================================
+   LES BOUTONS  ·  un seul dessin pour toute l'appli
+   (demande du propriétaire, 02/10/2026 : « je souhaite que dans toute
+   l'application les boutons soient comme sur cette interface, même
+   design, avec des couleurs différentes ; pour le vert prends le vert
+   olive ».)
+
+   Il a montré l'écran d'accueil. On en tire deux formes, et deux seules :
+
+   1. LE BOUTON PLEIN — « Commencer ». Un dégradé de sa couleur (plus
+      clair en haut à gauche, plus profond en bas à droite), le texte en
+      blanc, et une lueur de la même couleur posée dessous. C'est l'action
+      principale de l'écran.
+   2. LE BOUTON CERNÉ — « Français » / « English ». Un fond à peine teinté,
+      un bord de 2 px, le texte dans la couleur. C'est le second choix,
+      une bascule, un réglage.
+
+   Chaque bouton ne change que sa COULEUR (--teinte), jamais son dessin :
+   olive = argent qui entre, rouge = argent qui sort, ambre = crédit,
+   ardoise = maison et matériel, braise = la marque, graphite = le neutre.
+   RÈGLE POUR LA SUITE : un nouveau bouton reçoit .b-plein ou .b-cerne et
+   une --teinte. On ne dessine pas un bouton de plus à la main.
+   ===================================================================== */
+
+/* La couleur par défaut, pour qu'un bouton sans teinte reste dessiné. */
+:root { --teinte: var(--gris-700); }
+
+/* ---------- La forme commune ---------- */
+.bouton-principal, .action, .secondaire, .bouton-ok, .bouton-annuler,
+.bouton-sauver, .bouton-paye, .bouton-fpaye, .bouton-arrivage,
+.bouton-relancer, .bouton-envoyer, .bouton-excel, .bouton-invest,
+.bouton-conseil, .bouton-danger, .bouton-whatsapp, .bouton-contact,
+.bouton-fiche, .bouton-ecouter, .bouton-ecouter-accueil, .rapide,
+.message button, .rappel-sauvegarde .bouton, .choix {
+  border-radius: 16px;
+  font-weight: 600;
+  letter-spacing: -0.1px;
+  transition: transform .08s ease, box-shadow .08s ease;
+}
+
+/* ---------- 1. Le bouton plein ---------- */
+.bouton-principal, .action, .bouton-ok, .bouton-sauver, .bouton-paye,
+.bouton-fpaye, .bouton-arrivage, .bouton-envoyer, .message button,
+.rappel-sauvegarde .bouton, .choix[aria-pressed="true"] {
+  background: var(--teinte);
+  background: linear-gradient(122deg,
+      color-mix(in srgb, var(--teinte) 82%, #FFFFFF) 0%,
+      var(--teinte) 54%,
+      color-mix(in srgb, var(--teinte) 78%, #000000) 100%);
+  color: #FFFFFF;
+  border: 0;
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--teinte) 34%, transparent);
+}
+.bouton-principal:active, .action:active, .bouton-ok:active,
+.bouton-sauver:active, .bouton-paye:active, .bouton-fpaye:active,
+.bouton-arrivage:active, .bouton-envoyer:active, .message button:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--teinte) 28%, transparent);
+}
+
+/* ---------- 2. Le bouton cerné ---------- */
+.secondaire, .bouton-annuler, .bouton-relancer, .bouton-excel,
+.bouton-invest, .bouton-conseil, .bouton-danger, .bouton-whatsapp,
+.bouton-contact, .bouton-fiche, .bouton-ecouter, .rapide,
+.choix-langue button, .choix-carte {
+  background: color-mix(in srgb, var(--teinte) 8%, #FFFFFF);
+  border: 2px solid color-mix(in srgb, var(--teinte) 38%, #FFFFFF);
+  color: color-mix(in srgb, var(--teinte) 86%, #000000);
+  box-shadow: none;
+}
+.secondaire:active, .bouton-annuler:active, .bouton-relancer:active,
+.bouton-excel:active, .bouton-invest:active, .bouton-conseil:active,
+.bouton-whatsapp:active, .bouton-contact:active, .bouton-fiche:active,
+.bouton-ecouter:active, .rapide:active, .choix-langue button:active {
+  background: color-mix(in srgb, var(--teinte) 16%, #FFFFFF);
+  transform: translateY(1px);
+}
+.choix-langue button[aria-pressed="true"], .choix-carte[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--teinte) 14%, #FFFFFF);
+  border-color: var(--teinte);
+}
+
+/* ---------- Les couleurs, une par sens ---------- */
+.bouton-principal, .bouton-envoyer { --teinte: var(--braise); }
+.action.vente, .bouton-paye, .bouton-arrivage { --teinte: var(--entre); }
+.action.depense, .bouton-fpaye, .bouton-danger { --teinte: var(--sort); }
+.action.credit, .secondaire.fournisseur, .bouton-relancer,
+.bouton-conseil, .bouton-fiche { --teinte: var(--credit); }
+.secondaire.maison, .secondaire.investissement, .bouton-invest { --teinte: var(--maison); }
+.bouton-ok { --teinte: var(--couleur-saisie, var(--entre)); }
+.bouton-sauver, .message button, .rappel-sauvegarde .bouton,
+.choix[aria-pressed="true"], .bouton-annuler, .bouton-excel, .rapide,
+.bouton-ecouter, .bouton-contact, .choix-carte { --teinte: var(--gris-700); }
+.bouton-whatsapp { --teinte: var(--entre); }
+/* La langue : seul le choix retenu porte la couleur, l'autre reste neutre
+   — sinon les deux ont l'air choisis. */
+.choix-langue button { --teinte: var(--braise); color: var(--gris-700); background: #FFFFFF; border-color: var(--bord); }
+.choix-langue button[aria-pressed="true"] { color: var(--ocre-800); }
+
+/* Les cases à cocher des réglages restent blanches tant qu'elles ne sont
+   pas choisies : ce sont des cartes, pas des boutons d'action. */
+.choix-carte {
+  --teinte: var(--braise);
+  background: #FFFFFF;
+  border-color: var(--bord);
+  color: var(--brun);
+}
+.choix-carte[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--braise) 7%, #FFFFFF);
+  border-color: var(--braise);
+}
+
+/* ---------- Les trois gros boutons : pleins, icône en médaillon ---------- */
+.action {
+  min-height: 92px;
+  gap: 6px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .18);
+}
+.action svg {
+  width: 40px;
+  height: 40px;
+  padding: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .20);
+  color: #FFFFFF;
+  box-sizing: border-box;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .22);
+}
+.secondaire { min-height: 56px; }
+.secondaire svg { opacity: .9; }
+
+/* ---------- L'accueil : les deux formes sur fond sombre ---------- */
+.accueil .choix-langue button {
+  --teinte: var(--braise);
+  background: rgba(255, 255, 255, .06);
+  border-color: rgba(255, 255, 255, .20);
+  color: #E8E2DC;
+}
+.accueil .choix-langue button[aria-pressed="true"] {
+  background: rgba(220, 63, 23, .22);
+  border-color: var(--braise-vive);
+  color: #FFE6DC;
+}
+.bouton-ecouter-accueil {
+  --teinte: var(--braise);
+  background: rgba(255, 255, 255, .06);
+  border: 2px solid rgba(255, 255, 255, .20);
+  color: #E8E2DC;
+}
+.bouton-ecouter-accueil:active { background: rgba(255, 255, 255, .12); }
+
+/* ---------- Les bascules à deux ou trois choix ---------- */
+.choix { color: var(--gris-600); background: transparent; border: 0; box-shadow: none; }
+.choix[aria-pressed="true"] { box-shadow: 0 6px 16px rgba(52, 56, 67, .26); }
+
+/* ---------- Les montants rapides : plus discrets que les actions ---------- */
+.rapide { min-height: 48px; border-radius: 13px; border-width: 1.5px; }
+
+/* ---------- Le bouton « Dire » garde sa place de bouton plein ---------- */
+.saisie-voix .bouton-parler { --teinte: var(--gris-700); }
+
+/* Les bascules qui vivent dans une fenêtre de saisie prennent la couleur
+   de cette fenêtre (vente = olive, dépense = rouge…), mais le même
+   dégradé que les autres boutons pleins. */
+.saisie .choix[aria-pressed="true"],
+.saisie .quatre-choix .choix[aria-pressed="true"],
+.saisie .trois-choix .choix[aria-pressed="true"],
+#arrivage-paye .choix[aria-pressed="true"],
+.tons .choix[aria-pressed="true"] {
+  --teinte: var(--couleur-saisie, var(--gris-700));
+  background: var(--teinte);
+  background: linear-gradient(122deg,
+      color-mix(in srgb, var(--teinte) 82%, #FFFFFF) 0%,
+      var(--teinte) 54%,
+      color-mix(in srgb, var(--teinte) 78%, #000000) 100%);
+  color: #FFFFFF;
+  border-color: transparent;
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--teinte) 30%, transparent);
+}
+.tons .choix[aria-pressed="true"] { --teinte: var(--credit); }
+.saisie .trois-choix .choix[aria-pressed="true"],
+#arrivage-paye .choix[aria-pressed="true"] { --teinte: var(--gris-700); }

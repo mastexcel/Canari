@@ -2,9 +2,12 @@
 // L'image est dessinée sur le téléphone (sans internet), avec le logo et le nom
 // de la boutique enregistrés dans Réglages.
 
+// Charte BIP : le bandeau et le nom de la boutique passent du vert au
+// graphite, la braise sert d'accent de marque (le mot « canari »).
 const COULEURS_FACTURE = {
-  fond: "#FFFFFF", vert: "#174A3F", texte: "#2A1A12", doux: "#6B5646",
-  ligne: "#E6D9C6", sable: "#F6EEE3", rouge: "#B8412B", entre: "#1E7A4F", or: "#F2B233"
+  fond: "#FFFFFF", vert: "#1A1B20", texte: "#22242A", doux: "#5B5A5E",
+  ligne: "#E8DFD7", sable: "#F8EFE9", rouge: "#B8412B", entre: "#2F7A52",
+  or: "#C2802F", braise: "#DC3F17"
 };
 
 let documentEnCours = null; // { toile, nom }

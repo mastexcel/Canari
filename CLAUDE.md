@@ -34,19 +34,25 @@ Concurrents étudiés : Djago (Côte d'Ivoire), Keiwa, NAFA ERP, OkCredit, Khata
 
 - **Nom** : Canari (la jarre traditionnelle en terre cuite qui garde l'eau précieuse). Écrit en minuscules dans le logo : « canari ».
 - **Slogan** : « Tu vends. Canari compte. » (choisi par le propriétaire en remplacement de « Garde chaque franc. », qui ne voulait plus rien dire hors zone FCFA depuis l'ajout des monnaies : naira, franc guinéen…). Il dit le partage du travail, ne nomme aucune monnaie, et fait entendre le nom de la marque. Anglais : « You sell. Canari counts. »
-- **Couleurs**
-  - Vert forêt `#174A3F` (couleur principale, fond de l'icône)
-  - Terre cuite `#C8643A` (la jarre)
-  - Terre claire `#E08A5F` (bord de la jarre, accents)
-  - Or `#F2B233` (pièces, gains)
-  - Sable `#F6EEE3` (fond clair de l'appli)
-  - Brun foncé `#2A1A12` (texte)
-  - Rouge dépense `#B8412B`, ambre crédit `#9A6512` (couleurs de sens)
-- **Signature graphique (demande du propriétaire : les couleurs nationales — orange, blanc, vert — en nuances sourdes, aucune couleur vive, des motifs et des formes en fond, un rendu professionnel)**, dans `app/style.css`, section « SIGNATURE GRAPHIQUE CANARI ».
-  - **Trois familles de couleurs** : **ivoire** (`--ivoire`, `--ivoire-2`, `--sable`), **ocre** (l'orange sourd : `--ocre-500` à `--ocre-800`, `--ocre-100`, `--dore`) et **olive** (`--olive-50` à `--olive-900`). Les couleurs de la marque pointent dessus (`--vert-foret` = olive 700, `--terre-cuite` = ocre 600, `--or` = doré). Les couleurs de sens : olive = argent qui entre, **rouge = argent qui sort et nombre négatif**, ocre = crédit, ardoise = maison. Les fonds restent clairs et sourds ; seuls les textes sont foncés.
-  - **Cinq dessins faits maison** (SVG écrits dans le CSS, aucune image à charger) : **les vagues** (arcs concentriques, en filigrane sur toute la page et dans le bilan du jour), **les pièces** (ronds dorés au trait, sur les grandes cartes et l'accueil), **le zigzag** (la frise du canari, en haut des cartes et en bas de l'accueil), **le halo** (cercles du goulot, coin des cartes et des fenêtres) et **la trame** (fines hachures obliques : la tenue du papier). Plus trois voiles de couleur fixes derrière la page et une grande goutte sur l'accueil.
-  - **Rendu sobre** : bordures fines de 1 px, ombres légères, angles à 16-18 px, pas d'effet de relief, étiquettes des grandes cartes en petites capitales.
-  - Contrastes vérifiés : tous les textes ≥ 6,8:1 (le minimum exigé est 4,5:1).
+- **Couleurs (charte BIP depuis le 02/10/2026, voir plus bas)**
+  - Graphite `#1A1B20` → `#121319` (couleur principale : fonds sombres, textes, barre du haut)
+  - Braise `#DC3F17`, braise vive `#F46134`, braise profonde `#8E1F0C` (l'orange-rouge du logo BIP : accents de marque)
+  - Gris BIP `#8E929B` (le « B » du logo : filets, dessins de fond)
+  - Ivoire `#FCFAF7` et rosé pâle `#F8EFE9` (fonds clairs de l'appli)
+  - Or `#C2802F` (pièces)
+  - Couleurs de sens, inchangées : vert `#2F7A52` = argent qui entre, rouge `#B8412B` = argent qui sort, ambre `#96701F` = crédit, ardoise `#4A5873` = maison
+  - *Avant* : vert forêt `#174A3F`, terre cuite `#C8643A`, or `#F2B233`, sable `#F6EEE3`.
+- **Charte graphique : celle du logo BIP (demande du propriétaire du 02/10/2026 : « l'application doit être attractive, créer de l'émotion en offrant une atmosphère unique et une expérience unique de navigation, des fonds soignés et originaux ; utilise d'autres couleurs tant que cela ne brise pas la dynamique de la charte ; bascule sur la charte du logo BIP »)**, dans `app/style.css`, sections « SIGNATURE GRAPHIQUE CANARI » et « ATMOSPHÈRE ». Inspirée des pages du site BIP Corporate Finance fournies par le propriétaire (héros sombre, braise orange-rouge, grille fine, sections claires rosées).
+  - **Deux registres qui se répondent, et c'est là que naît l'émotion.** Les **grands moments sont sombres** : l'écran d'accueil, la carte du jour, « On me doit », « Je dois », la semaine, le mois, le stock — graphite, braise qui chauffe un coin, grille fine, vagues de Canari en filigrane clair ; le chiffre sort en blanc du fond chaud. Le **travail reste clair** : listes, fenêtres de saisie, réglages, tableau de bord gardent l'ivoire, parce qu'on y lit longtemps, en plein soleil, sur un écran bon marché.
+  - **Trois familles de couleurs** : **ivoire** (`--ivoire`, `--ivoire-2`, `--sable` — le rosé pâle des sections claires du site BIP), **braise** (l'orange-rouge du logo : `--braise-vive` `#F46134`, `--braise` `#DC3F17`, `--braise-profonde` `#8E1F0C`, plus la famille `--ocre-*` qui pointe dessus) et **gris chaud** (`--gris-900` à `--gris-50`, dont `--gris-400` `#8E929B`, le gris du « B » du logo).
+  - **Le vert n'est plus une couleur de marque, seulement une couleur de sens.** L'ancienne famille `--olive-*` est devenue un **alias du gris** : les deux mille lignes de règles qui l'utilisaient pour des choses neutres (titres, boutons de réglage, filets, puces) ont basculé d'un coup sur le graphite BIP. Le vert vit désormais dans `--entre` seul.
+  - **Les couleurs de sens ne bougent pas** : olive/vert = argent qui entre, **rouge = argent qui sort et nombre négatif**, ocre = crédit, ardoise = maison.
+  - **La braise n'est jamais un bouton d'argent.** Elle ne sert qu'aux surfaces de marque : fond sombre, dégradés, filets du haut des cartes, onglet actif, bouton « Commencer », titres de réglage. Sinon le rouge perdrait son seul sens, l'argent qui sort. **Règle pour la suite** : ne jamais poser la braise sur un bouton qui note un mouvement d'argent.
+  - **Les dessins** (SVG écrits dans le CSS, aucune image à charger) : la **grille** de BIP (`--motif-grille`, `--motif-grille-claire`), les **vagues** de Canari (claires sur fond sombre : `--motif-vagues-clair`), les **pièces**, le **halo**, la **trame**, la **goutte**, et la **braise** (`--lueur-braise`, `--fond-braise` : graphite + deux lueurs chaudes + grille, le fond de tous les grands moments).
+  - **L'expérience de navigation** : trois animations courtes seulement, et uniquement sur ce qui **apparaît** (la carte du jour, les trois gros boutons, le message du bas) — jamais sur un texte déjà lu. Toutes coupées par `prefers-reduced-motion`.
+  - **La barre du haut du téléphone passe au graphite** `#121319` (`theme_color` du manifeste, `<meta name="theme-color">`, `twa-manifest.json`) ; le fond de démarrage reste l'ivoire.
+  - **Les factures suivent** : `COULEURS_FACTURE` (`app/facture.js`) passe du vert au graphite pour le bandeau, le nom de la boutique et les totaux ; sur la facture d'abonnement, le mot « canari » sous la mascotte est en braise, comme le logo BIP en face.
+  - Contrastes vérifiés : blanc sur le fond sombre ≈ 15:1, texte doux `#BDB6B0` ≈ 8,8:1, braise `#F46134` ≈ 5,6:1 — tous au-dessus du minimum exigé (4,5:1).
   - Le fond ne doit pas être en `background-attachment: fixed` (défilement saccadé sur les petits téléphones) : les formes sont posées par `body::before`, qui ne se redessine pas.
 - **Polices (retravaillées à la demande du propriétaire : « faire correspondre les polices au contenu »)**, section « TYPOGRAPHIE » de `app/style.css`. Toujours deux polices seulement (poids de l'appli inchangé), mais deux rôles nets :
   - **Fredoka** (`--titre`), ronde et chaleureuse → l'**identité** : le logo, le slogan, les titres d'écran et de fenêtre, les titres de liste, les mots des gros boutons, le nom de la boutique sur les factures.
@@ -146,7 +152,7 @@ Calculs (remplacés par la décision « bénéfice » ci-dessous) : gain = encai
 - Tout en français simple, tutoiement.
 - Montants en FCFA sans décimales, avec espaces : « 12 500 F ».
 - Gros chiffres, gros boutons (au moins 48 px de haut), peu de mots, une icône à côté de chaque action.
-- Couleurs de sens constantes : vert = argent qui entre, rouge = argent qui sort, ambre = crédit, bleu-violet = maison.
+- Couleurs de sens constantes : vert = argent qui entre, rouge = argent qui sort, ambre = crédit, ardoise = maison. Elles n'ont pas bougé avec la charte BIP : la braise de BIP ne sert jamais à un bouton d'argent.
 - Doit rester lisible en plein soleil (bon contraste).
 - Écrans vides accueillants avec la mascotte et une phrase qui dit quoi faire.
 

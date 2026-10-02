@@ -1470,10 +1470,22 @@ a.bouton { text-decoration: none; }
 .voix-ecoute.compact .bouton { width: auto; min-height: 44px; padding: 0 14px; flex: none; }
 
 /* =====================================================================
-   SIGNATURE GRAPHIQUE CANARI  ·  ivoire, ocre, olive
-   (demande du propriétaire : les couleurs nationales — orange, blanc,
-   vert — mais en nuances sourdes, aucune couleur vive, avec des motifs
-   et des formes en arrière-plan, pour un rendu professionnel.)
+   SIGNATURE GRAPHIQUE CANARI  ·  charte BIP : graphite, braise, ivoire
+   (demande du propriétaire : basculer sur la charte du logo BIP, créer
+   de l'émotion, une atmosphère et une navigation uniques, des fonds
+   soignés et originaux — sans casser la dynamique de la marque.)
+
+   Deux registres, et c'est là que naît l'émotion :
+     · les GRANDS MOMENTS sont sombres — l'accueil et la carte du jour
+       sont en graphite avec une braise qui chauffe le coin et la grille
+       fine du site BIP ; le chiffre du jour s'y détache en blanc ;
+     · le TRAVAIL reste clair — listes, fenêtres et formulaires gardent
+       l'ivoire, parce qu'on y lit longtemps, au soleil, sur un écran bon
+       marché.
+   La BRAISE (l'orange-rouge du logo BIP) ne sert qu'aux surfaces de
+   marque — fond sombre, dégradés, filets, onglet actif. Elle n'est
+   jamais un bouton d'argent : le rouge plat garde son seul sens, l'argent
+   qui sort.
 
    Cinq dessins faits maison (écrits dans le CSS, aucune image à charger)
    reviennent partout et forment la marque :
@@ -1485,60 +1497,112 @@ a.bouton { text-decoration: none; }
    Les fonds restent clairs ; seuls les textes sont foncés (plein soleil).
    ===================================================================== */
 :root {
-  /* --- Les trois familles : ivoire, ocre (orange sourd), olive --- */
-  --ivoire: #FBF8F1;
-  --ivoire-2: #F5F1E7;
-  --sable: #F2EDE1;
-  --sable-fonce: #E4DCCA;
-  --bord: #E2DAC8;
+  /* --- Les familles : ivoire, braise (le rouge-orange BIP), graphite --- */
+  --ivoire: #FCFAF7;
+  --ivoire-2: #F5F1EC;
+  --sable: #F8EFE9;          /* le rose pâle des sections claires du site BIP */
+  --sable-fonce: #E7DCD3;
+  --bord: #E8DFD7;
 
-  --olive-900: #2F3823;      /* textes */
-  --olive-800: #3C4A2D;
-  --olive-700: #4E5B39;
-  --olive-600: #61704A;
-  --olive-400: #8A9668;
-  --olive-200: #C4CDAE;
-  --olive-100: #E4E9D7;
-  --olive-50: #F0F3E8;
+  /* Le graphite du site BIP : fonds sombres, textes, gris du « B ». */
+  --graphite-900: #121319;
+  --graphite-800: #1A1C23;
+  --graphite-700: #24272F;
+  --graphite-600: #32363F;
+  --graphite-500: #4A4F59;
+  --graphite-300: #8D939C;   /* le gris du logo */
+  --graphite-200: #C3C7CD;
+  --graphite-100: #E6E8EB;
 
-  --ocre-800: #7A4B25;
-  --ocre-700: #8E5B30;
-  --ocre-600: #A96F3E;
-  --ocre-500: #B4703F;
-  --ocre-300: #D9AE84;
-  --ocre-100: #F3E5D5;
-  --ocre-50: #F9F0E5;
+  /* La braise : le rouge-orange du logo BIP, du plus clair au plus profond. */
+  --braise-vive: #F46134;
+  --braise: #DC3F17;
+  --braise-profonde: #8E1F0C;
 
-  --dore: #B08A4E;
-  --dore-100: #F4EBD9;
+  /* Le gris chaud de BIP : c'est lui qui porte l'interface neutre
+     (titres, boutons de réglage, filets, puces). */
+  --gris-900: #1A1B20;       /* textes */
+  --gris-800: #262830;
+  --gris-700: #343843;
+  --gris-600: #474C57;
+  --gris-400: #8E929B;       /* le gris du logo */
+  --gris-200: #CBCDD2;
+  --gris-100: #E8E9EC;
+  --gris-50: #F4F4F6;
+
+  /* L'ancienne famille « olive » pointe sur ce gris : deux mille lignes de
+     règles l'utilisent pour des choses neutres (titres, boutons, filets),
+     et elles basculent donc d'un coup sur la charte BIP. Le VERT, lui,
+     n'est plus qu'une couleur de sens — l'argent qui entre — et vit dans
+     --entre, qui n'a pas bougé. */
+  --olive-900: var(--gris-900);
+  --olive-800: var(--gris-800);
+  --olive-700: var(--gris-700);
+  --olive-600: var(--gris-600);
+  --olive-400: var(--gris-400);
+  --olive-200: var(--gris-200);
+  --olive-100: var(--gris-100);
+  --olive-50: var(--gris-50);
+
+  /* L'ancienne famille « ocre » pointe maintenant sur la braise : tout ce
+     qui portait l'orange sourd prend l'orange BIP, sans toucher 2 000
+     lignes de règles. */
+  --ocre-800: #8E2A10;
+  --ocre-700: #A83214;
+  --ocre-600: #C93C18;
+  --ocre-500: #DC4A1E;
+  --ocre-300: #F0A98F;
+  --ocre-100: #FBE6DC;
+  --ocre-50: #FDF3EE;
+
+  --dore: #C2802F;
+  --dore-100: #F8EBD8;
 
   /* Couleurs de la marque, mises au ton sourd */
   --vert-foret: var(--olive-700);
   --terre-cuite: var(--ocre-600);
   --terre-claire: var(--ocre-300);
   --or: var(--dore);
-  --brun: #2E2A21;
+  --brun: #22242A;
   --carte: #FFFFFF;
   --creme: var(--ivoire);
-  --texte-doux: #5C5445;
+  --texte-doux: #5B5A5E;
   --arrondi: 16px;
 
   /* Couleurs de sens (mêmes rôles qu'avant, en versions sourdes) */
-  --entre: #5A6B41;         --entre-fonce: #3C4A2D;  --entre-clair: #A8B58E;  --entre-100: #E6EBDB;
+  --entre: #2F7A52;         --entre-fonce: #1D5B3B;  --entre-clair: #8FC4A7;  --entre-100: #E2F1E8;
   /* Le rouge des décaissements et des nombres négatifs (demande du propriétaire) */
   --sort: #B8412B;          --sort-fonce: #8E2F1E;   --sort-clair: #E0A294;   --sort-100: #FAE4DF;
-  --credit: #8A6A2B;        --credit-fonce: #634A19; --credit-clair: #D3BC8A; --credit-100: #F4ECD9;
-  --maison: #4F5A6B;        --maison-fonce: #3A4351; --maison-clair: #A9B3C1; --maison-100: #E7EAEE;
+  --credit: #96701F;        --credit-fonce: #6B4F11; --credit-clair: #DCC48B; --credit-100: #F7EFDA;
+  --maison: #4A5873;        --maison-fonce: #34405A; --maison-clair: #A6B0C5; --maison-100: #E7EAF0;
 
-  --ombre: 0 1px 2px rgba(46, 42, 33, .05), 0 4px 14px rgba(46, 42, 33, .06);
-  --ombre-forte: 0 1px 3px rgba(46, 42, 33, .06), 0 10px 26px rgba(46, 42, 33, .09);
+  --ombre: 0 1px 2px rgba(18, 19, 25, .05), 0 4px 14px rgba(18, 19, 25, .07);
+  --ombre-forte: 0 2px 6px rgba(18, 19, 25, .08), 0 14px 34px rgba(18, 19, 25, .13);
+  --ombre-sombre: 0 10px 30px rgba(142, 31, 12, .22), 0 2px 6px rgba(18, 19, 25, .3);
 
-  --motif-vagues: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22180%22%20height%3D%2290%22%20viewBox%3D%220%200%20180%2090%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%239A7A4F%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20opacity%3D%220.55%22%3E%3Cpath%20d%3D%22M-20%2078%20Q%2025%2034%2070%2078%20T%20160%2078%22/%3E%3Cpath%20d%3D%22M20%2044%20Q%2065%200%20110%2044%20T%20200%2044%22/%3E%3C/g%3E%3C/svg%3E");
-  --motif-pieces: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2292%22%20height%3D%2292%22%20viewBox%3D%220%200%2092%2092%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23B08A4E%22%20stroke-width%3D%221.6%22%20opacity%3D%220.34%22%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2218%22%20r%3D%225%22/%3E%3Ccircle%20cx%3D%2260%22%20cy%3D%2238%22%20r%3D%223.2%22/%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2266%22%20r%3D%224%22/%3E%3Ccircle%20cx%3D%2278%22%20cy%3D%2278%22%20r%3D%222.6%22/%3E%3C/g%3E%3C/svg%3E");
-  --motif-zigzag: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2240%22%20height%3D%2214%22%20viewBox%3D%220%200%2040%2014%22%3E%3Cpath%20d%3D%22M0%2011%20L10%204%20L20%2011%20L30%204%20L40%2011%22%20fill%3D%22none%22%20stroke%3D%22%23B4703F%22%20stroke-width%3D%222.6%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E");
-  --motif-halo: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22240%22%20height%3D%22240%22%20viewBox%3D%220%200%20240%20240%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%237E8A5E%22%20stroke-width%3D%227%22%20opacity%3D%220.26%22%3E%3Ccircle%20cx%3D%22200%22%20cy%3D%2240%22%20r%3D%2240%22/%3E%3Ccircle%20cx%3D%22200%22%20cy%3D%2240%22%20r%3D%2272%22/%3E%3Ccircle%20cx%3D%22200%22%20cy%3D%2240%22%20r%3D%22104%22/%3E%3Ccircle%20cx%3D%22200%22%20cy%3D%2240%22%20r%3D%22136%22/%3E%3C/g%3E%3C/svg%3E");
-  --motif-trame: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2012%2012%22%3E%3Cpath%20d%3D%22M0%2012%20L12%200%22%20stroke%3D%22%237E8A5E%22%20stroke-width%3D%221%22%20opacity%3D%220.11%22/%3E%3C/svg%3E");
-  --forme-goutte: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22400%22%20height%3D%22400%22%20viewBox%3D%220%200%20400%20400%22%3E%3Cpath%20d%3D%22M330%2060c50%2060%2040%20150-20%20200s-160%2070-220%2020S40%20110%20110%2070%20280%200%20330%2060z%22%20fill%3D%22%237E8A5E%22/%3E%3C/svg%3E");
+  --motif-vagues: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22180%22%20height%3D%2290%22%20viewBox%3D%220%200%20180%2090%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23B08F76%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20opacity%3D%220.5%22%3E%3Cpath%20d%3D%22M-20%2078%20Q%2025%2034%2070%2078%20T%20160%2078%22%2F%3E%3Cpath%20d%3D%22M20%2044%20Q%2065%200%20110%2044%20T%20200%2044%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  --motif-pieces: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2292%22%20height%3D%2292%22%20viewBox%3D%220%200%2092%2092%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23C2802F%22%20stroke-width%3D%221.6%22%20opacity%3D%220.3%22%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2218%22%20r%3D%225%22%2F%3E%3Ccircle%20cx%3D%2260%22%20cy%3D%2238%22%20r%3D%223.2%22%2F%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2266%22%20r%3D%224%22%2F%3E%3Ccircle%20cx%3D%2278%22%20cy%3D%2278%22%20r%3D%222.6%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  --motif-zigzag: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2240%22%20height%3D%2214%22%20viewBox%3D%220%200%2040%2014%22%3E%3Cpath%20d%3D%22M0%2011%20L10%204%20L20%2011%20L30%204%20L40%2011%22%20fill%3D%22none%22%20stroke%3D%22%23DC4A1E%22%20stroke-width%3D%222.6%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  --motif-halo: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22240%22%20height%3D%22240%22%20viewBox%3D%220%200%20240%20240%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%238E929B%22%20stroke-width%3D%227%22%20opacity%3D%220.22%22%3E%3Ccircle%20cx%3D%22200%22%20cy%3D%2240%22%20r%3D%2240%22%2F%3E%3Ccircle%20cx%3D%22200%22%20cy%3D%2240%22%20r%3D%2272%22%2F%3E%3Ccircle%20cx%3D%22200%22%20cy%3D%2240%22%20r%3D%22104%22%2F%3E%3Ccircle%20cx%3D%22200%22%20cy%3D%2240%22%20r%3D%22136%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  --motif-trame: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2012%2012%22%3E%3Cpath%20d%3D%22M0%2012%20L12%200%22%20stroke%3D%22%238E929B%22%20stroke-width%3D%221%22%20opacity%3D%220.12%22%2F%3E%3C%2Fsvg%3E");
+  /* --- Les dessins de la charte BIP --- */
+  /* La grille fine du site : la rigueur, sous la braise. */
+  --motif-grille: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2244%22%20height%3D%2244%22%20viewBox%3D%220%200%2044%2044%22%3E%3Cpath%20d%3D%22M44%200H0v44%22%20fill%3D%22none%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%221%22%20opacity%3D%220.07%22%2F%3E%3C%2Fsvg%3E");
+  --motif-grille-claire: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2244%22%20height%3D%2244%22%20viewBox%3D%220%200%2044%2044%22%3E%3Cpath%20d%3D%22M44%200H0v44%22%20fill%3D%22none%22%20stroke%3D%22%23C93C18%22%20stroke-width%3D%221%22%20opacity%3D%220.09%22%2F%3E%3C%2Fsvg%3E");
+  /* Les vagues et les pièces en version claire, pour les fonds sombres. */
+  --motif-vagues-clair: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22180%22%20height%3D%2290%22%20viewBox%3D%220%200%20180%2090%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20opacity%3D%220.5%22%3E%3Cpath%20d%3D%22M-20%2078%20Q%2025%2034%2070%2078%20T%20160%2078%22%2F%3E%3Cpath%20d%3D%22M20%2044%20Q%2065%200%20110%2044%20T%20200%2044%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  --motif-pieces-clair: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2292%22%20height%3D%2292%22%20viewBox%3D%220%200%2092%2092%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23F8C98A%22%20stroke-width%3D%221.6%22%20opacity%3D%220.5%22%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2218%22%20r%3D%225%22%2F%3E%3Ccircle%20cx%3D%2260%22%20cy%3D%2238%22%20r%3D%223.2%22%2F%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2266%22%20r%3D%224%22%2F%3E%3Ccircle%20cx%3D%2278%22%20cy%3D%2278%22%20r%3D%222.6%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  /* La braise : deux lueurs chaudes qui chauffent un coin du fond sombre. */
+  --lueur-braise:
+    radial-gradient(74% 56% at 88% 6%, rgba(244, 97, 52, .40) 0, transparent 70%),
+    radial-gradient(90% 62% at 8% 104%, rgba(142, 31, 12, .58) 0, transparent 72%);
+  /* Le fond sombre complet : graphite + braise + grille. */
+  --fond-braise:
+    var(--motif-grille) 0 0 / 44px 44px repeat,
+    radial-gradient(74% 56% at 88% 6%, rgba(244, 97, 52, .40) 0, transparent 70%),
+    radial-gradient(90% 62% at 8% 104%, rgba(142, 31, 12, .58) 0, transparent 72%),
+    linear-gradient(158deg, var(--graphite-800) 0%, var(--graphite-900) 52%, #1D1215 100%);
+  --forme-goutte: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22400%22%20height%3D%22400%22%20viewBox%3D%220%200%20400%20400%22%3E%3Cpath%20d%3D%22M330%2060c50%2060%2040%20150-20%20200s-160%2070-220%2020S40%20110%20110%2070%20280%200%20330%2060z%22%20fill%3D%22%238E929B%22%2F%3E%3C%2Fsvg%3E");
 }
 
 /* ---------- Fond de l'appli ---------- */
@@ -1890,7 +1954,7 @@ body::after {
 /* ---------- Bilan de la semaine ---------- */
 .barres { border: 1px solid var(--bord); box-shadow: var(--ombre); background: rgba(255, 255, 255, .96); }
 .barre-piste { background: var(--ivoire-2); height: 16px; border-radius: 8px; }
-.barre-remplie { background: linear-gradient(90deg, var(--olive-400), var(--entre)); border-radius: 8px; }
+.barre-remplie { background: linear-gradient(90deg, var(--entre-clair), var(--entre)); border-radius: 8px; }
 .barre.negative .barre-remplie { background: linear-gradient(90deg, var(--sort-clair), var(--sort)); }
 .barre.aujourdhui { background: var(--olive-50); border-radius: 10px; margin: 0 -8px; padding: 0 8px; }
 .barre-valeur { color: var(--entre-fonce); }
@@ -1927,6 +1991,231 @@ body::after {
 }
 .message button { background: var(--olive-700); color: #fff; }
 .message #message-autre { background: #fff; color: var(--olive-800); border: 1px solid var(--bord); }
+
+/* =====================================================================
+   ATMOSPHÈRE  ·  charte BIP
+   (demande du propriétaire : « l'application doit être attractive, créer
+   de l'émotion en offrant une atmosphère unique et une expérience unique
+   de navigation, des fonds soignés et originaux ; utilise d'autres
+   couleurs tant que cela ne brise pas la dynamique de la charte ;
+   bascule sur la charte du logo BIP ».)
+
+   Le principe : deux registres qui se répondent.
+   · SOMBRE pour les moments forts — l'accueil, la carte du jour, les
+     grands totaux. Graphite du site BIP, braise dans un coin, grille
+     fine, vagues de Canari en filigrane clair. C'est là que l'émotion
+     se joue : le chiffre du jour sort en blanc d'un fond chaud.
+   · CLAIR pour le travail — listes, saisie, réglages. On y lit longtemps,
+     en plein soleil, sur un écran bon marché : le fond reste ivoire.
+   La braise ne devient jamais un bouton d'argent ; le rouge plat garde
+   son seul sens, l'argent qui sort.
+   ===================================================================== */
+
+/* ---------- Le fond de la page : ivoire chaud, lueurs BIP ---------- */
+body {
+  background: linear-gradient(174deg, var(--ivoire) 0%, var(--sable) 52%, var(--ivoire-2) 100%);
+}
+body::before {
+  background:
+    radial-gradient(40% 26% at 92% 2%, rgba(244, 97, 52, .17) 0, transparent 72%),
+    radial-gradient(46% 30% at -12% 26%, rgba(141, 147, 156, .20) 0, transparent 72%),
+    radial-gradient(52% 34% at 108% 82%, rgba(220, 63, 23, .11) 0, transparent 74%);
+}
+/* Les vagues de Canari, plus la grille de BIP : les deux marques se
+   superposent en filigrane, c'est la signature du fond. */
+body::after {
+  background:
+    var(--motif-grille-claire) 0 0 / 44px 44px repeat,
+    var(--motif-vagues) 0 0 / 180px 90px repeat;
+  opacity: .26;
+}
+
+/* ---------- L'accueil : le grand moment sombre ---------- */
+.accueil {
+  background: var(--fond-braise);
+  color: #F3EFEA;
+}
+/* La goutte devient une onde claire, à peine visible sur le graphite. */
+.accueil::before {
+  background: var(--forme-goutte) center / contain no-repeat;
+  opacity: .07;
+  filter: grayscale(1) brightness(3);
+}
+/* En bas, un filet de braise au lieu du zigzag sombre. */
+.accueil::after {
+  height: 4px;
+  background: linear-gradient(90deg, transparent 0%, var(--braise) 22%, var(--braise-vive) 50%, var(--braise) 78%, transparent 100%);
+  opacity: 1;
+}
+.accueil-mascotte { filter: drop-shadow(0 18px 34px rgba(0, 0, 0, .55)); }
+.accueil .logo { color: #FFFFFF; text-shadow: 0 2px 18px rgba(244, 97, 52, .45); }
+.slogan { color: var(--braise-vive); }
+.accueil-texte { color: #CFC8C2; opacity: 1; }
+.accueil .choix-langue button {
+  background: rgba(255, 255, 255, .08);
+  color: #E8E2DC;
+  border-color: rgba(255, 255, 255, .18);
+}
+.accueil .choix-langue button[aria-pressed="true"] {
+  background: rgba(244, 97, 52, .22);
+  border-color: var(--braise-vive);
+  color: #FFE6DC;
+}
+.bouton-ecouter-accueil {
+  background: rgba(255, 255, 255, .08);
+  color: #E8E2DC;
+  border-color: rgba(255, 255, 255, .18);
+}
+.bouton-principal {
+  background: linear-gradient(118deg, var(--braise-vive) 0%, var(--braise) 56%, var(--braise-profonde) 100%);
+  box-shadow: 0 10px 26px rgba(220, 63, 23, .45);
+}
+
+/* ---------- La carte du jour : le chiffre sort du feu ---------- */
+.carte-gain {
+  background: var(--fond-braise);
+  border-color: rgba(255, 255, 255, .10);
+  box-shadow: var(--ombre-sombre);
+  color: #F3EFEA;
+  padding-top: 26px;
+}
+/* Les vagues claires remplacent le halo et la trame. */
+.carte-gain::before {
+  background:
+    var(--motif-pieces-clair) 0 0 / 92px 92px repeat,
+    var(--motif-vagues-clair) right -30px bottom -26px / 200px 100px no-repeat;
+  opacity: .13;
+}
+/* Le zigzag du haut devient le filet de braise. */
+.carte-gain::after {
+  height: 3px;
+  background: linear-gradient(90deg, var(--braise-profonde) 0%, var(--braise-vive) 48%, var(--braise-profonde) 100%);
+  opacity: 1;
+}
+.carte-gain .etiquette { color: var(--braise-vive); opacity: 1; }
+.carte-gain .gros-chiffre {
+  color: #FFFFFF;
+  text-shadow: 0 2px 22px rgba(244, 97, 52, .35);
+}
+.carte-gain .gros-chiffre.negatif { color: #FF9C86; text-shadow: none; }
+
+/* Les trois chiffres, en verre sur le graphite. */
+.carte-gain .chiffre {
+  background: rgba(255, 255, 255, .07);
+  border-color: rgba(255, 255, 255, .13);
+  box-shadow: inset 0 3px 0 currentColor;
+}
+.carte-gain .chiffre span { color: #BDB6B0; }
+.carte-gain .chiffre strong { color: #FFFFFF; }
+.carte-gain .chiffre.revient { color: #E0B872; }
+.carte-gain .chiffre.sort { color: #FF9C86; }
+.carte-gain .chiffre.sort strong { color: #FFC2B2; }
+.carte-gain .chiffre.entre { color: #8FCBA6; }
+.carte-gain .chiffre.entre strong { color: #CFEBD9; }
+.carte-gain .chiffre.maison { color: #A9B6CA; }
+.carte-gain .chiffre.maison strong { color: #D6DEE9; }
+
+/* Les lignes sous les chiffres (caisse, seuil, reste pour la boutique). */
+.carte-gain .ligne-carte {
+  background: rgba(255, 255, 255, .06);
+  border-color: rgba(255, 255, 255, .12);
+  box-shadow: inset 3px 0 0 rgba(255, 255, 255, .28);
+  color: #EDE7E2;
+}
+.carte-gain .ligne-carte small { color: #BDB6B0; }
+.carte-gain .ligne-carte strong { color: #FFFFFF; }
+.carte-gain .maison-carte {
+  background: rgba(169, 182, 202, .14);
+  box-shadow: inset 3px 0 0 #8FA0BC;
+  color: #DCE3EC;
+}
+.carte-gain .maison-carte small, .carte-gain .maison-carte strong { color: #DCE3EC; }
+.carte-gain .seuil-carte {
+  background: rgba(244, 97, 52, .16);
+  box-shadow: inset 3px 0 0 var(--braise-vive);
+  color: #FFD9CB;
+}
+.carte-gain .seuil-carte small, .carte-gain .seuil-carte strong { color: #FFD9CB; }
+
+/* ---------- Tous les grands totaux sur le même fond sombre ----------
+   « On me doit », « Je dois », la semaine, le mois, le stock : ce sont les
+   mêmes grands chiffres que la carte du jour, ils portent donc la même
+   carte sombre. L'écran change, la signature reste. */
+.total-credits, .total-dettes {
+  background: var(--fond-braise);
+  border-color: rgba(255, 255, 255, .10);
+  box-shadow: var(--ombre-sombre);
+  color: #F3EFEA;
+}
+.total-credits::before, .total-dettes::before {
+  background:
+    var(--motif-pieces-clair) 0 0 / 92px 92px repeat,
+    var(--motif-vagues-clair) right -30px bottom -26px / 200px 100px no-repeat;
+  opacity: .13;
+}
+.total-credits::after, .total-dettes::after {
+  height: 3px;
+  background: linear-gradient(90deg, var(--braise-profonde) 0%, var(--braise-vive) 48%, var(--braise-profonde) 100%);
+  opacity: 1;
+}
+.total-credits strong, .total-dettes strong { color: #FFFFFF; }
+.total-credits small, .total-dettes small { color: #BDB6B0; opacity: 1; }
+.total-relances { color: var(--credit-fonce); }
+
+/* Les lignes posées dans une carte sombre (« Dont 6 600 F à crédit »…). */
+.carte-gain .vendu, .total-credits .vendu, .total-dettes .vendu {
+  background: rgba(255, 255, 255, .07);
+  border-color: rgba(255, 255, 255, .13);
+  box-shadow: inset 3px 0 0 var(--braise-vive);
+  color: #F3EFEA;
+}
+.carte-gain .vendu.negatif, .carte-gain .ligne-carte.negatif { color: #FF9C86; box-shadow: inset 3px 0 0 #FF9C86; }
+
+/* ---------- L'en-tête et les onglets ---------- */
+.bouton-reglages, .bouton-retour {
+  border-color: var(--graphite-200);
+  color: var(--graphite-700);
+}
+.onglet[aria-current="page"] {
+  background: var(--ocre-50);
+  color: var(--ocre-800);
+  box-shadow: inset 0 -3px 0 var(--braise);
+}
+.onglets { box-shadow: 0 -2px 16px rgba(18, 19, 25, .08); }
+
+/* ---------- Les fenêtres de saisie : un filet de braise en haut ---------- */
+.saisie { border-top: 3px solid var(--braise); }
+.bouton-ok { box-shadow: 0 4px 14px rgba(18, 19, 25, .22); }
+
+/* ---------- Les bandeaux et le message du bas ---------- */
+.rappel-sauvegarde { border-color: var(--ocre-300); }
+.message { box-shadow: 0 10px 30px rgba(18, 19, 25, .22), inset 4px 0 0 var(--braise); }
+
+/* ---------- Les titres de réglage : le filet devient braise ---------- */
+.carte-reglage h2::before { background: linear-gradient(180deg, var(--braise-vive), var(--braise-profonde)); }
+
+/* ---------- L'expérience de navigation : des arrivées douces ----------
+   Trois animations courtes seulement, et aucune sur un vieux téléphone
+   réglé pour moins de mouvement. Elles ne déplacent jamais le texte
+   d'un écran déjà lu : elles accompagnent ce qui APPARAÎT. */
+@keyframes canari-monte {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes canari-braise {
+  from { opacity: 0; transform: scale(.98); }
+  to { opacity: 1; transform: none; }
+}
+.ecran:not([hidden]) > .carte-gain { animation: canari-braise .34s ease-out both; }
+.ecran:not([hidden]) > .gros-boutons .action { animation: canari-monte .3s ease-out both; }
+.ecran:not([hidden]) > .gros-boutons .action:nth-child(2) { animation-delay: .05s; }
+.ecran:not([hidden]) > .gros-boutons .action:nth-child(3) { animation-delay: .1s; }
+.message:not([hidden]) { animation: canari-monte .22s ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .ecran:not([hidden]) > .carte-gain,
+  .ecran:not([hidden]) > .gros-boutons .action,
+  .message:not([hidden]) { animation: none; }
+}
 
 /* =====================================================================
    TYPOGRAPHIE  (demande du propriétaire : des polices qui correspondent
@@ -2145,7 +2434,7 @@ body {
 .barres-produits li { display: grid; grid-template-columns: 5.5em 1fr auto; align-items: center; gap: 8px; }
 .bp-nom { font-size: 14px; color: var(--texte-doux); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .bp-piste { background: var(--ivoire-2); border-radius: 7px; height: 12px; }
-.bp-barre { display: block; height: 12px; border-radius: 7px; background: linear-gradient(90deg, var(--olive-400), var(--entre)); }
+.bp-barre { display: block; height: 12px; border-radius: 7px; background: linear-gradient(90deg, var(--entre-clair), var(--entre)); }
 .bp-barre.perte { background: linear-gradient(90deg, var(--sort-clair), var(--sort)); }
 .bp-valeur {
   font-family: var(--chiffres);

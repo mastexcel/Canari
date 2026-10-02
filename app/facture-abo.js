@@ -111,7 +111,7 @@ function dessinerFactureAbo(doc) {
           if (vraiment) ctx.drawImage(logoCanari, L - marge - larg, y, larg, haut);
           // Le nom de la marque sous la mascotte, en minuscules comme dans le logo.
           const centre = L - marge - larg / 2;
-          texte("canari", centre, y + haut + 30, fredoka(32), C.vert, "center");
+          texte("canari", centre, y + haut + 30, fredoka(32), C.braise, "center");
           bas = Math.max(bas, y + haut + 40);
         }
         y = bas + 44;   // de l'air entre les logos et les mentions légales

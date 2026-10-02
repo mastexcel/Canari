@@ -965,7 +965,7 @@ button.ligne-texte {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: var(--vert-foret) !important;
+  color: var(--gris-700) !important;
   font-weight: 600;
   margin-top: 2px;
 }
@@ -1586,6 +1586,15 @@ a.bouton { text-decoration: none; }
   --motif-halo: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22240%22%20height%3D%22240%22%20viewBox%3D%220%200%20240%20240%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%238E929B%22%20stroke-width%3D%227%22%20opacity%3D%220.22%22%3E%3Ccircle%20cx%3D%22200%22%20cy%3D%2240%22%20r%3D%2240%22%2F%3E%3Ccircle%20cx%3D%22200%22%20cy%3D%2240%22%20r%3D%2272%22%2F%3E%3Ccircle%20cx%3D%22200%22%20cy%3D%2240%22%20r%3D%22104%22%2F%3E%3Ccircle%20cx%3D%22200%22%20cy%3D%2240%22%20r%3D%22136%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
   --motif-trame: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2012%2012%22%3E%3Cpath%20d%3D%22M0%2012%20L12%200%22%20stroke%3D%22%238E929B%22%20stroke-width%3D%221%22%20opacity%3D%220.12%22%2F%3E%3C%2Fsvg%3E");
   /* --- Les dessins de la charte BIP --- */
+  /* Les lignes de crête : une grande composition de 640 px qui ne se
+     répète pas à l'œil, là où un petit motif de 180 px faisait du papier
+     peint. C'est le fond de toute l'appli. */
+  --motif-cretes: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22640%22%20height%3D%22640%22%20viewBox%3D%220%200%20640%20640%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23B08F76%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M-40%20118%20C%2090%2036%20206%20196%20330%20120%20C%20452%2046%20560%20150%20690%2092%22%20stroke-width%3D%222.2%22%20opacity%3D%22.40%22%2F%3E%3Cpath%20d%3D%22M-40%20160%20C%2096%2086%20212%20236%20336%20164%20C%20458%2094%20566%20190%20690%20136%22%20stroke-width%3D%221.1%22%20opacity%3D%22.26%22%2F%3E%3Cpath%20d%3D%22M-40%20352%20C%20110%20268%20198%20430%20344%20356%20C%20476%20290%20572%20388%20690%20330%22%20stroke-width%3D%222.2%22%20opacity%3D%22.34%22%2F%3E%3Cpath%20d%3D%22M-40%20392%20C%20116%20316%20204%20466%20350%20398%20C%20480%20336%20578%20424%20690%20372%22%20stroke-width%3D%221.1%22%20opacity%3D%22.22%22%2F%3E%3Cpath%20d%3D%22M-40%20574%20C%2086%20498%20220%20648%20352%20578%20C%20470%20516%20578%20600%20690%20552%22%20stroke-width%3D%222%22%20opacity%3D%22.30%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  /* La poussière : un grain très fin qui creuse les fonds sombres. */
+  --motif-poussiere: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22140%22%20height%3D%22140%22%20viewBox%3D%220%200%20140%20140%22%3E%3Cg%20fill%3D%22%23FFFFFF%22%20opacity%3D%220.22%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2228%22%20r%3D%221%22%2F%3E%3Ccircle%20cx%3D%2258%22%20cy%3D%229%22%20r%3D%22.8%22%2F%3E%3Ccircle%20cx%3D%22104%22%20cy%3D%2236%22%20r%3D%221.1%22%2F%3E%3Ccircle%20cx%3D%22131%22%20cy%3D%2274%22%20r%3D%22.8%22%2F%3E%3Ccircle%20cx%3D%2234%22%20cy%3D%2286%22%20r%3D%221%22%2F%3E%3Ccircle%20cx%3D%2278%22%20cy%3D%22112%22%20r%3D%22.9%22%2F%3E%3Ccircle%20cx%3D%22118%22%20cy%3D%22128%22%20r%3D%22.8%22%2F%3E%3Ccircle%20cx%3D%226%22%20cy%3D%22124%22%20r%3D%221%22%2F%3E%3Ccircle%20cx%3D%2292%22%20cy%3D%2266%22%20r%3D%22.7%22%2F%3E%3Ccircle%20cx%3D%2246%22%20cy%3D%2252%22%20r%3D%22.7%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  /* La frise : le zigzag du canari, en fil de braise, sous les cartes. */
+  --motif-frise: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2248%22%20height%3D%228%22%20viewBox%3D%220%200%2048%208%22%3E%3Cpath%20d%3D%22M0%206%20L6%202%20L12%206%20L18%202%20L24%206%20L30%202%20L36%206%20L42%202%20L48%206%22%20fill%3D%22none%22%20stroke%3D%22%23F46134%22%20stroke-width%3D%221%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20opacity%3D%22.3%22%2F%3E%3C%2Fsvg%3E");
+
   /* La grille fine du site : la rigueur, sous la braise. */
   --motif-grille: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2244%22%20height%3D%2244%22%20viewBox%3D%220%200%2044%2044%22%3E%3Cpath%20d%3D%22M44%200H0v44%22%20fill%3D%22none%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%221%22%20opacity%3D%220.07%22%2F%3E%3C%2Fsvg%3E");
   --motif-grille-claire: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2244%22%20height%3D%2244%22%20viewBox%3D%220%200%2044%2044%22%3E%3Cpath%20d%3D%22M44%200H0v44%22%20fill%3D%22none%22%20stroke%3D%22%23C93C18%22%20stroke-width%3D%221%22%20opacity%3D%220.09%22%2F%3E%3C%2Fsvg%3E");
@@ -1887,12 +1896,17 @@ body::after {
   box-shadow: 0 -8px 30px rgba(46, 42, 33, .14);
   border-top: 0;
 }
+/* Un souffle de braise dans le coin, plus la grille : la fenêtre de
+   saisie appartient au même monde que les cartes sombres, en clair. */
 .saisie::before {
   content: "";
   position: absolute;
-  right: -60px; top: -60px;
-  width: 220px; height: 220px;
-  background: var(--motif-halo) center / contain no-repeat;
+  right: 0; top: 0; left: 0;
+  height: 260px;
+  background:
+    var(--motif-grille-claire) 0 0 / 44px 44px repeat,
+    var(--motif-cretes) right -120px top -200px / 640px 640px no-repeat,
+    radial-gradient(60% 70% at 100% 0%, rgba(244, 97, 52, .13) 0, transparent 70%);
   opacity: .85;
   pointer-events: none;
 }
@@ -2026,8 +2040,8 @@ body::before {
 body::after {
   background:
     var(--motif-grille-claire) 0 0 / 44px 44px repeat,
-    var(--motif-vagues) 0 0 / 180px 90px repeat;
-  opacity: .26;
+    var(--motif-cretes) center top / 640px 640px repeat;
+  opacity: .5;
 }
 
 /* ---------- L'accueil : le grand moment sombre ---------- */
@@ -2036,10 +2050,16 @@ body::after {
   color: #F3EFEA;
 }
 /* La goutte devient une onde claire, à peine visible sur le graphite. */
+/* Les lignes de crête, en grand et en clair : un relief lointain derrière
+   la mascotte, à la place de la tache ronde d'avant. */
 .accueil::before {
-  background: var(--forme-goutte) center / contain no-repeat;
-  opacity: .07;
-  filter: grayscale(1) brightness(3);
+  width: 160%;
+  height: 100%;
+  top: -6%;
+  left: -30%;
+  background: var(--motif-cretes) center top / 760px 760px no-repeat;
+  opacity: .16;
+  filter: saturate(0) brightness(3.4);
 }
 /* En bas, un filet de braise au lieu du zigzag sombre. */
 .accueil::after {
@@ -2073,23 +2093,29 @@ body::after {
 
 /* ---------- La carte du jour : le chiffre sort du feu ---------- */
 .carte-gain {
-  background: var(--fond-braise);
+  background:
+    var(--motif-frise) center bottom 10px / 48px 8px repeat-x,
+    var(--fond-braise);
   border-color: rgba(255, 255, 255, .10);
   box-shadow: var(--ombre-sombre);
   color: #F3EFEA;
-  padding-top: 26px;
+  padding: 26px 16px 28px;
 }
 /* Les vagues claires remplacent le halo et la trame. */
 .carte-gain::before {
   background:
-    var(--motif-pieces-clair) 0 0 / 92px 92px repeat,
-    var(--motif-vagues-clair) right -30px bottom -26px / 200px 100px no-repeat;
-  opacity: .13;
+    var(--motif-poussiere) 0 0 / 140px 140px repeat,
+    var(--motif-cretes) center -120px / 640px 640px no-repeat,
+    radial-gradient(120% 90% at 50% 40%, transparent 40%, rgba(0, 0, 0, .34) 100%);
+  opacity: .5;
+  filter: saturate(0) brightness(2.6);
+  mix-blend-mode: soft-light;
 }
 /* Le zigzag du haut devient le filet de braise. */
-.carte-gain::after {
-  height: 3px;
-  background: linear-gradient(90deg, var(--braise-profonde) 0%, var(--braise-vive) 48%, var(--braise-profonde) 100%);
+.carte-gain::after,
+.total-credits::after, .total-dettes::after {
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, var(--braise-profonde) 10%, var(--braise-vive) 50%, var(--braise-profonde) 90%, transparent 100%);
   opacity: 1;
 }
 .carte-gain .etiquette { color: var(--braise-vive); opacity: 1; }
@@ -2142,21 +2168,22 @@ body::after {
    mêmes grands chiffres que la carte du jour, ils portent donc la même
    carte sombre. L'écran change, la signature reste. */
 .total-credits, .total-dettes {
-  background: var(--fond-braise);
+  background:
+    var(--motif-frise) center bottom 10px / 48px 8px repeat-x,
+    var(--fond-braise);
   border-color: rgba(255, 255, 255, .10);
   box-shadow: var(--ombre-sombre);
   color: #F3EFEA;
+  padding-bottom: 26px;
 }
 .total-credits::before, .total-dettes::before {
   background:
-    var(--motif-pieces-clair) 0 0 / 92px 92px repeat,
-    var(--motif-vagues-clair) right -30px bottom -26px / 200px 100px no-repeat;
-  opacity: .13;
-}
-.total-credits::after, .total-dettes::after {
-  height: 3px;
-  background: linear-gradient(90deg, var(--braise-profonde) 0%, var(--braise-vive) 48%, var(--braise-profonde) 100%);
-  opacity: 1;
+    var(--motif-poussiere) 0 0 / 140px 140px repeat,
+    var(--motif-cretes) center -160px / 640px 640px no-repeat,
+    radial-gradient(120% 90% at 50% 40%, transparent 40%, rgba(0, 0, 0, .34) 100%);
+  opacity: .5;
+  filter: saturate(0) brightness(2.6);
+  mix-blend-mode: soft-light;
 }
 .total-credits strong, .total-dettes strong { color: #FFFFFF; }
 .total-credits small, .total-dettes small { color: #BDB6B0; opacity: 1; }
@@ -2291,6 +2318,89 @@ body {
 .montant-f, .lc-f { font-weight: 600; }
 .barre-valeur, .vendu, .ligne-carte b { font-weight: 600; }
 .abo-prix { font-weight: 700; }
+
+/* ---------- Des tailles qui suivent la largeur de l'écran ----------
+   (demande du propriétaire : « adapte et ajuste pour que le texte soit
+   harmonieux avec l'environnement, qu'on ne sente pas de débordement ».)
+
+   Un téléphone d'entrée de gamme fait souvent 320 px de large, un autre
+   412 : une taille fixe qui tient sur l'un déborde sur l'autre. Chaque
+   texte important est donc écrit en clamp(plancher, part de la largeur,
+   plafond) — il rétrécit sur un petit écran, il ne grossit jamais au-delà
+   de sa taille d'origine sur un grand. Et chaque case de grille reçoit
+   min-width: 0, sans quoi un mot long refuse de se replier et pousse la
+   colonne hors de l'écran. */
+
+/* L'en-tête : le logo, la date et les deux boutons sur une seule ligne. */
+.entete { min-width: 0; }
+.logo-petit { font-size: clamp(22px, 7vw, 28px); min-width: 0; }
+.date {
+  font-size: clamp(12px, 3.6vw, 15px);
+  line-height: 1.25;
+  white-space: nowrap;
+  flex: none;
+}
+
+/* Le grand chiffre : il ne touche jamais les bords de sa carte. */
+.gros-chiffre { font-size: clamp(30px, 11.5vw, 54px); }
+.etiquette { font-size: clamp(13px, 4vw, 16px); }
+
+/* Les trois cases de la carte du jour. */
+.trois-chiffres > * { min-width: 0; }
+.chiffre span { font-size: clamp(11.5px, 3.5vw, 14px); text-wrap: balance; hyphens: auto; }
+.chiffre strong { font-size: clamp(16px, 5.2vw, 21px); }
+.trois-chiffres.deux .chiffre strong { font-size: clamp(18px, 6.4vw, 24px); }
+
+/* Les lignes posées sous les chiffres. */
+.ligne-carte, .vendu { font-size: clamp(13.5px, 4.1vw, 16px); text-wrap: pretty; }
+
+/* Les boutons : les mots se replient proprement au lieu de pousser. */
+.gros-boutons > *, .petits-boutons > * { min-width: 0; }
+.action { font-size: clamp(16px, 5.2vw, 20px); text-wrap: balance; }
+.secondaire { font-size: clamp(13px, 3.9vw, 15px); text-wrap: balance; }
+.bouton { min-width: 0; }
+.bouton-principal { font-size: clamp(18px, 5.6vw, 22px); }
+
+/* Les titres et les grands totaux. */
+.titre-liste { font-size: clamp(17px, 5.2vw, 20px); }
+.titre-ecran { font-size: clamp(20px, 6vw, 26px); text-wrap: balance; }
+.saisie-titre { font-size: clamp(19px, 5.8vw, 24px); }
+.total-credits strong, .total-dettes strong { font-size: clamp(30px, 11.5vw, 54px); }
+
+/* Les onglets du bas : cinq mots sur une ligne, même à 320 px. */
+.onglet { font-size: clamp(11px, 3.3vw, 13px); min-width: 0; }
+
+/* La ligne d'un mouvement : le texte garde une largeur vivable, et c'est
+   le montant qui passe à la ligne quand il n'y a vraiment plus la place
+   (un million de francs sur un écran de 320 px). Sans ce plancher, la
+   colonne de texte était écrasée à 24 px et « Facture » débordait. */
+.ligne { flex-wrap: wrap; }
+.ligne-texte { flex: 1 1 110px; }
+.ligne-texte, .ligne-texte > * { min-width: 0; max-width: 100%; }
+.lien-document { flex-wrap: wrap; max-width: 100%; }
+.ligne-montant { font-size: clamp(16px, 5vw, 19px); }
+.ligne-texte small { font-size: clamp(12.5px, 3.8vw, 14px); }
+
+/* Le symbole de la monnaie, à côté du montant : gris de la charte. */
+.montant-f, .lc-f { color: var(--gris-500); }
+
+/* Les champs : un <select> prend par défaut la largeur de sa plus longue
+   option (« Franc CFA d'Afrique de l'Ouest (XOF) ») et poussait l'écran
+   des Réglages hors du téléphone. */
+.note, select.note, input.note, textarea.note {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  font-size: clamp(15px, 4.4vw, 18px);
+}
+
+/* Les quatre montants rapides : à 320 px, « 5 000 F » ne tenait plus. */
+.rapides > * { min-width: 0; }
+.rapide { font-size: clamp(13px, 4.2vw, 16px); padding: 0 2px; }
+
+/* Dernier garde-fou : un mot plus large que son bloc se coupe au lieu de
+   déborder (un nom de client, une note, une adresse collée). */
+body { overflow-wrap: break-word; }
 
 /* ---------- Petits textes et étiquettes ---------- */
 .champ-etiquette { font-weight: 600; color: var(--olive-800); }

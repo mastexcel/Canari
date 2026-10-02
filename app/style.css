@@ -2044,16 +2044,18 @@ body::after {
   color: #F3EFEA;
 }
 /* La goutte devient une onde claire, à peine visible sur le graphite. */
-/* Les lignes de crête, en grand et en clair : un relief lointain derrière
-   la mascotte, à la place de la tache ronde d'avant. */
+/* L'accueil garde le fond que le propriétaire a choisi le 02/10/2026 :
+   le graphite et la braise, la grille fine de BIP, et la grande forme
+   ronde très douce en haut à gauche — rien d'autre. Les rubans sont le
+   fond des écrans clairs ; ici ils chargeaient l'image. */
 .accueil::before {
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  background: var(--motif-rubans) center / cover no-repeat;
-  opacity: .5;
-  filter: saturate(.3) brightness(3);
+  width: 150%;
+  height: 58%;
+  top: -16%;
+  left: -25%;
+  background: var(--forme-goutte) center / contain no-repeat;
+  opacity: .07;
+  filter: grayscale(1) brightness(3);
 }
 /* En bas, un filet de braise au lieu du zigzag sombre. */
 .accueil::after {

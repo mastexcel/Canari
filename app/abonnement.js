@@ -1,4 +1,4 @@
-// Canari · essai gratuit de 3 mois, puis abonnement.
+// Canari · essai gratuit d'UN MOIS, puis abonnement.
 // Chargé avant app.js ; initAbonnement() est lancé au démarrage.
 //
 // Canari marche sans internet et sans serveur. Le paiement se fait donc ainsi :
@@ -12,13 +12,20 @@
 // ses chiffres, faire sa sauvegarde, relancer et noter les remboursements.
 // Seules les nouvelles ventes, dépenses et achats demandent un abonnement.
 
-const ESSAI_JOURS = 90;
+// Un mois d'essai (décision du propriétaire, 02/10/2026 : l'abonnement est
+// exigé après un mois, au lieu de trois). Le compte part du premier jour
+// d'utilisation. Rien d'autre à changer : tous les textes de l'appli parlent
+// de « jours restants », jamais de « trois mois ».
+const ESSAI_JOURS = 30;
+const ANCIEN_ESSAI_JOURS = 90;   // la règle d'avant, pour ne couper personne net
 // Les prix de l'abonnement sont en FCFA, quelle que soit la monnaie de la boutique.
 function francCFA(n) {
   const cfa = deviseCourante.symbole === "F" && !deviseCourante.avant;
   return nombre(n).replace(/ /g, "\u00a0") + (cfa ? "\u00a0F" : "\u00a0FCFA");
 }
-const PREVENIR_JOURS = 10; // bandeau sur l'écran principal avant la fin
+// Le bandeau prévient 7 jours avant la fin : sur un essai d'un mois, dix
+// jours d'avertissement, c'était un tiers de l'essai passé à être relancé.
+const PREVENIR_JOURS = 7;
 const FORMULES = [
   { id: "mois", nom: "1 mois", jours: 31, prix: 1000, detail: function () { return "Environ " + francCFA(35) + " par jour"; } },
   { id: "trimestre", nom: "3 mois", jours: 92, prix: 2500, detail: function () { return "Tu économises " + francCFA(500); } },
@@ -73,6 +80,16 @@ function completerAbonnement() {
   if (!a.codes) a.codes = [];
   if (!a.conseil) a.conseil = 0;              // fin de l'option Conseil
   if (!a.essaisConseil) a.essaisConseil = 0;  // questions déjà offertes
+  // L'essai est passé de trois mois à un mois. Un commerçant qui utilise déjà
+  // Canari depuis plus d'un mois se retrouverait coupé net, du jour au
+  // lendemain, sans avoir rien vu venir. On lui laisse donc une semaine à
+  // partir du jour où il reçoit cette version — une seule fois, et seulement
+  // si l'ancienne règle le laissait encore en essai.
+  if (a.essaiJusqua === undefined) {
+    const t = Date.now();
+    a.essaiJusqua = (a.debut + ESSAI_JOURS * JOUR < t && a.debut + ANCIEN_ESSAI_JOURS * JOUR > t)
+      ? t + 7 * JOUR : 0;
+  }
   let miroir = null;
   try { miroir = JSON.parse(lire(CLE_MIROIR_ABONNEMENT)); } catch (e) { miroir = null; }
   if (miroir && miroir.id === a.id) {
@@ -80,6 +97,7 @@ function completerAbonnement() {
     a.fin = Math.max(a.fin || 0, miroir.fin || 0);
     a.conseil = Math.max(a.conseil || 0, miroir.conseil || 0);
     a.essaisConseil = Math.max(a.essaisConseil || 0, miroir.essaisConseil || 0);
+    if (miroir.essaiJusqua !== undefined) a.essaiJusqua = Math.max(a.essaiJusqua || 0, miroir.essaiJusqua || 0);
     (miroir.codes || []).forEach(function (c) { if (a.codes.indexOf(c) === -1) a.codes.push(c); });
     a.vu = Math.max(a.vu || 0, miroir.vu || 0);
   }
@@ -94,7 +112,7 @@ function garderAbonnement(avant) {
 function garderMiroir() {
   const a = donnees.abonnement;
   ecrire(CLE_MIROIR_ABONNEMENT, JSON.stringify({ id: a.id, debut: a.debut, fin: a.fin, codes: a.codes, vu: a.vu,
-    conseil: a.conseil, essaisConseil: a.essaisConseil }));
+    conseil: a.conseil, essaisConseil: a.essaisConseil, essaiJusqua: a.essaiJusqua || 0 }));
 }
 
 // L'heure du téléphone, sans pouvoir revenir en arrière pour allonger l'essai.
@@ -108,7 +126,7 @@ function maintenantAbonnement() {
 function etatAbonnement() {
   const a = donnees.abonnement;
   const t = maintenantAbonnement();
-  const finEssai = a.debut + ESSAI_JOURS * JOUR;
+  const finEssai = Math.max(a.debut + ESSAI_JOURS * JOUR, a.essaiJusqua || 0);
   const paye = a.fin > t;
   const fin = paye ? Math.max(a.fin, finEssai) : finEssai;
   const reste = Math.max(0, Math.ceil((fin - t) / JOUR));

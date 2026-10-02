@@ -1586,14 +1586,17 @@ a.bouton { text-decoration: none; }
      répète pas à l'œil, là où un petit motif de 180 px faisait du papier
      peint. C'est le fond de toute l'appli. */
   --motif-cretes: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22640%22%20height%3D%22640%22%20viewBox%3D%220%200%20640%20640%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23B08F76%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M-40%20118%20C%2090%2036%20206%20196%20330%20120%20C%20452%2046%20560%20150%20690%2092%22%20stroke-width%3D%222.2%22%20opacity%3D%22.40%22%2F%3E%3Cpath%20d%3D%22M-40%20160%20C%2096%2086%20212%20236%20336%20164%20C%20458%2094%20566%20190%20690%20136%22%20stroke-width%3D%221.1%22%20opacity%3D%22.26%22%2F%3E%3Cpath%20d%3D%22M-40%20352%20C%20110%20268%20198%20430%20344%20356%20C%20476%20290%20572%20388%20690%20330%22%20stroke-width%3D%222.2%22%20opacity%3D%22.34%22%2F%3E%3Cpath%20d%3D%22M-40%20392%20C%20116%20316%20204%20466%20350%20398%20C%20480%20336%20578%20424%20690%20372%22%20stroke-width%3D%221.1%22%20opacity%3D%22.22%22%2F%3E%3Cpath%20d%3D%22M-40%20574%20C%2086%20498%20220%20648%20352%20578%20C%20470%20516%20578%20600%20690%20552%22%20stroke-width%3D%222%22%20opacity%3D%22.30%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
-  /* LES FILS (demande du propriétaire, 02/10/2026) : des traits courbes
-     verticaux, foncés, dans les couleurs de la charte — braise, ocre,
-     doré, olive, graphite, gris. Dix-sept fils d'épaisseurs, d'amplitudes
-     et de respirations toutes différentes, pour qu'aucun ne soit le
-     jumeau d'un autre. L'image porte preserveAspectRatio="slice" et se
-     pose en « cover » : sans ça, le navigateur la centre en gardant ses
-     proportions et laisse deux bandes vides sur les côtés. */
-  --motif-fils: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22400%22%20height%3D%221400%22%20viewBox%3D%220%200%20400%201400%22%20preserveAspectRatio%3D%22xMidYMid%20slice%22%3E%3Cg%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M-34%20-601%20C%2066%20-377.4%20-134%2035.4%20-34%20259%20C%20-134%20482.6%2066%20895.4%20-34%201119%20C%2066%201342.6%20-134%201755.4%20-34%201979%22%20stroke%3D%22%238E1F0C%22%20stroke-width%3D%223.4%22%20opacity%3D%220.41%22%2F%3E%3Cpath%20d%3D%22M-14%20-310%20C%20108%20-159.2%20-136%20119.2%20-14%20270%20C%20-136%20420.8%20108%20699.2%20-14%20850%20C%20108%201000.8%20-136%201279.2%20-14%201430%20C%20-136%201580.8%20108%201859.2%20-14%202010%22%20stroke%3D%22%23DC3F17%22%20stroke-width%3D%222.4%22%20opacity%3D%220.32%22%2F%3E%3Cpath%20d%3D%22M2%20-202%20C%20-120%20-82.4%20124%20138.4%202%20258%20C%20124%20377.6%20-120%20598.4%202%20718%20C%20-120%20837.6%20124%201058.4%202%201178%20C%20124%201297.6%20-120%201518.4%202%201638%20C%20-120%201757.6%20124%201978.4%202%202098%22%20stroke%3D%22%23C2802F%22%20stroke-width%3D%224.6%22%20opacity%3D%220.45%22%2F%3E%3Cpath%20d%3D%22M52%20-541%20C%20174%20-390.2%20-70%20-111.8%2052%2039%20C%20-70%20189.8%20174%20468.2%2052%20619%20C%20174%20769.8%20-70%201048.2%2052%201199%20C%20-70%201349.8%20174%201628.2%2052%201779%22%20stroke%3D%22%235E7033%22%20stroke-width%3D%224.6%22%20opacity%3D%220.46%22%2F%3E%3Cpath%20d%3D%22M68%20-475%20C%2028%20-324.2%20108%20-45.8%2068%20105%20C%20108%20255.8%2028%20534.2%2068%20685%20C%2028%20835.8%20108%201114.2%2068%201265%20C%20108%201415.8%2028%201694.2%2068%201845%22%20stroke%3D%22%23343843%22%20stroke-width%3D%221.3%22%20opacity%3D%220.45%22%2F%3E%3Cpath%20d%3D%22M100%20-511%20C%20222%20-360.2%20-22%20-81.8%20100%2069%20C%20-22%20219.8%20222%20498.2%20100%20649%20C%20222%20799.8%20-22%201078.2%20100%201229%20C%20-22%201379.8%20222%201658.2%20100%201809%22%20stroke%3D%22%23A83214%22%20stroke-width%3D%221.3%22%20opacity%3D%220.46%22%2F%3E%3Cpath%20d%3D%22M150%20-564%20C%20190%20-382%20110%20-46%20150%20136%20C%20110%20318%20190%20654%20150%20836%20C%20190%201018%20110%201354%20150%201536%20C%20110%201718%20190%202054%20150%202236%22%20stroke%3D%22%238E929B%22%20stroke-width%3D%222.4%22%20opacity%3D%220.4%22%2F%3E%3Cpath%20d%3D%22M200%20-30%20C%20280%20120.8%20120%20399.2%20200%20550%20C%20120%20700.8%20280%20979.2%20200%201130%20C%20280%201280.8%20120%201559.2%20200%201710%22%20stroke%3D%22%2344521F%22%20stroke-width%3D%221.8%22%20opacity%3D%220.43%22%2F%3E%3Cpath%20d%3D%22M240%20-197%20C%20280%20-77.4%20200%20143.4%20240%20263%20C%20200%20382.6%20280%20603.4%20240%20723%20C%20280%20842.6%20200%201063.4%20240%201183%20C%20200%201302.6%20280%201523.4%20240%201643%20C%20280%201762.6%20200%201983.4%20240%202103%22%20stroke%3D%22%23F46134%22%20stroke-width%3D%222.4%22%20opacity%3D%220.51%22%2F%3E%3Cpath%20d%3D%22M256%20-53%20C%20216%2097.8%20296%20376.2%20256%20527%20C%20296%20677.8%20216%20956.2%20256%201107%20C%20216%201257.8%20296%201536.2%20256%201687%20C%20296%201837.8%20216%202116.2%20256%202267%22%20stroke%3D%22%23C93C18%22%20stroke-width%3D%221.3%22%20opacity%3D%220.53%22%2F%3E%3Cpath%20d%3D%22M288%20-101%20C%20188%2018.6%20388%20239.4%20288%20359%20C%20388%20478.6%20188%20699.4%20288%20819%20C%20188%20938.6%20388%201159.4%20288%201279%20C%20388%201398.6%20188%201619.4%20288%201739%22%20stroke%3D%22%238E1F0C%22%20stroke-width%3D%222.4%22%20opacity%3D%220.44%22%2F%3E%3Cpath%20d%3D%22M314%20-419%20C%20354%20-237%20274%2099%20314%20281%20C%20274%20463%20354%20799%20314%20981%20C%20354%201163%20274%201499%20314%201681%20C%20274%201863%20354%202199%20314%202381%22%20stroke%3D%22%23DC3F17%22%20stroke-width%3D%221.8%22%20opacity%3D%220.3%22%2F%3E%3Cpath%20d%3D%22M334%20-238%20C%20274%20-118.4%20394%20102.4%20334%20222%20C%20394%20341.6%20274%20562.4%20334%20682%20C%20274%20801.6%20394%201022.4%20334%201142%20C%20394%201261.6%20274%201482.4%20334%201602%20C%20274%201721.6%20394%201942.4%20334%202062%22%20stroke%3D%22%23C2802F%22%20stroke-width%3D%224.6%22%20opacity%3D%220.3%22%2F%3E%3Cpath%20d%3D%22M354%20-749%20C%20476%20-525.4%20232%20-112.6%20354%20111%20C%20232%20334.6%20476%20747.4%20354%20971%20C%20476%201194.6%20232%201607.4%20354%201831%22%20stroke%3D%22%235E7033%22%20stroke-width%3D%221.3%22%20opacity%3D%220.43%22%2F%3E%3Cpath%20d%3D%22M386%20-217%20C%20486%206.6%20286%20419.4%20386%20643%20C%20286%20866.6%20486%201279.4%20386%201503%20C%20486%201726.6%20286%202139.4%20386%202363%22%20stroke%3D%22%23343843%22%20stroke-width%3D%221%22%20opacity%3D%220.41%22%2F%3E%3Cpath%20d%3D%22M412%20-201%20C%20534%20-81.4%20290%20139.4%20412%20259%20C%20290%20378.6%20534%20599.4%20412%20719%20C%20534%20838.6%20290%201059.4%20412%201179%20C%20290%201298.6%20534%201519.4%20412%201639%20C%20534%201758.6%20290%201979.4%20412%202099%22%20stroke%3D%22%23A83214%22%20stroke-width%3D%221.8%22%20opacity%3D%220.35%22%2F%3E%3Cpath%20d%3D%22M428%20-791%20C%20368%20-567.4%20488%20-154.6%20428%2069%20C%20488%20292.6%20368%20705.4%20428%20929%20C%20368%201152.6%20488%201565.4%20428%201789%22%20stroke%3D%22%238E929B%22%20stroke-width%3D%221.3%22%20opacity%3D%220.36%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  /* LES RUBANS (choix du propriétaire, 02/10/2026, parmi quatre
+     propositions) : de larges barres en courbe qui traversent l'écran.
+     Chaque ruban est un trio — une bande très large et très pâle, une
+     bande moyenne plus soutenue, un fil fin par-dessus — ce qui lui donne
+     une épaisseur et une ombre, au lieu d'un simple trait. Quatre trios,
+     dans les couleurs de la charte : braise et doré en haut, gris et
+     graphite au milieu, olive plus bas, braise tout en bas.
+     L'image porte preserveAspectRatio="slice" et se pose en « cover » :
+     sans ça, le navigateur la centre en gardant ses proportions et laisse
+     deux bandes vides sur les côtés. */
+  --motif-rubans: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22900%22%20height%3D%221900%22%20viewBox%3D%220%200%20900%201900%22%20preserveAspectRatio%3D%22xMidYMid%20slice%22%3E%3Cg%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M-220%20300%20C%20120%2080%20420%20470%20760%20240%20C%20900%20146%201020%20220%201140%20160%22%20stroke%3D%22%23DC3F17%22%20stroke-width%3D%22150%22%20opacity%3D%22.075%22%2F%3E%3Cpath%20d%3D%22M-220%20430%20C%20140%20230%20440%20600%20780%20370%22%20stroke%3D%22%23C2802F%22%20stroke-width%3D%2246%22%20opacity%3D%22.11%22%2F%3E%3Cpath%20d%3D%22M-220%20470%20C%20150%20276%20450%20648%20790%20420%22%20stroke%3D%22%238E1F0C%22%20stroke-width%3D%227%22%20opacity%3D%22.13%22%2F%3E%3Cpath%20d%3D%22M-220%20830%20C%20180%20650%20400%201050%20800%20830%20C%20960%20742%201060%20810%201160%20770%22%20stroke%3D%22%238E929B%22%20stroke-width%3D%22195%22%20opacity%3D%22.095%22%2F%3E%3Cpath%20d%3D%22M-220%20990%20C%20160%20830%20420%201190%20820%20970%22%20stroke%3D%22%23DC3F17%22%20stroke-width%3D%2232%22%20opacity%3D%22.10%22%2F%3E%3Cpath%20d%3D%22M-220%201035%20C%20170%20878%20430%201236%20830%201018%22%20stroke%3D%22%23343843%22%20stroke-width%3D%226%22%20opacity%3D%22.12%22%2F%3E%3Cpath%20d%3D%22M-220%201380%20C%20200%201200%20440%201580%20860%201360%22%20stroke%3D%22%235E7033%22%20stroke-width%3D%22135%22%20opacity%3D%22.075%22%2F%3E%3Cpath%20d%3D%22M-220%201520%20C%20210%201348%20450%201718%20870%201500%22%20stroke%3D%22%23C2802F%22%20stroke-width%3D%2226%22%20opacity%3D%22.10%22%2F%3E%3Cpath%20d%3D%22M-220%201790%20C%20220%201630%20460%201980%20880%201760%22%20stroke%3D%22%23C93C18%22%20stroke-width%3D%22110%22%20opacity%3D%22.07%22%2F%3E%3Cpath%20d%3D%22M-220%201870%20C%20230%201716%20470%202062%20890%201844%22%20stroke%3D%22%238E929B%22%20stroke-width%3D%2218%22%20opacity%3D%22.10%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
   /* Les mêmes crêtes, en gris froid et plus grandes : posées derrière les
      premières, elles creusent le fond sans qu'on les remarque. */
   --motif-cretes-gris: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22900%22%20height%3D%22900%22%20viewBox%3D%220%200%20900%20900%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%238E929B%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M-60%20250%20C%20150%20120%20300%20400%20500%20268%20C%20680%20150%20820%20300%20960%20210%22%20stroke-width%3D%222.6%22%20opacity%3D%22.30%22%2F%3E%3Cpath%20d%3D%22M-60%20300%20C%20160%20180%20310%20452%20510%20320%20C%20686%20206%20826%20350%20960%20266%22%20stroke-width%3D%221.2%22%20opacity%3D%22.18%22%2F%3E%3Cpath%20d%3D%22M-60%20660%20C%20180%20540%20330%20820%20540%20690%20C%20720%20580%20840%20700%20960%20630%22%20stroke-width%3D%222.4%22%20opacity%3D%22.24%22%2F%3E%3Cpath%20d%3D%22M-60%20848%20C%20150%20740%20340%20980%20560%20860%20C%20740%20762%20850%20846%20960%20800%22%20stroke-width%3D%221.6%22%20opacity%3D%22.18%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
@@ -2020,24 +2023,16 @@ body::after {
         devant, l'autre gris derrière, qui s'effacent en haut et en bas
         au lieu de buter sur les bords. */
 body {
-  background:
-    var(--motif-grille-claire) 0 0 / 44px 44px repeat,
-    linear-gradient(172deg,
-      var(--ivoire) 0%,
-      var(--sable) 38%,
-      #F6F1EC 68%,
-      var(--ivoire-2) 100%);
+  background: linear-gradient(168deg, #FCFAF7 0%, var(--sable) 55%, #F4F2EF 100%);
 }
 body::before {
   background:
-    radial-gradient(42% 26% at 94% -2%, rgba(244, 97, 52, .20) 0, transparent 70%),
-    radial-gradient(50% 30% at -14% 22%, rgba(141, 147, 156, .22) 0, transparent 72%),
-    radial-gradient(44% 26% at 112% 58%, rgba(220, 63, 23, .10) 0, transparent 74%),
-    radial-gradient(70% 34% at 50% 108%, rgba(36, 39, 47, .10) 0, transparent 76%);
+    radial-gradient(54% 30% at 96% 0%, rgba(244, 97, 52, .16) 0, transparent 70%),
+    radial-gradient(56% 34% at 4% 70%, rgba(94, 112, 51, .12) 0, transparent 74%);
 }
-/* Les fils, sur toute la largeur, effacés en haut et en bas. */
+/* Les rubans, sur toute la largeur, effacés en haut et en bas. */
 body::after {
-  background: var(--motif-fils) center / cover no-repeat;
+  background: var(--motif-rubans) center / cover no-repeat;
   opacity: 1;
   -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 8%, #000 90%, transparent 100%);
   mask-image: linear-gradient(180deg, transparent 0, #000 8%, #000 90%, transparent 100%);
@@ -2056,9 +2051,9 @@ body::after {
   height: 100%;
   top: 0;
   left: 0;
-  background: var(--motif-fils) center / cover no-repeat;
-  opacity: .22;
-  filter: saturate(.25) brightness(3.2);
+  background: var(--motif-rubans) center / cover no-repeat;
+  opacity: .5;
+  filter: saturate(.3) brightness(3);
 }
 /* En bas, un filet de braise au lieu du zigzag sombre. */
 .accueil::after {

@@ -24,6 +24,10 @@ function enP_depuis(s) {
 Object.assign(EN, {
   /* ---------- index.html : accueil et écran principal ---------- */
   "canari": "canari",
+  "Guide de l'utilisateur": "User guide",
+  "Tout ce que Canari sait faire, expliqué pas à pas : noter une vente, un crédit, une dépense, relancer un client, lire tes chiffres, faire ta sauvegarde.":
+    "Everything Canari can do, step by step: record a sale, a credit, an expense, chase a customer, read your figures, back up.",
+  "Ouvrir le guide": "Open the guide",
   "Tu vends. Canari compte.": "You sell. Canari counts.",
   "Ton carnet de caisse sur le téléphone. Ventes, dépenses, crédits : tout est noté, même sans internet.": "Your cash book on your phone. Sales, expenses, credits: everything is recorded, even without internet.",
   "Commencer": "Start",

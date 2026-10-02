@@ -284,6 +284,18 @@ Demande : une option d'intelligence artificielle où le commerçant discute et p
 - **Le numéro de version est affiché** en bas des Réglages (« canari · Garde chaque franc. · Zéro publicité. · canari-v47 »). L'appli le demande au service worker par message (`{type:"version"}`) : aucune constante à tenir à jour en double, donc aucun risque d'afficher un faux numéro. Le numéro vit dans son propre élément avec `translate="no"`, pour que la phrase garde sa traduction anglaise.
 - **À dire au propriétaire quand il ne voit pas un changement** : ouvre l'appli, attends le bandeau, touche « Ouvrir ». S'il n'apparaît pas, vérifie le numéro de version en bas des Réglages.
 
+## Guide de l'utilisateur (fait, demande du propriétaire)
+
+Demande du 02/10/2026 : « insère une page dénommée Guide de l'utilisateur, où du détail pas à pas l'utilisation de l'application ». Code : `app/guide.html`.
+
+- **Une page à part**, comme `confidentialite.html` : elle s'ouvre seule, se partage par un lien, s'imprime, et **marche sans internet** (elle est dans `FICHIERS` du service worker). Adresse publique : `https://mastexcel.github.io/Canari/guide.html`.
+- **Seize sections**, dans l'ordre où un commerçant découvre l'appli : installer, le premier démarrage, l'écran du jour, une vente, le crédit et le remboursement, une dépense, l'argent de la maison, les fournisseurs, les relances WhatsApp, les produits et le stock, les factures, lire ses chiffres, parler au lieu d'écrire, la sauvegarde, l'abonnement, et « si quelque chose ne va pas ». Un sommaire cliquable en haut.
+- **Écrit pour quelqu'un qui n'a jamais utilisé d'application de gestion** : des étapes numérotées, des tableaux « ce que tu vois / ce que ça veut dire », les couleurs de sens expliquées, et des encadrés — vert pour un conseil, rouge pour un avertissement (la sauvegarde, le garde-fou de la caisse, la reconnaissance vocale qui a besoin d'internet).
+- **Aux couleurs de la charte BIP** : en-tête sombre graphite et braise comme l'accueil de l'appli, cartes blanches, filets de braise devant les titres. La page n'a **aucune dépendance** : pas de police à télécharger, pas de script, tout est dans le fichier.
+- **Où on y entre** : Réglages → première carte, **« Guide de l'utilisateur »** avec le bouton « Ouvrir le guide » ; et un lien discret tout en bas des Réglages, à côté de la politique de confidentialité.
+- **Version anglaise** en bas de la même page (`<section class="en">`), plus ramassée mais complète.
+- **Règle pour la suite** : quand une fonctionnalité change, la section correspondante du guide change avec elle. Un guide faux est pire que pas de guide.
+
 ## Repartir à zéro (fait, demande du propriétaire)
 
 Le propriétaire ne savait pas comment effacer ses essais avant de faire tester l'appli à un commerçant. Réglages → **Repartir à zéro** → « Tout effacer et repartir à zéro », avec **deux confirmations** (la seconde rappelle qu'on ne peut pas revenir en arrière) et un rappel de faire une sauvegarde d'abord.

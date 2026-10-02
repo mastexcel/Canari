@@ -2908,6 +2908,24 @@ body { overflow-wrap: break-word; }
   border-color: var(--teinte);
 }
 
+/* Le bouton du guide : un lien, mais dessiné comme un bouton plein. */
+.bouton-guide {
+  --teinte: var(--braise);
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 56px; border-radius: 16px;
+  font-family: var(--titre); font-size: clamp(16px, 5vw, 19px); font-weight: 600;
+  text-decoration: none;
+  background: var(--teinte);
+  background: linear-gradient(122deg,
+      color-mix(in srgb, var(--teinte) 82%, #FFFFFF) 0%,
+      var(--teinte) 54%,
+      color-mix(in srgb, var(--teinte) 78%, #000000) 100%);
+  color: #FFFFFF;
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--teinte) 34%, transparent);
+}
+.bouton-guide svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linejoin: round; }
+.bouton-guide:active { transform: translateY(2px); box-shadow: none; }
+
 /* ---------- Les couleurs, une par sens ---------- */
 .bouton-principal, .bouton-envoyer { --teinte: var(--braise); }
 .action.vente, .bouton-paye, .bouton-arrivage { --teinte: var(--entre); }

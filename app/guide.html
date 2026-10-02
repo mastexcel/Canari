@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Canari · Guide de l'utilisateur</title>
+<meta name="description" content="Comment se servir de Canari, pas à pas : noter une vente, un crédit, une dépense, relancer un client, lire ses chiffres.">
+<meta name="theme-color" content="#121319">
+<link rel="icon" href="icones/icone-192.png">
+<style>
+  :root {
+    --ivoire: #FCFAF7; --sable: #F8EFE9; --bord: #E8DFD7;
+    --graphite: #1A1B20; --graphite-7: #343843; --gris: #8E929B; --doux: #5B5A5E;
+    --braise: #DC3F17; --braise-vive: #F46134; --braise-profonde: #8E1F0C;
+    --olive: #5E7033; --olive-fonce: #44521F;
+    --rouge: #B8412B; --ambre: #96701F; --ardoise: #4A5873;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 0 0 70px;
+    background: linear-gradient(168deg, #FCFAF7 0%, var(--sable) 55%, #F4F2EF 100%);
+    color: #22242A;
+    font: 17px/1.62 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    overflow-wrap: break-word;
+  }
+  main { max-width: 700px; margin: 0 auto; padding: 0 18px; }
+
+  /* L'en-tête sombre, comme les grands moments de l'appli. */
+  .haut {
+    background:
+      radial-gradient(74% 56% at 88% 6%, rgba(244, 97, 52, .40) 0, transparent 70%),
+      radial-gradient(90% 62% at 8% 104%, rgba(142, 31, 12, .58) 0, transparent 72%),
+      linear-gradient(158deg, #1A1C23 0%, #121319 52%, #1D1215 100%);
+    color: #F3EFEA;
+    padding: 30px 18px 34px;
+    text-align: center;
+    border-bottom: 2px solid var(--braise);
+  }
+  .haut img { width: 92px; height: auto; border-radius: 20px; }
+  .haut h1 { font-size: clamp(24px, 7vw, 30px); margin: 14px 0 4px; line-height: 1.2; }
+  .haut p { margin: 0; color: #CFC8C2; font-size: clamp(15px, 4.2vw, 17px); }
+  .haut .slogan { color: var(--braise-vive); font-weight: 600; margin-top: 8px; }
+
+  h2 {
+    font-size: clamp(19px, 5.4vw, 22px);
+    margin: 38px 0 10px;
+    color: var(--graphite);
+    display: flex; align-items: center; gap: 10px;
+    line-height: 1.25;
+  }
+  h2::before {
+    content: ""; width: 4px; height: 24px; flex: none; border-radius: 2px;
+    background: linear-gradient(180deg, var(--braise-vive), var(--braise-profonde));
+  }
+  h3 { font-size: 17px; margin: 22px 0 6px; color: var(--graphite-7); }
+  p { margin: 10px 0; }
+  ul, ol { padding-left: 22px; margin: 10px 0; }
+  li { margin: 7px 0; }
+  a { color: var(--braise-profonde); }
+  b, strong { color: var(--graphite); }
+
+  .carte {
+    background: #fff;
+    border: 1px solid var(--bord);
+    border-radius: 16px;
+    padding: 16px 18px;
+    margin: 14px 0;
+    box-shadow: 0 1px 2px rgba(18,19,25,.05), 0 4px 14px rgba(18,19,25,.06);
+  }
+  .carte > :first-child { margin-top: 0; }
+  .carte > :last-child { margin-bottom: 0; }
+
+  /* Les étapes numérotées */
+  ol.etapes { list-style: none; padding: 0; counter-reset: e; }
+  ol.etapes > li {
+    counter-increment: e;
+    position: relative;
+    padding: 2px 0 2px 46px;
+    margin: 14px 0;
+  }
+  ol.etapes > li::before {
+    content: counter(e);
+    position: absolute; left: 0; top: 0;
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    background: linear-gradient(122deg, #3E4350, var(--graphite-7));
+    color: #fff; font-weight: 700; font-size: 16px;
+  }
+
+  .conseil, .attention {
+    border-left: 4px solid var(--olive);
+    background: #F3F6EE;
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 16px;
+  }
+  .attention { border-left-color: var(--rouge); background: #FBEDE9; }
+  .conseil b { color: var(--olive-fonce); }
+  .attention b { color: #8E2F1E; }
+
+  /* La table des matières */
+  .sommaire { background: #fff; border: 1px solid var(--bord); border-radius: 16px; padding: 14px 18px; margin: 22px 0 0; }
+  .sommaire h2 { margin-top: 4px; }
+  .sommaire ol { padding-left: 20px; }
+  .sommaire a { text-decoration: none; font-weight: 600; }
+  .sommaire a:hover { text-decoration: underline; }
+
+  /* Les pastilles de couleur de sens */
+  .sens { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+  .sens span {
+    display: inline-flex; align-items: center; gap: 7px;
+    border: 1px solid var(--bord); background: #fff;
+    border-radius: 999px; padding: 6px 13px; font-size: 15px; font-weight: 600;
+  }
+  .sens i { width: 13px; height: 13px; border-radius: 50%; display: block; }
+
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 16px; }
+  th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid var(--bord); vertical-align: top; }
+  th { color: var(--doux); font-size: 14px; text-transform: uppercase; letter-spacing: .4px; }
+
+  footer { margin-top: 44px; padding-top: 18px; border-top: 1px solid var(--bord); color: var(--doux); font-size: 15px; }
+  .en { margin-top: 54px; padding-top: 26px; border-top: 2px solid var(--bord); }
+  .retour {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin: 22px 0 0; padding: 12px 20px;
+    border-radius: 16px; border: 2px solid var(--bord); background: #fff;
+    color: var(--graphite-7); font-weight: 600; text-decoration: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="haut">
+  <img src="icones/icone-192.png" alt="">
+  <h1>Guide de l'utilisateur</h1>
+  <p>Comment te servir de Canari, pas à pas.</p>
+  <p class="slogan">Tu vends. Canari compte.</p>
+</div>
+
+<main>
+
+  <div class="sommaire">
+    <h2 id="sommaire">Ce qu'il y a dans ce guide</h2>
+    <ol>
+      <li><a href="#installer">Installer Canari sur ton téléphone</a></li>
+      <li><a href="#demarrer">Le premier démarrage : les questions du début</a></li>
+      <li><a href="#ecran">L'écran du jour : ce que chaque chiffre veut dire</a></li>
+      <li><a href="#vente">Noter une vente</a></li>
+      <li><a href="#credit">Vendre à crédit, et noter un remboursement</a></li>
+      <li><a href="#depense">Noter une dépense</a></li>
+      <li><a href="#maison">L'argent que tu prends pour la maison</a></li>
+      <li><a href="#fournisseur">Ce que tu dois à tes fournisseurs</a></li>
+      <li><a href="#relances">Relancer un client sur WhatsApp</a></li>
+      <li><a href="#produits">Tes produits, tes prix et ton stock</a></li>
+      <li><a href="#facture">Envoyer une facture ou un reçu</a></li>
+      <li><a href="#bilan">Lire tes chiffres : 7 jours, mois, tableau de bord</a></li>
+      <li><a href="#voix">Parler au lieu d'écrire</a></li>
+      <li><a href="#sauvegarde">La sauvegarde : à faire chaque semaine</a></li>
+      <li><a href="#abonnement">L'essai gratuit et l'abonnement</a></li>
+      <li><a href="#problemes">Si quelque chose ne va pas</a></li>
+    </ol>
+  </div>
+
+  <h2 id="installer">1 · Installer Canari sur ton téléphone</h2>
+  <p>Canari n'est pas encore sur le Play Store. Tu l'installes directement depuis internet, et ça prend moins d'une minute.</p>
+  <ol class="etapes">
+    <li>Ouvre <b>Chrome</b> sur ton téléphone Android.</li>
+    <li>Va à l'adresse <b>mastexcel.github.io/Canari/</b></li>
+    <li>Touche le <b>menu ⋮</b> en haut à droite de Chrome.</li>
+    <li>Touche <b>« Installer l'application »</b> (ou « Ajouter à l'écran d'accueil »).</li>
+    <li>L'icône du canari apparaît sur ton écran d'accueil, comme n'importe quelle autre application.</li>
+  </ol>
+  <div class="conseil">
+    <p><b>Une fois installée, Canari marche sans internet.</b> Tu peux noter tes ventes toute la journée sans réseau et sans consommer de forfait. Internet ne sert qu'à trois choses : installer l'appli, recevoir les mises à jour, et envoyer un message WhatsApp.</p>
+  </div>
+
+  <h2 id="demarrer">2 · Le premier démarrage</h2>
+  <p>La première fois, Canari te pose quelques questions. Elles servent à calculer ton vrai bénéfice, pas seulement ton argent entré. <b>Tu peux passer les questions</b> et y revenir plus tard dans Réglages.</p>
+  <ol class="etapes">
+    <li><b>Ta boutique</b> — son nom, ton numéro, ton logo si tu en as un, et ta monnaie. Le nom et le logo apparaîtront sur tes factures.</li>
+    <li><b>L'argent que tu as maintenant</b> — compte ce qu'il y a dans ta caisse et sur tes comptes mobile money, et écris-le. Sans ça, Canari croit que tu pars de zéro et refusera ta première dépense.</li>
+    <li><b>Ta façon de vendre</b> — en boutique, en ligne, ou à la sauvette. Chacune te propose déjà sa liste de charges.</li>
+    <li><b>Ce que tu vends</b> — tu revends de la marchandise, tu fabriques, ou tu rends des services.</li>
+    <li><b>Ta marge habituelle</b> — si tu achètes à 800 et revends à 1 000, ta marge est de 20 %. C'est ce qui permet à Canari de calculer ton bénéfice même quand tu tapes juste un montant.</li>
+    <li><b>Tes charges fixes</b> — loyer, électricité, place au marché, apprenti… avec leur fréquence (par jour, semaine, mois ou an).</li>
+    <li><b>Tes impôts et taxes</b> — ce que tu paies vraiment. Canari n'invente aucune règle fiscale : il note ce que tu lui dis.</li>
+  </ol>
+  <div class="conseil">
+    <p><b>Pourquoi ces questions ?</b> Sans elles, Canari te dirait seulement « tu as encaissé 20 000 F aujourd'hui ». Avec elles, il te dit « tu as gagné 3 400 F », ce qui est très différent — et beaucoup plus utile.</p>
+  </div>
+
+  <h2 id="ecran">3 · L'écran du jour</h2>
+  <p>C'est l'écran que tu vois en ouvrant Canari. Du haut vers le bas :</p>
+  <div class="carte">
+    <table>
+      <tr><th>Ce que tu vois</th><th>Ce que ça veut dire</th></tr>
+      <tr><td><b>Ventes du jour</b> (le grand chiffre)</td><td>Tout ce que tu as vendu aujourd'hui, <b>même ce qui n'est pas encore payé</b>.</td></tr>
+      <tr><td><b>Marge brute</b></td><td>Tes ventes moins ce que la marchandise t'a coûté.</td></tr>
+      <tr><td><b>Charges et taxes</b></td><td>La part du jour de ton loyer, de tes taxes et de tes autres charges. Canari étale le mois sur tes jours de travail.</td></tr>
+      <tr><td><b>Bénéfice net</b></td><td>Ce qui te reste vraiment. <b>C'est le chiffre qui compte.</b></td></tr>
+      <tr><td><b>Argent en caisse</b></td><td>Ce que tu as réellement, maintenant, en espèces et sur tes comptes mobile money.</td></tr>
+    </table>
+  </div>
+  <p>En dessous, les trois gros boutons — <b>Vente</b>, <b>Dépense</b>, <b>Crédit</b> — puis les plus petits : Pris pour la maison, Dette fournisseur, Investissement.</p>
+  <p>Tout en bas de l'écran, les cinq onglets : <b>Jour</b>, <b>Crédits</b>, <b>Relances</b>, <b>Bilan</b> et <b>Stock</b>.</p>
+
+  <h3>Les couleurs ont toujours le même sens</h3>
+  <div class="sens">
+    <span><i style="background:#5E7033"></i> Vert : l'argent qui entre</span>
+    <span><i style="background:#B8412B"></i> Rouge : l'argent qui sort</span>
+    <span><i style="background:#96701F"></i> Ambre : le crédit</span>
+    <span><i style="background:#4A5873"></i> Ardoise : la maison</span>
+  </div>
+  <p>Un chiffre en rouge veut dire deux choses, et deux seulement : soit c'est de l'argent qui sort, soit c'est un nombre négatif.</p>
+
+  <h2 id="vente">4 · Noter une vente</h2>
+  <p>Touche le gros bouton vert <b>Vente</b>. Tu as deux façons de faire, choisis celle qui t'arrange :</p>
+  <h3>Par montant — le plus rapide</h3>
+  <ol class="etapes">
+    <li>Tape le prix total, ou touche un des boutons rapides (500, 1 000, 2 000, 5 000 F).</li>
+    <li>Laisse <b>« Tout payé »</b> si le client a tout donné.</li>
+    <li>Choisis comment tu as été payé : espèces, Wave, Orange Money…</li>
+    <li>Touche <b>Enregistrer</b>. C'est fini.</li>
+  </ol>
+  <h3>Par produits — quand tu veux une facture et le stock à jour</h3>
+  <ol class="etapes">
+    <li>Touche <b>« Par produits »</b> en haut de la fenêtre.</li>
+    <li>Touche chaque produit vendu et sa quantité. Canari fait le total tout seul.</li>
+    <li>Enregistre. Le stock baisse automatiquement, et la facture est prête.</li>
+  </ol>
+  <div class="conseil">
+    <p><b>Tu t'es trompé ?</b> Juste après avoir enregistré, un message en bas propose <b>« Annuler »</b> pendant quelques secondes. Plus tard, tu peux toujours retirer la ligne avec le petit <b>✕</b> dans la liste du jour — et le stock remonte tout seul.</p>
+  </div>
+
+  <h2 id="credit">5 · Vendre à crédit, et noter un remboursement</h2>
+  <p><b>Une vente n'est pas toujours payée.</b> C'est là que Canari change tout par rapport à un cahier.</p>
+  <h3>Le client ne paie rien</h3>
+  <p>Touche le bouton <b>Crédit</b>. C'est une vente où le client n'a rien donné.</p>
+  <h3>Le client paie une partie</h3>
+  <p>Touche <b>Vente</b>, tape le prix total, puis choisis <b>« Pas tout payé »</b> et écris ce qu'il t'a donné. Le reste part automatiquement à son crédit.</p>
+  <h3>Le numéro de téléphone est obligatoire</h3>
+  <p>Dès qu'il reste quelque chose à payer, Canari demande le <b>numéro du client</b>. Ce n'est pas pour t'embêter :</p>
+  <ul>
+    <li>deux clients peuvent s'appeler Koffi — le numéro, lui, ne trompe pas ;</li>
+    <li>c'est ce numéro qui te permettra de le relancer sur WhatsApp en un geste ;</li>
+    <li>la fois suivante, tu tapes le numéro et Canari retrouve le nom tout seul.</li>
+  </ul>
+  <p>Tu peux aussi toucher <b>« Choisir dans mes contacts »</b> pour prendre le nom et le numéro dans ton répertoire.</p>
+  <h3>Quand il rembourse</h3>
+  <ol class="etapes">
+    <li>Va dans l'onglet <b>Crédits</b> → <b>« On me doit »</b>.</li>
+    <li>Trouve le client et touche <b>« Il a payé »</b>.</li>
+    <li>Écris ce qu'il t'a donné — tout, ou une partie seulement.</li>
+    <li>Canari met sa dette à jour et te propose un <b>reçu</b> à lui envoyer.</li>
+  </ol>
+
+  <h2 id="depense">6 · Noter une dépense</h2>
+  <p>Touche le bouton rouge <b>Dépense</b>, tape le montant, puis <b>dis de quelle sorte de dépense il s'agit</b>. C'est important, parce que les quatre ne se comportent pas pareil :</p>
+  <div class="carte">
+    <table>
+      <tr><th>Sorte</th><th>Effet sur ton bénéfice</th></tr>
+      <tr><td><b>Marchandise à revendre</b></td><td>Aucun. Elle sera comptée quand tu la revendras. L'argent sort de ta caisse, c'est tout.</td></tr>
+      <tr><td><b>Charge fixe</b> (déjà prévue)</td><td>Aucun de plus : elle est déjà étalée sur tes jours. Canari la marque « payée » dans le bilan du mois.</td></tr>
+      <tr><td><b>Impôt ou taxe</b> (déjà prévu)</td><td>Pareil : déjà compté, il est juste marqué payé.</td></tr>
+      <tr><td><b>Autre dépense</b></td><td>Transport, réparation, imprévu… <b>Celle-là baisse ton bénéfice du jour.</b></td></tr>
+    </table>
+  </div>
+  <div class="attention">
+    <p><b>Canari refuse une dépense si tu n'as pas l'argent.</b> Ta caisse ne peut jamais être négative. Si tu n'as pas assez en espèces, Canari te montre le solde de chaque compte et te propose de payer avec celui qui a assez, ou de prendre la marchandise à crédit chez ton fournisseur. Si tu as de l'argent que Canari ne connaît pas, corrige-le dans <b>Réglages → Argent en caisse</b>.</p>
+  </div>
+
+  <h2 id="maison">7 · L'argent que tu prends pour la maison</h2>
+  <p>Touche le petit bouton <b>« Pris pour la maison »</b> chaque fois que tu prends de l'argent de la boutique pour toi : le riz du soir, l'école des enfants, le transport.</p>
+  <p><b>Ce n'est pas une perte</b>, c'est de l'argent qui change de poche. Canari le compte donc à part, et te dit chaque jour : « tu as gagné 8 700 F, tu as pris 2 000 F pour la maison, il reste 6 700 F pour la boutique ».</p>
+  <div class="conseil">
+    <p><b>C'est le piège numéro un des petits commerces.</b> Quand on mélange l'argent de la boutique et celui de la maison, on croit gagner de l'argent alors qu'on mange son capital. Note tout ce que tu prends, même 500 F : au bout d'un mois, le chiffre surprend.</p>
+  </div>
+
+  <h2 id="fournisseur">8 · Ce que tu dois à tes fournisseurs</h2>
+  <ul>
+    <li><b>Tu prends de la marchandise sans payer</b> → bouton <b>« Dette fournisseur »</b>. Tu dois plus, mais aucun argent n'est sorti.</li>
+    <li><b>Tu paies ton fournisseur</b> → onglet <b>Crédits</b> → <b>« Je dois »</b> → <b>« J'ai payé »</b>. L'argent sort de ta caisse et ta dette baisse.</li>
+  </ul>
+  <p>Quand tu notes un arrivage de marchandise, Canari te demande directement <b>« Tu l'as payé ? »</b> avec quatre réponses : tout payé, payé en partie, tout à crédit, ou pas maintenant. La dette se crée toute seule.</p>
+
+  <h2 id="relances">9 · Relancer un client sur WhatsApp</h2>
+  <p>L'onglet <b>Relances</b> est celui qui te rapporte le plus d'argent. Canari classe tes clients tout seul :</p>
+  <ul>
+    <li><b>À relancer aujourd'hui</b> — il a dépassé sa promesse, ou il doit depuis plus de 7 jours sans avoir été relancé.</li>
+    <li><b>Promesses à venir</b> — il a promis une date, elle n'est pas encore arrivée.</li>
+    <li><b>Déjà relancés</b> — tu l'as relancé il y a moins de 5 jours, laisse-le respirer.</li>
+    <li><b>Crédits récents</b> — c'est trop tôt pour réclamer.</li>
+  </ul>
+  <ol class="etapes">
+    <li>Touche <b>Relancer</b> à côté du nom du client.</li>
+    <li>Canari a déjà écrit le message, avec le bon montant et la bonne durée. <b>Trois tons</b> : gentil la première fois, ferme ensuite, dernier rappel après trois relances.</li>
+    <li>Tu peux modifier le texte si tu veux.</li>
+    <li>Touche <b>« Envoyer sur WhatsApp »</b> : la conversation du client s'ouvre, le message est déjà écrit. Tu n'as plus qu'à appuyer sur envoyer.</li>
+  </ol>
+  <div class="conseil">
+    <p><b>Pourquoi ça marche :</b> le plus dur dans une relance, c'est de trouver les mots sans se fâcher avec le client. Canari les a trouvés pour toi. Et le jour où il rembourse, sa promesse s'efface toute seule.</p>
+  </div>
+
+  <h2 id="produits">10 · Tes produits, tes prix et ton stock</h2>
+  <p>Onglet <b>Stock</b>. Tu n'es pas obligé de t'en servir — on peut très bien utiliser Canari en tapant juste des montants. Mais si tu notes tes produits, tu gagnes trois choses : le total calculé tout seul, le stock à jour, et des factures propres.</p>
+  <h3>Ajouter un produit</h3>
+  <ol class="etapes">
+    <li>Donne-lui un nom et un <b>prix de vente</b>.</li>
+    <li>Choisis son <b>unité</b> : pièce, kg, litre, sac, carton, plat, prestation…</li>
+    <li>Dis combien il te coûte à l'achat. Si tu l'achètes au sac de 50 kg mais le vends au kg, note-le : Canari calcule le prix par kilo tout seul.</li>
+    <li>Mets ton <b>stock de départ</b> et le seuil d'alerte (« préviens-moi quand il reste 10 »).</li>
+  </ol>
+  <h3>Un arrivage de marchandise</h3>
+  <p>Touche <b>« Arrivage »</b> sur le produit, note combien tu as reçu et le prix du lot cette fois-ci. Canari recalcule ton prix d'achat moyen, et te demande si tu as payé.</p>
+  <div class="conseil">
+    <p><b>Le stock n'est jamais tapé à la main.</b> Il se calcule : stock de départ, plus les arrivages, moins ce que tu as vendu. C'est pour ça que retirer une vente par erreur remet automatiquement le produit en stock.</p>
+  </div>
+  <p>Si tu fabriques (pain, attiéké, jus, savon…) ou si tu rends des services, Canari sait aussi gérer tes <b>recettes</b> et tes <b>intrants</b> : il calcule le coût de revient d'une fournée et te dit si tu vends à perte.</p>
+
+  <h2 id="facture">11 · Envoyer une facture ou un reçu</h2>
+  <p>Après une vente par produits, le message en bas propose <b>« Facture »</b>. Tu peux aussi la retrouver en touchant la ligne de la vente dans la liste du jour.</p>
+  <ul>
+    <li><b>Envoyer à [nom]</b> — la conversation WhatsApp du client s'ouvre avec la facture écrite. L'image est copiée en même temps : un appui long sur la zone de texte la colle.</li>
+    <li><b>Partager l'image</b> — le menu de partage d'Android s'ouvre (WhatsApp, e-mail, Bluetooth…).</li>
+  </ul>
+  <p>Chaque fois qu'un client rembourse une partie de son crédit, Canari prépare un <b>reçu d'acompte</b> : déjà payé, reste à payer. Le client sait exactement où il en est, et toi aussi.</p>
+
+  <h2 id="bilan">12 · Lire tes chiffres</h2>
+  <p>Onglet <b>Bilan</b>. Trois façons de regarder :</p>
+  <h3>7 jours</h3>
+  <p>Tes ventes et ton bénéfice de la semaine, avec une barre par jour. On voit tout de suite quel jour marche et quel jour est mort.</p>
+  <h3>Mois</h3>
+  <p>Le calcul complet, ligne par ligne : ventes, moins le prix de revient, moins les autres dépenses, moins les charges fixes, moins les impôts. Et à la fin, ton bénéfice net.</p>
+  <h3>Tableau de bord</h3>
+  <p>C'est l'écran qui réfléchit à ta place. Chaque indicateur te donne quatre choses : <b>le chiffre</b>, <b>une couleur</b> (vert = ça va, ambre = à surveiller, rouge = attention), <b>une phrase qui l'explique</b>, et <b>le geste à faire</b>.</p>
+  <ul>
+    <li>Choisis la période en haut : semaine, mois, année, ou plusieurs années.</li>
+    <li>Commence par <b>« L'essentiel »</b>. Passe à <b>« Tout le détail »</b> quand tu veux creuser.</li>
+    <li>Tout en bas : <b>« Ce que je ferais à ta place »</b> — les trois gestes les plus utiles aujourd'hui, classés par urgence.</li>
+  </ul>
+  <h3>Télécharger tes chiffres</h3>
+  <p>Bouton en bas du tableau de bord, ou Réglages → <b>« Télécharger mes chiffres »</b>. Tu choisis la période, puis le format : <b>Excel</b> (pour calculer), <b>PDF</b> (pour imprimer ou donner à ton comptable) ou <b>CSV</b>. Le fichier part par WhatsApp, par e-mail, ou tombe dans tes Téléchargements.</p>
+
+  <h2 id="voix">13 · Parler au lieu d'écrire</h2>
+  <p>Si tu écris lentement, ou si tu as les mains prises, tu peux tout dire à Canari.</p>
+  <ol class="etapes">
+    <li>Ouvre une fenêtre de saisie (Vente, Dépense, Crédit…).</li>
+    <li>Touche <b>« Dire »</b> et parle normalement : <i>« vente deux mille, il a donné mille, Koffi, zéro sept zéro un zéro deux zéro trois zéro quatre »</i>.</li>
+    <li>Canari remplit ce qu'il a compris, te dit ce qui manque, et écoute à nouveau.</li>
+    <li>Dis <b>« oui »</b> ou <b>« enregistre »</b> pour valider, <b>« non »</b> pour annuler.</li>
+  </ol>
+  <p>Les boutons <b>« Écouter »</b> (le petit haut-parleur) font lire l'écran à voix haute : le bilan du jour, qui te doit de l'argent, qui relancer.</p>
+  <div class="attention">
+    <p><b>La reconnaissance vocale a besoin d'internet</b> (c'est Google qui écoute, pas Canari). La lecture à voix haute, elle, marche sans réseau. Le dioula et le baoulé ne sont pas reconnus.</p>
+  </div>
+
+  <h2 id="sauvegarde">14 · La sauvegarde — le plus important de ce guide</h2>
+  <div class="attention">
+    <p><b>Tes chiffres sont uniquement sur ton téléphone.</b> Si tu perds le téléphone, si on te le vole, ou si tu désinstalles l'appli, <b>tout est perdu</b>. Il n'y a pas de copie ailleurs : c'est le prix de la confidentialité et du « marche sans internet ».</p>
+  </div>
+  <ol class="etapes">
+    <li>Réglages → <b>Sauvegarde</b> → <b>« Enregistrer mes chiffres »</b>.</li>
+    <li>Un fichier est créé. <b>Envoie-le-toi sur WhatsApp</b> (à toi-même), ou mets-le sur Google Drive.</li>
+    <li>Fais-le <b>une fois par semaine</b>. Canari te le rappelle tout seul.</li>
+  </ol>
+  <p>Pour tout récupérer sur un nouveau téléphone : installe Canari, puis Réglages → Sauvegarde → <b>« Récupérer une sauvegarde »</b> et choisis ton fichier. Ton abonnement suit aussi.</p>
+
+  <h2 id="abonnement">15 · L'essai gratuit et l'abonnement</h2>
+  <p>Canari est <b>gratuit pendant 1 mois</b>, à partir de ton premier jour d'utilisation. Ensuite, il faut un abonnement.</p>
+  <div class="carte">
+    <table>
+      <tr><th>Formule</th><th>Prix</th></tr>
+      <tr><td>1 mois</td><td>1 000 F</td></tr>
+      <tr><td>3 mois</td><td>2 500 F</td></tr>
+      <tr><td>1 an</td><td>9 000 F <b>(le plus avantageux)</b></td></tr>
+    </table>
+  </div>
+  <h3>Comment s'abonner</h3>
+  <ol class="etapes">
+    <li>Réglages → <b>Mon abonnement</b>.</li>
+    <li>Choisis ta formule et <b>paie</b> : avec Wave, ou avec Orange Money, MTN, Moov ou Djamo.</li>
+    <li>Touche <b>« Envoyer ta demande »</b> : WhatsApp s'ouvre avec ton numéro Canari déjà écrit.</li>
+    <li>Tu reçois un <b>code d'activation</b> en réponse. Touche le lien, ou colle le code dans l'appli.</li>
+    <li>Tes jours s'ajoutent, et ta <b>facture</b> est créée aussitôt.</li>
+  </ol>
+  <div class="conseil">
+    <p><b>Quand l'essai est fini, rien n'est effacé ni caché.</b> Tu vois toujours tous tes chiffres, tu peux relancer tes clients, noter leurs remboursements et faire ta sauvegarde. Seules les <b>nouvelles</b> ventes, dépenses et achats demandent un abonnement.</p>
+  </div>
+  <p><b>Zéro publicité</b>, dans Canari. Jamais. C'est une promesse, pas une offre de lancement.</p>
+
+  <h2 id="problemes">16 · Si quelque chose ne va pas</h2>
+  <h3>Je ne vois pas les nouveautés dont on m'a parlé</h3>
+  <p>C'est normal : l'appli s'ouvre depuis la copie gardée sur ton téléphone — c'est ce qui la rend rapide et utilisable sans réseau. Ferme complètement Canari, rouvre-la, et touche <b>« Ouvrir »</b> quand le bandeau <i>« Une nouvelle version de Canari est prête »</i> apparaît. Le numéro de version est écrit tout en bas des Réglages.</p>
+  <h3>Canari refuse ma dépense</h3>
+  <p>C'est le garde-fou : ta caisse ne peut pas devenir négative. Paie avec un compte qui a assez, prends la marchandise à crédit, ou corrige ton argent dans <b>Réglages → Argent en caisse</b>.</p>
+  <h3>Je me suis trompé dans une vente</h3>
+  <p>Touche le <b>✕</b> à droite de la ligne, dans la liste du jour. Tout revient en arrière, y compris le stock et la dette du client.</p>
+  <h3>Je veux effacer mes essais avant de commencer pour de vrai</h3>
+  <p>Réglages → <b>Repartir à zéro</b>. Deux confirmations te sont demandées. Fais une sauvegarde avant si tu veux pouvoir revenir. Ton abonnement, lui, n'est pas touché.</p>
+  <h3>J'ai une question sur mon commerce</h3>
+  <p>Bouton <b>« Pose ta question à Canari »</b>, en bas du tableau de bord. Demande-lui « qui me doit de l'argent ? », « pourquoi je perds ? », « combien je dois vendre ? » — il répond à partir de tes propres chiffres.</p>
+
+  <footer>
+    <p><b>Canari</b> — ton carnet de caisse sur le téléphone. Une application de Bridge Investment Partners.</p>
+    <p><a href="confidentialite.html">Tes données et ta vie privée</a> · <a href="./">Ouvrir Canari</a></p>
+    <a class="retour" href="./">← Revenir à l'application</a>
+  </footer>
+
+  <!-- ===================== ENGLISH ===================== -->
+  <section class="en" lang="en">
+    <h2 id="english">User guide — English</h2>
+    <p>Canari is your cash book on your phone: sales, expenses, customer credit, supplier debt and reminders, with your real profit always visible. It works <b>without internet</b> and keeps everything on your phone.</p>
+
+    <h3>1 · Install</h3>
+    <p>Open <b>Chrome</b> on Android, go to <b>mastexcel.github.io/Canari/</b>, tap the <b>⋮ menu</b> → <b>Install app</b>. The canari icon appears on your home screen.</p>
+
+    <h3>2 · First start</h3>
+    <p>Canari asks a few questions: your shop, <b>the money you have right now</b>, how you sell, what you sell, your usual margin, your fixed costs and your taxes. You can skip them and come back later in Settings. Without them Canari can only tell you what came in — not what you actually earned.</p>
+
+    <h3>3 · The day screen</h3>
+    <p>Big number = <b>today's sales</b> (including unpaid ones). Below: gross margin, costs and taxes, and <b>net profit</b> — the one that matters. Then <b>cash on hand</b>: what you really have.</p>
+    <p>Colours always mean the same thing: <b>green</b> money in, <b>red</b> money out, <b>amber</b> credit, <b>slate</b> household.</p>
+
+    <h3>4 · Record a sale</h3>
+    <p>Tap <b>Sale</b>. Either type the amount (fastest), or pick products — the total, the stock and the invoice are then handled for you. Choose <b>Paid in full</b> or <b>Not fully paid</b>, pick how you were paid, and save. A message at the bottom lets you <b>undo</b> for a few seconds.</p>
+
+    <h3>5 · Credit and repayment</h3>
+    <p>Tap <b>Credit</b> if the customer pays nothing, or <b>Not fully paid</b> on a sale if they pay part. The <b>phone number is required</b>: two customers can share a name, a number cannot, and it is what lets you send a WhatsApp reminder later. When they pay: <b>Credit</b> tab → <b>They paid</b> → Canari updates the debt and offers a receipt.</p>
+
+    <h3>6 · Expenses</h3>
+    <p>Tap <b>Expense</b>, then say which kind: <b>goods to resell</b> (counted when you sell them), <b>fixed cost</b> or <b>tax</b> (already planned, just marked paid), or <b>other expense</b> — only that last one lowers today's profit.</p>
+    <p><b>Canari refuses an expense you cannot afford.</b> Your cash can never go negative. It shows each account's balance so you can pay with one that has enough, suggests taking the goods on credit, or you can correct your cash in <b>Settings → Cash on hand</b>.</p>
+
+    <h3>7 · Household money</h3>
+    <p>Tap <b>Taken for the household</b> whenever you take shop money for yourself. It is not a loss — it is money changing pockets — so Canari counts it separately and tells you what is left for the shop. Mixing the two is the number one trap in small trade.</p>
+
+    <h3>8 · Suppliers</h3>
+    <p><b>Supplier debt</b> when you take goods without paying; <b>Credit</b> tab → <b>I owe</b> → <b>I paid</b> when you settle.</p>
+
+    <h3>9 · Reminders</h3>
+    <p>The <b>Reminders</b> tab sorts your customers for you: to chase today, promises coming, already chased, recent credit. Tap <b>Remind</b> — the message is already written, with the right amount, in one of three tones (kind, firm, final). Tap <b>Send on WhatsApp</b>: their chat opens with the text ready.</p>
+
+    <h3>10 · Products and stock</h3>
+    <p><b>Stock</b> tab. Optional, but it gives you automatic totals, live stock and clean invoices. Give each product a price, a <b>unit</b> (piece, kg, litre, bag…), its cost, a starting stock and a low-stock alert. Record deliveries with <b>Delivery</b>. Stock is never typed by hand: it is start + deliveries − sales, which is why removing a sale puts the goods back.</p>
+
+    <h3>11 · Invoices and receipts</h3>
+    <p>After a sale by products, the bottom message offers <b>Invoice</b>. <b>Send to [name]</b> opens the customer's WhatsApp with the invoice written out, and copies the image so a long press pastes it. Every partial repayment produces a <b>part-payment receipt</b>: paid so far, still to pay.</p>
+
+    <h3>12 · Your figures</h3>
+    <p><b>Report</b> tab: <b>7 days</b> (one bar per day), <b>Month</b> (the full calculation, line by line) and <b>Dashboard</b>. Every dashboard card gives you four things: the number, a colour verdict, a sentence explaining it, and the action to take. At the bottom, <b>“What I would do in your place”</b> — the three most useful actions today.</p>
+    <p><b>Download my figures</b> (Settings, or the button under the dashboard): Excel, PDF or CSV, for any period.</p>
+
+    <h3>13 · Speak instead of typing</h3>
+    <p>In any entry window, tap <b>Say</b> and talk normally. Canari fills in what it understood, tells you what is missing, and listens again. Say <b>yes</b> to save, <b>no</b> to cancel. Speech recognition needs internet; reading aloud does not.</p>
+
+    <h3>14 · Backup — the most important part</h3>
+    <p><b>Your figures live only on your phone.</b> Lose it and they are gone. Settings → <b>Backup</b> → <b>Save my figures</b>, then send the file to yourself on WhatsApp or Drive. Do it <b>once a week</b>; Canari reminds you. To restore on a new phone: install Canari, then Settings → Backup → <b>Restore a backup</b>.</p>
+
+    <h3>15 · Free trial and subscription</h3>
+    <p><b>Free for 1 month</b> from your first day. Then: 1 month 1,000 F, 3 months 2,500 F, 1 year 9,000 F. Settings → <b>My subscription</b> → pay (Wave, Orange Money, MTN, Moov or Djamo) → <b>Send your request</b> on WhatsApp → you receive an <b>activation code</b>. When the trial ends <b>nothing is deleted or hidden</b>: you still see everything, chase customers, record repayments and back up. Only <b>new</b> sales, expenses and purchases need a subscription. <b>No advertising, ever.</b></p>
+
+    <h3>16 · If something looks wrong</h3>
+    <p><b>I don't see the new features:</b> the app opens from the copy stored on your phone. Close it fully, reopen, and tap <b>Open</b> when the banner says a new version is ready. The version number is at the bottom of Settings.</p>
+    <p><b>A mistake in a sale:</b> tap the <b>✕</b> on its line in the day list — stock and customer debt are restored too.</p>
+    <p><b>Clear my test entries:</b> Settings → <b>Start from scratch</b> (two confirmations; your subscription is not affected).</p>
+
+    <p><a class="retour" href="./">← Back to the app</a></p>
+  </section>
+
+</main>
+</body>
+</html>

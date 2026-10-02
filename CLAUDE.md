@@ -322,6 +322,19 @@ Le propriétaire ne savait pas comment effacer ses essais avant de faire tester 
   - Réglages → **Voix** : « Canari lit ses messages à voix haute » (chaque message du bas) et « Parler plus lentement » (gardés sur le téléphone).
   - La reconnaissance vocale de Chrome a besoin d'internet ; la lecture à voix haute marche en général sans. Les langues locales (dioula, baoulé…) ne sont pas reconnues. Le micro du clavier du téléphone (Gboard) reste utilisable dans tous les champs.
 
+## Les visuels de publicité (fait, demande du propriétaire)
+
+Demande du 02/10/2026 : « crée les images pour faire la publicité de l'application auprès du public ». Tout est dans `store/pub/`, avec son mode d'emploi (`store/pub/LISEZ-MOI.md`).
+
+- **Sept visuels**, aux couleurs de la charte BIP, avec de vraies captures de l'appli :
+  - **deux statuts WhatsApp / stories** 1080 × 1920 — « Tu sais combien tu as *vraiment* gagné aujourd'hui ? » et « Qui te doit de l'argent ? Canari s'en souvient. » ;
+  - **trois carrés** 1080 × 1080 — la marque, la relance (avec le message tout écrit), et le prix ;
+  - une **bannière** 1200 × 630 — couverture de page, et aperçu du lien ;
+  - un **flyer A5 à imprimer** 1748 × 2480 (300 dpi) avec un **QR code** vers l'adresse de l'appli : au marché, personne ne tape une adresse à la main.
+- **Fabriqués par le code, jamais à la main** : `store/pub/fabriquer.py` écrit une page HTML (polices, mascotte, captures et QR en base64, aucune dépendance extérieure), `store/pub/photographier.mjs` photographie chaque section à la taille exacte. Si un prix, le slogan ou une capture changent, on relance les deux scripts.
+- **L'aperçu du lien** : `app/index.html` porte les balises `og:` et `twitter:card`, et l'image `app/icones/partage.jpg` (1200 × 630, 79 Ko, compressée exprès puisqu'elle est téléchargée par celui qui reçoit le lien). Sans ça, le lien arrive nu sur WhatsApp — et personne ne touche un lien nu.
+- **Règle pour la suite** : jamais de logo ni de personnage d'une autre marque sur un visuel (on peut **nommer** WhatsApp, pas poser son logo) ; jamais de promesse de gain (« gagne plus », « double ton chiffre ») — Canari compte ce que le commerçant gagne, il ne le fait pas gagner ; et si un prix change, on refait les images.
+
 ## Play Store (préparé, étape 8)
 
 Tout ce qui peut être fait sans compte Google est fait. Guide pas à pas pour le propriétaire : `docs/play-store.md`.

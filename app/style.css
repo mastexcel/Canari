@@ -1586,14 +1586,17 @@ a.bouton { text-decoration: none; }
      répète pas à l'œil, là où un petit motif de 180 px faisait du papier
      peint. C'est le fond de toute l'appli. */
   --motif-cretes: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22640%22%20height%3D%22640%22%20viewBox%3D%220%200%20640%20640%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23B08F76%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M-40%20118%20C%2090%2036%20206%20196%20330%20120%20C%20452%2046%20560%20150%20690%2092%22%20stroke-width%3D%222.2%22%20opacity%3D%22.40%22%2F%3E%3Cpath%20d%3D%22M-40%20160%20C%2096%2086%20212%20236%20336%20164%20C%20458%2094%20566%20190%20690%20136%22%20stroke-width%3D%221.1%22%20opacity%3D%22.26%22%2F%3E%3Cpath%20d%3D%22M-40%20352%20C%20110%20268%20198%20430%20344%20356%20C%20476%20290%20572%20388%20690%20330%22%20stroke-width%3D%222.2%22%20opacity%3D%22.34%22%2F%3E%3Cpath%20d%3D%22M-40%20392%20C%20116%20316%20204%20466%20350%20398%20C%20480%20336%20578%20424%20690%20372%22%20stroke-width%3D%221.1%22%20opacity%3D%22.22%22%2F%3E%3Cpath%20d%3D%22M-40%20574%20C%2086%20498%20220%20648%20352%20578%20C%20470%20516%20578%20600%20690%20552%22%20stroke-width%3D%222%22%20opacity%3D%22.30%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  /* Les mêmes crêtes, en gris froid et plus grandes : posées derrière les
+     premières, elles creusent le fond sans qu'on les remarque. */
+  --motif-cretes-gris: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22900%22%20height%3D%22900%22%20viewBox%3D%220%200%20900%20900%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%238E929B%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M-60%20250%20C%20150%20120%20300%20400%20500%20268%20C%20680%20150%20820%20300%20960%20210%22%20stroke-width%3D%222.6%22%20opacity%3D%22.30%22%2F%3E%3Cpath%20d%3D%22M-60%20300%20C%20160%20180%20310%20452%20510%20320%20C%20686%20206%20826%20350%20960%20266%22%20stroke-width%3D%221.2%22%20opacity%3D%22.18%22%2F%3E%3Cpath%20d%3D%22M-60%20660%20C%20180%20540%20330%20820%20540%20690%20C%20720%20580%20840%20700%20960%20630%22%20stroke-width%3D%222.4%22%20opacity%3D%22.24%22%2F%3E%3Cpath%20d%3D%22M-60%20848%20C%20150%20740%20340%20980%20560%20860%20C%20740%20762%20850%20846%20960%20800%22%20stroke-width%3D%221.6%22%20opacity%3D%22.18%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
   /* La poussière : un grain très fin qui creuse les fonds sombres. */
   --motif-poussiere: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22140%22%20height%3D%22140%22%20viewBox%3D%220%200%20140%20140%22%3E%3Cg%20fill%3D%22%23FFFFFF%22%20opacity%3D%220.22%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2228%22%20r%3D%221%22%2F%3E%3Ccircle%20cx%3D%2258%22%20cy%3D%229%22%20r%3D%22.8%22%2F%3E%3Ccircle%20cx%3D%22104%22%20cy%3D%2236%22%20r%3D%221.1%22%2F%3E%3Ccircle%20cx%3D%22131%22%20cy%3D%2274%22%20r%3D%22.8%22%2F%3E%3Ccircle%20cx%3D%2234%22%20cy%3D%2286%22%20r%3D%221%22%2F%3E%3Ccircle%20cx%3D%2278%22%20cy%3D%22112%22%20r%3D%22.9%22%2F%3E%3Ccircle%20cx%3D%22118%22%20cy%3D%22128%22%20r%3D%22.8%22%2F%3E%3Ccircle%20cx%3D%226%22%20cy%3D%22124%22%20r%3D%221%22%2F%3E%3Ccircle%20cx%3D%2292%22%20cy%3D%2266%22%20r%3D%22.7%22%2F%3E%3Ccircle%20cx%3D%2246%22%20cy%3D%2252%22%20r%3D%22.7%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
   /* La frise : le zigzag du canari, en fil de braise, sous les cartes. */
-  --motif-frise: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2248%22%20height%3D%228%22%20viewBox%3D%220%200%2048%208%22%3E%3Cpath%20d%3D%22M0%206%20L6%202%20L12%206%20L18%202%20L24%206%20L30%202%20L36%206%20L42%202%20L48%206%22%20fill%3D%22none%22%20stroke%3D%22%23F46134%22%20stroke-width%3D%221%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20opacity%3D%22.3%22%2F%3E%3C%2Fsvg%3E");
+  --motif-frise: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2240%22%20height%3D%226%22%20viewBox%3D%220%200%2040%206%22%3E%3Cpath%20d%3D%22M0%204.6%20L5%201.4%20L10%204.6%20L15%201.4%20L20%204.6%20L25%201.4%20L30%204.6%20L35%201.4%20L40%204.6%22%20fill%3D%22none%22%20stroke%3D%22%23F46134%22%20stroke-width%3D%220.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20opacity%3D%22.17%22%2F%3E%3C%2Fsvg%3E");
 
   /* La grille fine du site : la rigueur, sous la braise. */
   --motif-grille: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2244%22%20height%3D%2244%22%20viewBox%3D%220%200%2044%2044%22%3E%3Cpath%20d%3D%22M44%200H0v44%22%20fill%3D%22none%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%221%22%20opacity%3D%220.07%22%2F%3E%3C%2Fsvg%3E");
-  --motif-grille-claire: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2244%22%20height%3D%2244%22%20viewBox%3D%220%200%2044%2044%22%3E%3Cpath%20d%3D%22M44%200H0v44%22%20fill%3D%22none%22%20stroke%3D%22%23C93C18%22%20stroke-width%3D%221%22%20opacity%3D%220.09%22%2F%3E%3C%2Fsvg%3E");
+  --motif-grille-claire: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2244%22%20height%3D%2244%22%20viewBox%3D%220%200%2044%2044%22%3E%3Cpath%20d%3D%22M44%200H0v44%22%20fill%3D%22none%22%20stroke%3D%22%23C93C18%22%20stroke-width%3D%221%22%20opacity%3D%220.05%22%2F%3E%3C%2Fsvg%3E");
   /* Les vagues et les pièces en version claire, pour les fonds sombres. */
   --motif-vagues-clair: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22180%22%20height%3D%2290%22%20viewBox%3D%220%200%20180%2090%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20opacity%3D%220.5%22%3E%3Cpath%20d%3D%22M-20%2078%20Q%2025%2034%2070%2078%20T%20160%2078%22%2F%3E%3Cpath%20d%3D%22M20%2044%20Q%2065%200%20110%2044%20T%20200%2044%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
   --motif-pieces-clair: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2292%22%20height%3D%2292%22%20viewBox%3D%220%200%2092%2092%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23F8C98A%22%20stroke-width%3D%221.6%22%20opacity%3D%220.5%22%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2218%22%20r%3D%225%22%2F%3E%3Ccircle%20cx%3D%2260%22%20cy%3D%2238%22%20r%3D%223.2%22%2F%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2266%22%20r%3D%224%22%2F%3E%3Ccircle%20cx%3D%2278%22%20cy%3D%2278%22%20r%3D%222.6%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
@@ -1997,23 +2000,41 @@ body::after {
    son seul sens, l'argent qui sort.
    ===================================================================== */
 
-/* ---------- Le fond de la page : ivoire chaud, lueurs BIP ---------- */
+/* ---------- Le fond de la page : trois couches, pas une ----------
+   Un fond plat se voit ; un fond en couches se regarde. On en empile
+   trois, toutes fixes derrière le contenu, donc jamais redessinées au
+   défilement (c'est ce qui le garde fluide sur un petit téléphone) :
+     1. la TEINTE  — ivoire chaud qui glisse vers le rosé puis le gris,
+        avec la grille de BIP bue dedans ;
+     2. les LUEURS — quatre voiles de couleur très diffus, qui donnent au
+        fond son relief et sa chaleur ;
+     3. les CRÊTES — deux jeux de courbes à deux échelles, l'un chaud
+        devant, l'autre gris derrière, qui s'effacent en haut et en bas
+        au lieu de buter sur les bords. */
 body {
-  background: linear-gradient(174deg, var(--ivoire) 0%, var(--sable) 52%, var(--ivoire-2) 100%);
+  background:
+    var(--motif-grille-claire) 0 0 / 44px 44px repeat,
+    linear-gradient(172deg,
+      var(--ivoire) 0%,
+      var(--sable) 38%,
+      #F6F1EC 68%,
+      var(--ivoire-2) 100%);
 }
 body::before {
   background:
-    radial-gradient(40% 26% at 92% 2%, rgba(244, 97, 52, .17) 0, transparent 72%),
-    radial-gradient(46% 30% at -12% 26%, rgba(141, 147, 156, .20) 0, transparent 72%),
-    radial-gradient(52% 34% at 108% 82%, rgba(220, 63, 23, .11) 0, transparent 74%);
+    radial-gradient(42% 26% at 94% -2%, rgba(244, 97, 52, .20) 0, transparent 70%),
+    radial-gradient(50% 30% at -14% 22%, rgba(141, 147, 156, .22) 0, transparent 72%),
+    radial-gradient(44% 26% at 112% 58%, rgba(220, 63, 23, .10) 0, transparent 74%),
+    radial-gradient(70% 34% at 50% 108%, rgba(36, 39, 47, .10) 0, transparent 76%);
 }
-/* Les vagues de Canari, plus la grille de BIP : les deux marques se
-   superposent en filigrane, c'est la signature du fond. */
+/* Les crêtes, à deux échelles, effacées aux deux bords. */
 body::after {
   background:
-    var(--motif-grille-claire) 0 0 / 44px 44px repeat,
-    var(--motif-cretes) center top / 640px 640px repeat;
-  opacity: .5;
+    var(--motif-cretes) center top / 640px 640px repeat,
+    var(--motif-cretes-gris) center -140px / 900px 900px repeat;
+  opacity: .46;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 14%, #000 72%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0, #000 14%, #000 72%, transparent 100%);
 }
 
 /* ---------- L'accueil : le grand moment sombre ---------- */
@@ -2066,7 +2087,7 @@ body::after {
 /* ---------- La carte du jour : le chiffre sort du feu ---------- */
 .carte-gain {
   background:
-    var(--motif-frise) center bottom 10px / 48px 8px repeat-x,
+    var(--motif-frise) center bottom 11px / 40px 6px repeat-x,
     var(--fond-braise);
   border-color: rgba(255, 255, 255, .10);
   box-shadow: var(--ombre-sombre);
@@ -2141,7 +2162,7 @@ body::after {
    carte sombre. L'écran change, la signature reste. */
 .total-credits, .total-dettes {
   background:
-    var(--motif-frise) center bottom 10px / 48px 8px repeat-x,
+    var(--motif-frise) center bottom 11px / 40px 6px repeat-x,
     var(--fond-braise);
   border-color: rgba(255, 255, 255, .10);
   box-shadow: var(--ombre-sombre);

@@ -1,0 +1,111 @@
+{
+ "name": "Canari 3 · Lien de paiement",
+ "nodes": [
+  {
+   "parameters": {
+    "httpMethod": "GET",
+    "path": "canari-payer",
+    "responseMode": "responseNode",
+    "options": {}
+   },
+   "id": "842a8b45-c52a-4088-a982-e0e6913266ff",
+   "name": "Lien « Payer »",
+   "type": "n8n-nodes-base.webhook",
+   "typeVersion": 2,
+   "position": [
+    0,
+    0
+   ],
+   "webhookId": "cf4bd5e5-d2e8-4d9f-8e72-74348e598157"
+  },
+  {
+   "parameters": {
+    "jsCode": "\n// Un numéro ivoirien s'écrit de dix façons : on le ramène toujours à 225 + 10 chiffres.\nfunction nettoyerTel(t) {\n  let tel = String(t || '').replace(/\\D/g, '');\n  if (tel.startsWith('00225')) tel = tel.slice(2);\n  if (tel.length === 10) tel = '225' + tel;\n  return /^225\\d{10}$/.test(tel) ? tel : '';\n}\n\nconst FORMULES = {\n  mois:      { nom: '1 mois',  jours: 31,  prix: 1000 },\n  trimestre: { nom: '3 mois',  jours: 92,  prix: 2500 },\n  an:        { nom: '1 an',    jours: 366, prix: 9000 },\n  // L'option Conseil (« Demande à Canari »), signée avec un C devant les jours.\n  conseil_mois:      { nom: 'Conseil 1 mois', jours: 31,  prix: 500,  conseil: true },\n  conseil_trimestre: { nom: 'Conseil 3 mois', jours: 92,  prix: 1200, conseil: true },\n  conseil_an:        { nom: 'Conseil 1 an',   jours: 366, prix: 4000, conseil: true }\n};\n\nconst q = $json.query || {};\nconst id = String(q.id || '').toUpperCase().replace(/[^A-Z2-9]/g, '');\nif (!/^[A-Z2-9]{8}$/.test(id)) throw new Error('Numéro Canari absent : ' + q.id);\nconst f = FORMULES[q.plan];\nif (!f) throw new Error('Formule inconnue : ' + q.plan);\n// Le prix et les jours viennent d'ICI, jamais du lien : sinon n'importe qui\n// paierait 1 F pour un an en changeant l'adresse dans son navigateur.\nreturn [{ json: {\n  transaction_id: 'CAN-' + id + '-' + Date.now().toString(36).toUpperCase(),\n  canari_id: id,\n  plan: q.plan,\n  jours: f.jours,\n  conseil: !!f.conseil,\n  montant: f.prix,\n  description: 'Canari — ' + f.nom,\n  telephone: nettoyerTel(q.tel),\n  boutique: String(q.boutique || '').slice(0, 60),\n  email: String(q.email || '').slice(0, 80),\n  langue: q.langue === 'en' ? 'en' : 'fr'\n}}];\n"
+   },
+   "id": "a143ecfc-4b9a-433d-a638-3c28130c9687",
+   "name": "Préparer la transaction",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    240,
+    40
+   ]
+  },
+  {
+   "parameters": {
+    "method": "POST",
+    "url": "https://api-checkout.cinetpay.com/v2/payment",
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ apikey: 'APIKEY_CINETPAY', site_id: 'SITE_ID_CINETPAY', transaction_id: $json.transaction_id, amount: $json.montant, currency: 'XOF', description: $json.description, channels: 'MOBILE_MONEY', lang: $json.langue.toUpperCase(), customer_phone_number: $json.telephone, metadata: JSON.stringify({ id: $json.canari_id, plan: $json.plan, jours: $json.jours, conseil: $json.conseil, tel: $json.telephone, boutique: $json.boutique, email: $json.email, langue: $json.langue }), notify_url: 'https://TON-N8N.app.n8n.cloud/webhook/canari-notification', return_url: 'https://mastexcel.github.io/Canari/#paiement=ok' }) }}",
+    "options": {}
+   },
+   "id": "78d9715d-c516-472e-a84c-0f91531920d1",
+   "name": "Ouvrir le guichet CinetPay",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    480,
+    0
+   ],
+   "retryOnFail": true,
+   "maxTries": 2,
+   "waitBetweenTries": 2000
+  },
+  {
+   "parameters": {
+    "respondWith": "redirect",
+    "redirectURL": "={{ $json.data.payment_url }}",
+    "options": {}
+   },
+   "id": "37dc6c5d-3b6b-4ae5-bfff-41e9e7da2c5e",
+   "name": "Envoyer vers le guichet",
+   "type": "n8n-nodes-base.respondToWebhook",
+   "typeVersion": 1.1,
+   "position": [
+    720,
+    40
+   ]
+  }
+ ],
+ "connections": {
+  "Lien « Payer »": {
+   "main": [
+    [
+     {
+      "node": "Préparer la transaction",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Préparer la transaction": {
+   "main": [
+    [
+     {
+      "node": "Ouvrir le guichet CinetPay",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Ouvrir le guichet CinetPay": {
+   "main": [
+    [
+     {
+      "node": "Envoyer vers le guichet",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "settings": {
+  "executionOrder": "v1",
+  "timezone": "Africa/Abidjan"
+ },
+ "pinData": {}
+}

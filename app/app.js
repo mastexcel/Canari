@@ -1580,6 +1580,7 @@ function afficherReglages() {
   remplirFormPaiements();
   remplirFormCaisse();
   afficherAbonnementReglages();
+  afficherRappelsReglages();
   const parJour = Math.round((fixeMensuel("charge") + fixeMensuel("impot")) / joursTravail());
   const taux = tauxVentes("charge") + tauxVentes("impot");
   $("resume-charges").textContent = aDesCharges()
@@ -1757,6 +1758,7 @@ chargerDonnees().then(function (d) {
   initFactureAbo();
   initContacts();
   initAbonnement();
+  initTunnel();
   initVoix();
   montrer(lire(CLE_DEJA_VU) ? "principal" : "accueil");
 });

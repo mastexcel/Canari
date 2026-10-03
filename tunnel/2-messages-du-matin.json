@@ -1,0 +1,201 @@
+{
+ "name": "Canari 2 · Messages du matin",
+ "nodes": [
+  {
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "cronExpression",
+       "expression": "0 9 * * *"
+      }
+     ]
+    }
+   },
+   "id": "772cf3d3-aaa3-40c8-963f-44abcef3b1e6",
+   "name": "Chaque matin 9 h",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "read",
+    "documentId": {
+     "__rl": true,
+     "mode": "id",
+     "value": "ID_DE_TA_GOOGLE_SHEET"
+    },
+    "sheetName": {
+     "__rl": true,
+     "mode": "name",
+     "value": "Clients"
+    },
+    "options": {}
+   },
+   "id": "7020f10f-48b6-46e6-a293-35e63dbff4c6",
+   "name": "Lire tous les clients",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    240,
+    40
+   ],
+   "alwaysOutputData": true
+  },
+  {
+   "parameters": {
+    "jsCode": "\nconst AUJ = new Date(new Date().toISOString().slice(0, 10) + 'T00:00:00Z');\nconst jours = (a, b) => Math.round((new Date(b + 'T00:00:00Z') - a) / 86400000);\n\n// Le calendrier de l'essai : le jour d'usage -> le message à envoyer.\n// « canari_… » sont les modèles validés chez Meta (voir LISEZ-MOI.md).\nconst ESSAI = [\n  { jour: 1,  cle: 'J1',  modele: 'canari_j1',  champs: c => [c.nom] },\n  { jour: 3,  cle: 'J3',  modele: 'canari_j3',  champs: c => [c.nom] },\n  { jour: 10, cle: 'J10', modele: 'canari_j10', champs: c => [c.nom] },\n  { jour: 21, cle: 'J21', modele: 'canari_j21', champs: c => [c.nom] },\n  { jour: 27, cle: 'J27', modele: 'canari_essai_bientot', champs: c => [c.nom, String(Math.max(0, jours(AUJ, c.fin_essai)))] },\n  { jour: 31, cle: 'FIN', modele: 'canari_essai_fini', champs: c => [c.nom] }\n];\n\nconst sortie = [];\nfor (const item of $input.all()) {\n  const c = item.json;\n  if (!c || !c.canari_id || !c.telephone) continue;\n  if (String(c.stop || '').trim()) continue;          // il a demandé qu'on arrête\n  const langue = c.langue === 'en' ? 'en' : 'fr';\n  const deja = String(c.dernier_message || '');\n  let choix = null;\n\n  if (c.statut === 'paye') {\n    // Abonné : on ne parle que du renouvellement, 3 jours avant la fin, puis une\n    // fois le lendemain de la fin.\n    const reste = jours(AUJ, c.date_expiration);\n    if (reste === 3 && deja !== 'R3') choix = { cle: 'R3', modele: 'canari_renouvellement', champs: [c.nom, String(reste)] };\n    else if (reste === -1 && deja !== 'R0') choix = { cle: 'R0', modele: 'canari_abonnement_fini', champs: [c.nom] };\n  } else {\n    // En essai (ou essai fini) : le calendrier, et seulement le message le plus\n    // avancé qu'il n'a pas encore reçu. Un commerçant inscrit en retard ne reçoit\n    // pas les six messages d'un coup.\n    const age = jours(new Date(c.date_inscription + 'T00:00:00Z'), AUJ.toISOString().slice(0, 10));\n    const faits = ESSAI.map(e => e.cle);\n    const rang = faits.indexOf(deja);\n    const du = ESSAI.filter((e, i) => i > rang && age >= e.jour).pop();\n    if (du) choix = { cle: du.cle, modele: du.modele, champs: du.champs(c) };\n  }\n  if (!choix) continue;\n  sortie.push({ json: {\n    canari_id: c.canari_id, telephone: c.telephone, langue: langue,\n    modele: choix.modele, champs: choix.champs.map(String), cle: choix.cle\n  }});\n}\nreturn sortie;\n"
+   },
+   "id": "00258f8c-2d82-4c2d-ade8-34a2f413eb46",
+   "name": "Choisir le message du jour",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    480,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "method": "POST",
+    "url": "https://graph.facebook.com/v21.0/ID_NUMERO_WHATSAPP/messages",
+    "sendHeaders": true,
+    "headerParameters": {
+     "parameters": [
+      {
+       "name": "Authorization",
+       "value": "Bearer TOKEN_WHATSAPP_META"
+      }
+     ]
+    },
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ messaging_product: 'whatsapp', to: $json.telephone, type: 'template', template: { name: $json.modele, language: { code: $json.langue }, components: [{ type: 'body', parameters: ($json.champs).map(t => ({ type: 'text', text: String(t) })) }] } }) }}",
+    "options": {}
+   },
+   "id": "45f232ec-04ee-4fa0-a4d9-d09d6b355cf5",
+   "name": "Envoyer sur WhatsApp",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    720,
+    40
+   ],
+   "onError": "continueRegularOutput",
+   "retryOnFail": true,
+   "maxTries": 3,
+   "waitBetweenTries": 5000
+  },
+  {
+   "parameters": {
+    "jsCode": "\n// On écrit dans la Sheet ce qui vient de partir : c'est ce qui empêche de\n// renvoyer le même message demain.\nconst envoye = $('Choisir le message du jour').all().map(i => i.json);\nreturn envoye.map(e => ({ json: {\n  canari_id: e.canari_id,\n  dernier_message: e.cle,\n  dernier_envoi: new Date().toISOString().slice(0, 10)\n}}));\n"
+   },
+   "id": "7506d6b1-0b2c-4951-b7f2-64338f490527",
+   "name": "Préparer la trace",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    960,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "update",
+    "documentId": {
+     "__rl": true,
+     "mode": "id",
+     "value": "ID_DE_TA_GOOGLE_SHEET"
+    },
+    "sheetName": {
+     "__rl": true,
+     "mode": "name",
+     "value": "Clients"
+    },
+    "columns": {
+     "mappingMode": "autoMapInputData",
+     "value": {},
+     "matchingColumns": [
+      "canari_id"
+     ],
+     "schema": []
+    },
+    "options": {}
+   },
+   "id": "90228020-3920-4dd9-a5da-ece1e39a376d",
+   "name": "Noter l'envoi",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    1200,
+    40
+   ]
+  }
+ ],
+ "connections": {
+  "Chaque matin 9 h": {
+   "main": [
+    [
+     {
+      "node": "Lire tous les clients",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Lire tous les clients": {
+   "main": [
+    [
+     {
+      "node": "Choisir le message du jour",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Choisir le message du jour": {
+   "main": [
+    [
+     {
+      "node": "Envoyer sur WhatsApp",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Envoyer sur WhatsApp": {
+   "main": [
+    [
+     {
+      "node": "Préparer la trace",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Préparer la trace": {
+   "main": [
+    [
+     {
+      "node": "Noter l'envoi",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "settings": {
+  "executionOrder": "v1",
+  "timezone": "Africa/Abidjan"
+ },
+ "pinData": {}
+}

@@ -51,13 +51,29 @@ const RECEPTION = {
   comptes: [      // autres comptes, facultatif : { nom: "Wave", tel: "07…", lien: "…" }
   ]
 };
-// Clé publique de la page gerant.html (format JWK, courbe P-256). Elle ne permet
-// que de vérifier les codes, pas d'en fabriquer.
-let CLE_PUBLIQUE = {
-  kty: "EC", crv: "P-256",
-  x: "lrnwwI4arI86bExVtIjGKJyMuD5Mi2i42cm_2zDP07k",
-  y: "W9aVJAHZffpSpR0jPy8IKNZR9hm6iPJntPi_RL6gHMU"
-};
+// Les clés publiques qui peuvent signer un code d'activation (format JWK, courbe
+// P-256). Elles ne permettent QUE de vérifier un code, jamais d'en fabriquer.
+// Il y en a deux, et c'est voulu :
+//   1. la clé du TÉLÉPHONE du propriétaire (page gerant.html). Sa clé secrète ne
+//      quitte jamais son téléphone. C'est la clé maîtresse : elle marchera
+//      toujours, même si le serveur tombe ou si on l'arrête ;
+//   2. la clé du SERVEUR du tunnel de vente (voir tunnel/LISEZ-MOI.md), qui signe
+//      les codes tout seul dès que CinetPay confirme un paiement. Sa clé secrète
+//      vit sur le serveur, pas dans l'appli.
+// Deux clés séparées parce qu'un serveur est forcément plus exposé qu'un
+// téléphone : si celui-ci était un jour percé, le propriétaire retire la clé
+// serveur de cette liste à la mise à jour suivante et sa clé à lui, intacte,
+// continue de marcher. Une clé vide est simplement ignorée.
+const CLES_PUBLIQUES = [
+  { // 1. le téléphone du propriétaire (gerant.html)
+    kty: "EC", crv: "P-256",
+    x: "lrnwwI4arI86bExVtIjGKJyMuD5Mi2i42cm_2zDP07k",
+    y: "W9aVJAHZffpSpR0jPy8IKNZR9hm6iPJntPi_RL6gHMU"
+  }
+  // 2. le serveur du tunnel : à coller ici (clé publique donnée par
+  //    tunnel/fabriquer-cle-serveur.html). Tant qu'elle manque, le tunnel ne
+  //    peut pas activer d'abonnement tout seul.
+].concat(typeof CLE_SERVEUR !== "undefined" && CLE_SERVEUR && CLE_SERVEUR.x ? [CLE_SERVEUR] : []);
 const CLE_MIROIR_ABONNEMENT = "canari.abonnement";
 
 /* ---------- État de l'abonnement ---------- */
@@ -172,13 +188,22 @@ function lireCode(texte) {
   return { id: m[1], jours: Number(conseil ? m[2].slice(1) : m[2]), conseil: conseil,
     emis: m[3], signature: m[4], charge: m[1] + "." + m[2] + "." + m[3] };
 }
+// Un code est bon s'il est signé par N'IMPORTE LAQUELLE des clés publiques
+// (le téléphone du propriétaire, ou le serveur du tunnel).
 function verifierSignature(code) {
-  if (!CLE_PUBLIQUE || !window.crypto || !crypto.subtle) return Promise.resolve(false);
-  return crypto.subtle.importKey("jwk", CLE_PUBLIQUE, { name: "ECDSA", namedCurve: "P-256" }, false, ["verify"])
-    .then(function (cle) {
-      return crypto.subtle.verify({ name: "ECDSA", hash: "SHA-256" }, cle,
-        base64urlVersOctets(code.signature), new TextEncoder().encode(code.charge));
-    }).catch(function () { return false; });
+  if (!CLES_PUBLIQUES.length || !window.crypto || !crypto.subtle) return Promise.resolve(false);
+  const signature = base64urlVersOctets(code.signature);
+  const charge = new TextEncoder().encode(code.charge);
+  const essayer = function (i) {
+    if (i >= CLES_PUBLIQUES.length) return Promise.resolve(false);
+    return crypto.subtle.importKey("jwk", CLES_PUBLIQUES[i], { name: "ECDSA", namedCurve: "P-256" }, false, ["verify"])
+      .then(function (cle) {
+        return crypto.subtle.verify({ name: "ECDSA", hash: "SHA-256" }, cle, signature, charge);
+      })
+      .catch(function () { return false; })
+      .then(function (ok) { return ok || essayer(i + 1); });
+  };
+  return essayer(0);
 }
 
 // Ce qu'on dit après un code accepté : abonnement, ou option Conseil.
@@ -197,7 +222,7 @@ function activerCode(texte) {
   if (!code) return Promise.resolve("Ce code n'est pas complet. Copie tout le message reçu, puis colle-le ici.");
   if (code.id !== a.id) return Promise.resolve("Ce code est pour un autre téléphone (numéro Canari " + idAffiche(code.id) + "). Le tien est " + idAffiche(a.id) + ".");
   if (a.codes.indexOf(code.emis) !== -1) return Promise.resolve("Ce code a déjà été utilisé sur ce téléphone.");
-  if (!CLE_PUBLIQUE) return Promise.resolve("Les abonnements ne sont pas encore ouverts. Réessaie après la prochaine mise à jour.");
+  if (!CLES_PUBLIQUES.length) return Promise.resolve("Les abonnements ne sont pas encore ouverts. Réessaie après la prochaine mise à jour.");
   return verifierSignature(code).then(function (ok) {
     if (!ok) return "Ce code n'est pas valable. Vérifie que tu l'as copié en entier.";
     const t = maintenantAbonnement();
@@ -236,6 +261,16 @@ function ouvrirAbonnement(raison) {
       '<b>' + f.nom + '</b><span class="abo-prix">' + francCFA(f.prix) + '</span><small>' + f.detail() + '</small></button>';
   }).join("");
   choisirFormule(formuleChoisie);
+  // Quand le tunnel de vente est allumé (voir tunnel.js), le paiement est
+  // automatique : un seul bouton, et l'abonnement s'active tout seul. L'ancien
+  // chemin (payer, puis écrire sur WhatsApp) reste là, replié derrière « Je
+  // préfère payer autrement » : il ne dépend d'aucun serveur, donc il doit
+  // toujours rester possible.
+  const auto = tunnelActif();
+  $("abo-auto").hidden = !auto;
+  $("abo-manuel").hidden = auto && !manuelOuvert;
+  $("abo-demande-bloc").hidden = auto && !manuelOuvert;
+  $("abo-autrement").hidden = manuelOuvert;
   // Deux chemins de paiement : Wave (le plus courant) et la page Djamo pour les autres.
   const w = RECEPTION.wave, d = RECEPTION.djamo;
   $("abo-wave-lien").hidden = !w.lien;
@@ -293,7 +328,11 @@ function choisirFormule(id) {
     (b.tel ? "&t=" + b.tel : "");   // pour que la réponse parte dans la bonne conversation
   $("abo-demande").href = "https://wa.me/" + numeroWhatsApp(RECEPTION.whatsapp) +
     "?text=" + encodeURIComponent(texte + "\n\n" + tr("Lien pour Canari :") + "\n" + lienGerant);
+  // Le guichet automatique : le lien porte la formule et le numéro Canari.
+  if (tunnelActif()) $("abo-auto-lien").href = lienPaiementTunnel(f);
 }
+// « Je préfère payer autrement » : déplie l'ancien chemin, sans serveur.
+let manuelOuvert = false;
 function validerCode() {
   const bouton = $("abo-activer");
   bouton.disabled = true;
@@ -370,6 +409,12 @@ function initAbonnement() {
   $("abo-formules").addEventListener("click", function (e) {
     const b = e.target.closest("[data-formule]");
     if (b) choisirFormule(b.dataset.formule);
+  });
+  $("abo-autrement").addEventListener("click", function () {
+    manuelOuvert = true;
+    $("abo-manuel").hidden = false;
+    $("abo-demande-bloc").hidden = false;
+    $("abo-autrement").hidden = true;
   });
   $("abo-activer").addEventListener("click", validerCode);
   $("abo-fermer").addEventListener("click", fermerFeuilles);

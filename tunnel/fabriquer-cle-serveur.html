@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Canari · la clé du serveur</title>
+<style>
+  :root { --graphite: #1A1B20; --braise: #DC3F17; --braise-vive: #F46134; --ivoire: #FCFAF7; --bord: #E8DFD7; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+         background: var(--ivoire); color: var(--graphite); line-height: 1.5; }
+  header { background: var(--graphite); color: #fff; padding: 22px 18px;
+           background-image: radial-gradient(120% 80% at 90% 0, rgba(244,97,52,.35), transparent 60%); }
+  header h1 { margin: 0; font-size: 1.3rem; }
+  header p { margin: 6px 0 0; color: #BDB6B0; font-size: .9rem; }
+  main { max-width: 760px; margin: 0 auto; padding: 18px; }
+  section { background: #fff; border: 1px solid var(--bord); border-radius: 14px; padding: 16px; margin: 0 0 16px; }
+  h2 { font-size: 1.05rem; margin: 0 0 10px; padding-left: 12px; border-left: 4px solid var(--braise); }
+  button { font: inherit; font-weight: 600; padding: 14px 18px; min-height: 48px; border: 0; border-radius: 12px;
+           background: linear-gradient(122deg, var(--braise-vive), var(--braise)); color: #fff; cursor: pointer; }
+  button.second { background: #fff; color: var(--graphite); border: 2px solid var(--bord); }
+  textarea { width: 100%; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .8rem;
+             border: 1px solid var(--bord); border-radius: 10px; padding: 10px; background: #FAFAF8; }
+  .attention { background: #FBEDE9; border-left: 4px solid #B8412B; padding: 10px 12px; border-radius: 8px; }
+  .ok { background: #EBF0DB; border-left: 4px solid #5E7033; padding: 10px 12px; border-radius: 8px; }
+  code { background: #F1EEEA; padding: 1px 5px; border-radius: 5px; font-size: .9em; }
+  ol { padding-left: 22px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>La clé du serveur de Canari</h1>
+  <p>À faire une seule fois, avant de brancher le tunnel de vente.</p>
+</header>
+<main>
+
+<section>
+  <h2>À quoi ça sert</h2>
+  <p>Quand un commerçant paie, c'est le serveur qui doit fabriquer son code d'activation,
+     tout seul, en pleine nuit si besoin. Pour ça il lui faut sa propre <b>clé</b>.</p>
+  <p>Une clé, ce sont deux morceaux :</p>
+  <ul>
+    <li>la <b>clé publique</b> : elle ne sait que <i>vérifier</i> un code. Elle va dans l'application.
+        Tu peux la montrer à qui tu veux, elle ne fabrique rien.</li>
+    <li>la <b>clé secrète</b> : elle sait <i>fabriquer</i> les codes. Elle va dans ton serveur, et là seulement.</li>
+  </ul>
+  <p class="attention"><b>Ne mets jamais la clé secrète dans l'application.</b>
+     L'application est téléchargée par tout le monde : on peut lire dedans. Quelqu'un
+     qui trouverait ta clé secrète s'abonnerait gratuitement, et abonnerait ses amis.</p>
+  <p>Ta clé du téléphone (page <code>gerant.html</code>) ne change pas et continue de marcher.
+     Celle-ci s'ajoute, elle ne la remplace pas : si un jour ton serveur a un problème,
+     tu retires cette clé-là de l'application et tu continues à la main.</p>
+</section>
+
+<section>
+  <h2>Fabriquer la clé</h2>
+  <button type="button" id="fabriquer">Fabriquer la clé du serveur</button>
+  <p class="aide" id="deja" hidden></p>
+</section>
+
+<section id="resultat" hidden>
+  <h2>1. La clé publique → dans l'application</h2>
+  <p>Colle ces deux lignes dans <code>app/tunnel.js</code>, à la place de <code>CLE_SERVEUR</code> :</p>
+  <textarea id="publique" rows="4" readonly></textarea>
+  <button type="button" class="second" data-copier="publique">Copier la clé publique</button>
+
+  <h2 style="margin-top:22px">2. La clé secrète → dans n8n</h2>
+  <p>Dans le scénario <b>Canari 4 · Paiement et code</b>, ouvre le nœud
+     <b>« Signer le code Canari »</b> et remplace la ligne <code>const CLE_PRIVEE = …</code> par celle-ci :</p>
+  <textarea id="privee" rows="4" readonly></textarea>
+  <button type="button" class="second" data-copier="privee">Copier la clé secrète</button>
+
+  <h2 style="margin-top:22px">3. Garde une copie</h2>
+  <p class="attention">Enregistre le fichier ci-dessous dans un endroit sûr (ton e-mail, Google Drive).
+     Si tu perds ton serveur sans ce fichier, tu devras refaire une clé et republier l'application.</p>
+  <button type="button" class="second" id="telecharger">Enregistrer le fichier de la clé</button>
+</section>
+
+<section>
+  <h2>Vérifier que ça marche</h2>
+  <p>Une fois les deux clés en place, on peut s'assurer qu'un code signé par le serveur
+     est bien accepté : écris un numéro Canari et un nombre de jours, la page fabrique un
+     code avec la clé secrète et le vérifie avec la clé publique, exactement comme le fait l'application.</p>
+  <p><input id="essai-id" placeholder="K7P2QX9M" style="font:inherit;padding:10px;border:1px solid var(--bord);border-radius:10px">
+     <input id="essai-jours" value="92" style="width:5em;font:inherit;padding:10px;border:1px solid var(--bord);border-radius:10px"></p>
+  <button type="button" class="second" id="essayer">Fabriquer un code pour essayer</button>
+  <p id="essai-resultat"></p>
+</section>
+
+</main>
+<script>
+const ALGO = { name: "ECDSA", namedCurve: "P-256" };
+const CLE = "canari.cle.serveur";
+const $ = function (id) { return document.getElementById(id); };
+let cles = null;
+try { cles = JSON.parse(localStorage.getItem(CLE)); } catch (e) { cles = null; }
+
+function montrer() {
+  if (!cles) return;
+  $("resultat").hidden = false;
+  $("publique").value = "const CLE_SERVEUR = " + JSON.stringify(cles.publique) + ";";
+  $("privee").value = "const CLE_PRIVEE = " + JSON.stringify(cles.privee) + ";";
+  $("deja").hidden = false;
+  $("deja").textContent = "Une clé a déjà été fabriquée sur ce navigateur le " +
+    new Date(cles.quand).toLocaleDateString("fr-FR") +
+    ". En fabriquer une autre rendra tous les codes déjà envoyés inutilisables.";
+}
+montrer();
+
+$("fabriquer").addEventListener("click", function () {
+  if (cles && !confirm("Une clé existe déjà. En fabriquer une nouvelle rendra inutilisables tous les codes déjà envoyés. Continuer ?")) return;
+  crypto.subtle.generateKey(ALGO, true, ["sign", "verify"]).then(function (paire) {
+    return Promise.all([
+      crypto.subtle.exportKey("jwk", paire.publicKey),
+      crypto.subtle.exportKey("jwk", paire.privateKey)
+    ]);
+  }).then(function (deux) {
+    const pub = deux[0], priv = deux[1];
+    ["key_ops", "ext", "alg", "use"].forEach(function (k) { delete pub[k]; delete priv[k]; });
+    cles = { publique: pub, privee: priv, quand: Date.now() };
+    localStorage.setItem(CLE, JSON.stringify(cles));
+    montrer();
+  });
+});
+
+document.addEventListener("click", function (e) {
+  const b = e.target.closest("[data-copier]");
+  if (!b) return;
+  const t = $(b.dataset.copier);
+  t.select();
+  navigator.clipboard.writeText(t.value).then(function () { b.textContent = "Copié !"; }, function () {});
+});
+
+$("telecharger").addEventListener("click", function () {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(cles, null, 1)], { type: "application/json" }));
+  a.download = "cle-serveur-canari-SECRETE.json";
+  a.click();
+});
+
+// L'essai : on signe comme le serveur, on vérifie comme l'application.
+const B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+function base64url(ab) {
+  const o = new Uint8Array(ab); let s = "";
+  for (let i = 0; i < o.length; i += 3) {
+    const a = o[i], b = o[i + 1], c = o[i + 2];
+    s += B64[a >> 2] + B64[((a & 3) << 4) | ((b || 0) >> 4)];
+    if (b !== undefined) s += B64[((b & 15) << 2) | ((c || 0) >> 6)];
+    if (c !== undefined) s += B64[c & 63];
+  }
+  return s;
+}
+function octets(texte) {
+  const b = atob(texte.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((texte.length + 3) % 4));
+  const o = new Uint8Array(b.length);
+  for (let i = 0; i < b.length; i++) o[i] = b.charCodeAt(i);
+  return o;
+}
+$("essayer").addEventListener("click", function () {
+  if (!cles) { $("essai-resultat").textContent = "Fabrique d'abord une clé."; return; }
+  const id = ($("essai-id").value || "K7P2QX9M").toUpperCase().replace(/[^A-Z2-9]/g, "");
+  if (id.length !== 8) { $("essai-resultat").textContent = "Un numéro Canari a 8 lettres et chiffres."; return; }
+  const jours = parseInt($("essai-jours").value, 10) || 31;
+  const charge = id + "." + jours + "." + Date.now().toString(36);
+  let code = "";
+  crypto.subtle.importKey("jwk", cles.privee, ALGO, false, ["sign"]).then(function (k) {
+    return crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, k, new TextEncoder().encode(charge));
+  }).then(function (sig) {
+    code = charge + "." + base64url(sig);
+    return crypto.subtle.importKey("jwk", cles.publique, ALGO, false, ["verify"]);
+  }).then(function (k) {
+    return crypto.subtle.verify({ name: "ECDSA", hash: "SHA-256" }, k, octets(code.split(".")[3]), new TextEncoder().encode(charge));
+  }).then(function (ok) {
+    $("essai-resultat").innerHTML = (ok
+      ? '<span class="ok">La clé marche. Voici un vrai code, utilisable sur le téléphone ' + id + ' :</span>'
+      : '<span class="attention">La vérification a échoué.</span>') +
+      '<br><textarea rows="3" readonly>' + code + '</textarea>';
+  });
+});
+</script>
+</body>
+</html>

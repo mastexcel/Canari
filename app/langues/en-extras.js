@@ -218,3 +218,42 @@ EN_MOTIFS.push(
   [/^La conversation de (.+) s'ouvre avec la facture écrite\. Pour l'image, reviens et touche « Partager l'image »\.$/,
     "$1's chat is opening with the written invoice. For the image, come back and tap “Share the image”."]
 );
+
+/* Tunnel de vente : rappels WhatsApp, paiement automatique (voir tunnel.js) */
+Object.assign(EN, {
+  // Questionnaire de départ
+  "Veux-tu que Canari t'écrive ?": "Would you like Canari to write to you?",
+  "Pendant ton mois d'essai, Canari peut t'envoyer quelques messages WhatsApp : comment bien noter tes ventes, et un rappel avant la fin de l'essai.":
+    "During your free month, Canari can send you a few WhatsApp messages: how to record your sales properly, and a reminder before the trial ends.",
+  "Ce qui part de ton téléphone, et rien d'autre : ton prénom, ton numéro WhatsApp et le nom de ta boutique. Jamais tes ventes, jamais tes clients, jamais tes montants. Tu peux dire non, et changer d'avis dans Réglages ⚙.":
+    "What leaves your phone, and nothing else: your first name, your WhatsApp number and your shop name. Never your sales, never your customers, never your amounts. You can say no, and change your mind in Settings ⚙.",
+  "Ce qui part de ton téléphone, et rien d'autre : ton prénom, ton numéro WhatsApp et le nom de ta boutique. Jamais tes ventes, jamais tes clients, jamais tes montants.":
+    "What leaves your phone, and nothing else: your first name, your WhatsApp number and your shop name. Never your sales, never your customers, never your amounts.",
+  "Ton prénom": "Your first name",
+  "Ton numéro WhatsApp": "Your WhatsApp number",
+  "Oui, écris-moi": "Yes, write to me",
+  "Quelques messages, jamais de publicité": "A few messages, never adverts",
+  "Non merci": "No thanks",
+  "Rien ne sort de mon téléphone": "Nothing leaves my phone",
+  // Réglages
+  "Rappels WhatsApp": "WhatsApp reminders",
+  "Canari peut t'écrire sur WhatsApp : comment bien noter tes ventes, et un rappel avant la fin de ton essai. Jamais de publicité.":
+    "Canari can message you on WhatsApp: how to record your sales properly, and a reminder before your trial ends. Never adverts.",
+  "Canari peut m'écrire sur WhatsApp": "Canari may message me on WhatsApp",
+  "Quelques messages pendant l'essai, jamais de publicité.": "A few messages during the trial, never adverts.",
+  "Canari ne t'écrit pas. Rien ne sort de ton téléphone.": "Canari does not message you. Nothing leaves your phone.",
+  "C'est noté : Canari peut t'écrire.": "Noted: Canari may message you.",
+  "Dès que tu auras du réseau, Canari enregistrera ton numéro.": "As soon as you have a signal, Canari will register your number.",
+  "C'est noté, Canari peut t'écrire.": "Noted, Canari may message you.",
+  "C'est noté, Canari ne t'écrit pas.": "Noted, Canari will not message you.",
+  "Écris ton numéro WhatsApp (au moins 8 chiffres) pour que Canari puisse t'écrire.":
+    "Write your WhatsApp number (at least 8 digits) so Canari can message you.",
+  // Abonnement : le paiement automatique
+  "Payer maintenant": "Pay now",
+  "Choisis Wave, Orange Money, MTN ou Moov sur la page qui s'ouvre. Dès que le paiement passe, ton code arrive sur WhatsApp : tu touches le lien et c'est activé. Pas besoin d'écrire à qui que ce soit.":
+    "Choose Wave, Orange Money, MTN or Moov on the page that opens. As soon as the payment goes through, your code arrives on WhatsApp: tap the link and it is active. No need to write to anyone.",
+  "Je préfère payer autrement": "I would rather pay another way",
+  "Paiement annulé. Tu peux réessayer quand tu veux.": "Payment cancelled. You can try again whenever you like.",
+  "Paiement reçu, merci ! Ton code d'activation arrive sur WhatsApp dans un instant. Touche le lien du message et c'est fini.":
+    "Payment received, thank you! Your activation code is arriving on WhatsApp in a moment. Tap the link in the message and you are done."
+});

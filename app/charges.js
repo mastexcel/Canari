@@ -212,7 +212,11 @@ function afficherMois() {
 
 /* ---------- Questionnaire de départ ---------- */
 
-const ETAPES = ["intro", "boutique", "caisse", "canaux", "activites", "marge", "charges", "impots", "fin"];
+const ETAPES = ["intro", "boutique", "caisse", "canaux", "activites", "marge", "charges", "impots", "rappels", "fin"];
+// Les étapes réellement montrées. « rappels » (l'accord pour les messages
+// WhatsApp) n'apparaît que si le tunnel de vente est allumé : sans serveur, il
+// n'y a rien à demander et rien qui sorte du téléphone (voir tunnel.js).
+let etapes = ETAPES.filter(function (e) { return e !== "rappels"; });
 let etape = 0;
 let brouillon = null; // réponses en cours, enregistrées à la fin
 let retourApres = "principal";
@@ -243,8 +247,11 @@ function ouvrirParametrage(depart, retour) {
     nom: b.nom || "", tel: b.tel || "", rccm: b.rccm || "", dfe: b.dfe || "", devise: b.devise || "XOF", symbole: b.symbole || "",
     canaux: (b.canaux || []).slice(), activites: (b.activites || []).slice(),
     marge: margeHabituelle(), joursTravail: joursTravail(), caisse: soldeMoyen("especes"),
+    rappels: (donnees.abonnement.rappels || {}).ok, rappelNom: (donnees.abonnement.rappels || {}).nom || "",
+    rappelTel: (donnees.abonnement.rappels || {}).tel || b.tel || "",
     charges: JSON.parse(JSON.stringify(donnees.charges || []))
   };
+  etapes = ETAPES.filter(function (e) { return e !== "rappels" || tunnelActif(); });
   etape = depart || 0;
   retourApres = retour || "principal";
   montrer("parametrage");
@@ -252,7 +259,7 @@ function ouvrirParametrage(depart, retour) {
 }
 
 function lireEtape() {
-  const nom = ETAPES[etape];
+  const nom = etapes[etape];
   if (nom === "boutique") {
     brouillon.nom = $("param-nom").value.trim().replace(/\s+/g, " ");
     brouillon.tel = normaliserTel($("param-tel").value);
@@ -261,6 +268,9 @@ function lireEtape() {
     brouillon.devise = $("param-devise").value;
     brouillon.symbole = $("param-symbole").value.trim();
     deviseCourante = lireDevise(brouillon); // les étapes suivantes montrent déjà la bonne monnaie
+  } else if (nom === "rappels") {
+    brouillon.rappelNom = $("param-rappel-nom").value.trim().slice(0, 40);
+    brouillon.rappelTel = normaliserTel($("param-rappel-tel").value);
   } else if (nom === "caisse") {
     brouillon.caisse = lireMontant($("param-caisse").value);
   } else if (nom === "marge") {
@@ -312,7 +322,7 @@ function choixMultiplesHtml(liste, choisis, attribut) {
 }
 
 function afficherEtape() {
-  const nom = ETAPES[etape];
+  const nom = etapes[etape];
   const b = brouillon;
   let image = "canari-tranquille", titre = "", html = "";
 
@@ -383,6 +393,19 @@ function afficherEtape() {
         .map(function (l) { return ligneChargeHtml(l, true); }).join("") + '</ul>' +
       '<button type="button" class="bouton bouton-annuler" data-ajouter-charge="impot">' +
         '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Ajouter un impôt ou une taxe</button>';
+  } else if (nom === "rappels") {
+    image = "canari-clin-doeil";
+    titre = "Veux-tu que Canari t'écrive ?";
+    html = '<p>Pendant ton mois d\'essai, Canari peut t\'envoyer quelques messages WhatsApp : comment bien noter tes ventes, et un rappel avant la fin de l\'essai.</p>' +
+      '<p class="aide">Ce qui part de ton téléphone, et rien d\'autre : ton prénom, ton numéro WhatsApp et le nom de ta boutique. Jamais tes ventes, jamais tes clients, jamais tes montants. Tu peux dire non, et changer d\'avis dans Réglages ⚙.</p>' +
+      '<label class="champ-etiquette" for="param-rappel-nom">Ton prénom</label>' +
+      '<input id="param-rappel-nom" class="note" placeholder="ex. Awa" autocapitalize="words" value="' + echapper(b.rappelNom) + '">' +
+      '<label class="champ-etiquette" for="param-rappel-tel">Ton numéro WhatsApp</label>' +
+      '<input id="param-rappel-tel" class="note" type="tel" inputmode="tel" placeholder="ex. 07 00 00 00 00" value="' + (b.rappelTel ? afficherTel(b.rappelTel) : "") + '">' +
+      '<div class="choix-cartes">' +
+        '<button type="button" class="choix-carte" data-rappels="oui" aria-pressed="' + (b.rappels === true) + '"><b>Oui, écris-moi</b><small>Quelques messages, jamais de publicité</small></button>' +
+        '<button type="button" class="choix-carte" data-rappels="non" aria-pressed="' + (b.rappels === false) + '"><b>Non merci</b><small>Rien ne sort de mon téléphone</small></button>' +
+      '</div>';
   } else if (nom === "fin") {
     image = "canari-yeux-fermes";
     titre = "C'est prêt !";
@@ -402,12 +425,12 @@ function afficherEtape() {
   $("param-image").src = "icones/" + image + ".webp";
   $("param-titre").textContent = titre;
   $("param-contenu").innerHTML = html;
-  $("param-progres").innerHTML = ETAPES.map(function (e, i) {
+  $("param-progres").innerHTML = etapes.map(function (e, i) {
     return '<span class="' + (i < etape ? 'fait' : i === etape ? 'actuel' : '') + '"></span>';
   }).join("");
   $("param-retour").hidden = etape === 0;
-  $("param-passer").hidden = etape === 0 || etape === ETAPES.length - 1;
-  $("param-suivant").textContent = etape === 0 ? "C'est parti" : etape === ETAPES.length - 1 ? "Terminer" : "Suivant";
+  $("param-passer").hidden = etape === 0 || etape === etapes.length - 1;
+  $("param-suivant").textContent = etape === 0 ? "C'est parti" : etape === etapes.length - 1 ? "Terminer" : "Suivant";
   window.scrollTo(0, 0);
 }
 
@@ -428,6 +451,8 @@ function terminerParametrage() {
   // On ne garde que les lignes remplies.
   donnees.charges = brouillon.charges.filter(function (l) { return l.mode === "pourcent" ? l.taux > 0 : l.montant > 0; });
   sauver();
+  // L'accord pour les rappels WhatsApp (il n'est demandé que si le tunnel est allumé).
+  if (brouillon.rappels !== undefined) reglerRappels(brouillon.rappels, brouillon.rappelNom, brouillon.rappelTel);
   montrer(retourApres);
   if (retourApres === "reglages") afficherReglages();
   message("Paramétrage enregistré.", null, true);
@@ -451,12 +476,12 @@ function afficherChoixCharge(categorie) {
 function initCharges() {
   $("param-suivant").addEventListener("click", function () {
     lireEtape();
-    if (etape === ETAPES.length - 1) return terminerParametrage();
+    if (etape === etapes.length - 1) return terminerParametrage();
     etape++;
     afficherEtape();
   });
   $("param-passer").addEventListener("click", function () {
-    etape = Math.min(etape + 1, ETAPES.length - 1);
+    etape = Math.min(etape + 1, etapes.length - 1);
     afficherEtape();
   });
   $("param-retour").addEventListener("click", function () {
@@ -470,6 +495,14 @@ function initCharges() {
     montrer(retourApres);
   });
   $("param-contenu").addEventListener("click", function (e) {
+    const rappels = e.target.closest("[data-rappels]");
+    if (rappels) {
+      brouillon.rappels = rappels.dataset.rappels === "oui";
+      document.querySelectorAll("[data-rappels]").forEach(function (x) {
+        x.setAttribute("aria-pressed", String(x.dataset.rappels === rappels.dataset.rappels));
+      });
+      return;
+    }
     const canal = e.target.closest("[data-canal]");
     const activite = e.target.closest("[data-activite]");
     const choix = canal || activite;

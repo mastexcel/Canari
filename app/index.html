@@ -220,6 +220,26 @@
     </button>
   </section>
 
+  <!-- Rappels WhatsApp : visible seulement si le tunnel de vente est allumé (tunnel.js) -->
+  <form class="carte-reglage" id="form-rappels" novalidate autocomplete="off" hidden>
+    <h2>Rappels WhatsApp</h2>
+    <p class="aide">Canari peut t'écrire sur WhatsApp : comment bien noter tes ventes, et un rappel avant la fin de ton essai. Jamais de publicité.</p>
+    <p class="aide">Ce qui part de ton téléphone, et rien d'autre : ton prénom, ton numéro WhatsApp et le nom de ta boutique. Jamais tes ventes, jamais tes clients, jamais tes montants.</p>
+    <div class="choix-cartes">
+      <button type="button" class="choix-carte" id="rappels-ok" aria-pressed="false"><b>Canari peut m'écrire sur WhatsApp</b><small>Quelques messages pendant l'essai, jamais de publicité.</small></button>
+    </div>
+    <div id="rappels-champs" hidden>
+      <label class="champ-etiquette" for="rappels-nom">Ton prénom</label>
+      <input id="rappels-nom" class="note" placeholder="ex. Awa" autocapitalize="words">
+      <label class="champ-etiquette" for="rappels-tel">Ton numéro WhatsApp</label>
+      <input id="rappels-tel" class="note" type="tel" inputmode="tel" placeholder="ex. 07 00 00 00 00">
+    </div>
+    <p class="aide" id="rappels-etat"></p>
+    <button type="button" class="bouton bouton-sauver" id="rappels-garder">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7"/></svg>Sauvegarder
+    </button>
+  </form>
+
   <form class="carte-reglage" id="form-paiements" novalidate autocomplete="off">
     <h2>Paiement mobile</h2>
     <p class="aide">Les comptes sur lesquels tes clients peuvent te payer. Leurs numéros apparaîtront sur tes factures et dans tes relances WhatsApp.</p>
@@ -864,6 +884,15 @@
   <div class="abo-formules" id="abo-formules"></div>
   <p class="aide">Sans publicité, et tes chiffres restent toujours à toi.</p>
   <p class="champ-etiquette">2. Paie <span id="abo-montant"></span></p>
+  <!-- Paiement automatique (tunnel) : l'abonnement s'active tout seul après le paiement. -->
+  <div class="abo-auto" id="abo-auto" hidden>
+    <a class="bouton bouton-ok abo-auto-bouton" id="abo-auto-lien" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3 4 14h6l-1 7 9-11h-6z"/></svg>Payer maintenant
+    </a>
+    <p class="aide">Choisis Wave, Orange Money, MTN ou Moov sur la page qui s'ouvre. Dès que le paiement passe, ton code arrive sur WhatsApp : tu touches le lien et c'est activé. Pas besoin d'écrire à qui que ce soit.</p>
+    <button type="button" class="lien-bouton" id="abo-autrement">Je préfère payer autrement</button>
+  </div>
+  <div id="abo-manuel">
   <div class="abo-djamo" id="abo-djamo" hidden>
     <a class="bouton bouton-ok" id="abo-wave-lien" target="_blank" rel="noopener" hidden>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>Payer avec Wave
@@ -896,12 +925,15 @@
   <p class="aide" id="abo-bientot">Les moyens de paiement arrivent bientôt.</p>
   <p class="aide">Dans le message du paiement, écris ton numéro Canari : <b id="abo-id"></b>
     <button type="button" class="lien-bouton" id="abo-copier-id">Copier</button></p>
+  </div><!-- /abo-manuel -->
   <label class="champ-etiquette" for="abo-email">3. Ton e-mail (pour recevoir ta facture)</label>
   <input id="abo-email" class="note" type="email" inputmode="email" autocomplete="email" placeholder="ex. awa@gmail.com">
-  <p class="champ-etiquette">4. Envoie ta demande</p>
-  <a class="bouton bouton-whatsapp" id="abo-demande" target="_blank" rel="noopener">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.7z"/></svg>Envoyer sur WhatsApp
-  </a>
+  <div id="abo-demande-bloc">
+    <p class="champ-etiquette">4. Envoie ta demande</p>
+    <a class="bouton bouton-whatsapp" id="abo-demande" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.7z"/></svg>Envoyer sur WhatsApp
+    </a>
+  </div>
   <p class="aide">Tu reçois ton code d'activation sur WhatsApp. Touche le lien, ou colle le code ici :</p>
   <label class="champ-etiquette" for="abo-code">5. Ton code d'activation</label>
   <textarea id="abo-code" class="note abo-code" rows="3" placeholder="Colle ici le code reçu"></textarea>
@@ -1007,6 +1039,7 @@
 <script src="emetteur.js"></script>
 <script src="facture-abo.js"></script>
 <script src="contacts.js"></script>
+<script src="tunnel.js"></script>
 <script src="abonnement.js"></script>
 <script src="app.js"></script>
 </body>

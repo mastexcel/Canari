@@ -75,13 +75,26 @@ a besoin de la précédente.
 
 ### Étape 1 · La Google Sheet
 
-1. Va sur **sheets.google.com**, crée un nouveau tableau, appelle-le `Canari Clients`.
+**C'est déjà fait (03/10/2026)** : la Sheet du propriétaire existe, avec ses
+17 colonnes, et son identifiant est déjà écrit dans les quatre scénarios
+(`SHEET` dans `fabriquer-scenarios.py`) :
+
+> <https://docs.google.com/spreadsheets/d/18h46yoM26aMjLrpkVLDuX35r-M3LWCRtGtxQu6Cdjsk/edit>
+
+Il reste **une seule chose** à y faire : l'onglet du bas s'appelle « Untitled »
+(ou « Feuille1 ») et les scénarios cherchent un onglet nommé exactement
+**`Clients`**. Touche son nom en bas de l'écran, choisis *Renommer*, écris
+`Clients`.
+
+Pour refaire la même chose sur une autre Sheet :
+
+1. Va sur **sheets.google.com**, crée un nouveau tableau.
 2. Renomme l'onglet du bas en **`Clients`** (le nom exact compte).
 3. Ouvre `Clients.csv` de ce dossier, et recopie la **première ligne** dans la
    première ligne de ton tableau — une colonne par mot. Ou plus simple :
    *Fichier → Importer → Clients.csv → Remplacer la feuille*.
 4. Dans l'adresse de la page, repère le long morceau entre `/d/` et `/edit` :
-   c'est l'**identifiant de la Sheet**. Garde-le de côté.
+   c'est l'**identifiant de la Sheet**, à mettre dans `SHEET`.
 
 Ce que veut dire chaque colonne :
 
@@ -153,7 +166,6 @@ Orange Money, MTN et Moov.
 
 | À remplacer | Par quoi | Où |
 |---|---|---|
-| `ID_DE_TA_GOOGLE_SHEET` | l'identifiant de l'étape 1 | tous les nœuds Google Sheets |
 | `ID_NUMERO_WHATSAPP` | le phone number ID de l'étape 2 | nœuds « WhatsApp… » |
 | `TOKEN_WHATSAPP_META` | le token permanent de l'étape 2 | nœuds « WhatsApp… » |
 | `APIKEY_CINETPAY` | la clé API de l'étape 3 | scénarios 3 et 4 |

@@ -11,7 +11,10 @@
 import json, uuid, pathlib
 
 # Les mots à remplacer par les vrais réglages du propriétaire (voir LISEZ-MOI.md).
-SHEET   = "ID_DE_TA_GOOGLE_SHEET"
+# La Google Sheet du propriétaire, créée le 03/10/2026. Cet identifiant n'est pas un
+# secret : sans son compte Google, il n'ouvre rien. Il est donc écrit ici pour qu'il
+# n'ait pas à le recopier dans les huit nœuds Google Sheets des quatre scénarios.
+SHEET   = "18h46yoM26aMjLrpkVLDuX35r-M3LWCRtGtxQu6Cdjsk"
 WA_ID   = "ID_NUMERO_WHATSAPP"
 WA_TOK  = "TOKEN_WHATSAPP_META"
 CP_KEY  = "APIKEY_CINETPAY"

@@ -10,7 +10,7 @@
      "allowedOrigins": "https://mastexcel.github.io"
     }
    },
-   "id": "988bbdd5-a1da-4069-9710-24aeb26b1dbb",
+   "id": "b901ef3f-481c-42ac-aae6-e34540eb2c0c",
    "name": "Inscription depuis l'app",
    "type": "n8n-nodes-base.webhook",
    "typeVersion": 2,
@@ -18,13 +18,13 @@
     0,
     0
    ],
-   "webhookId": "e98f45b4-5cb9-4e4f-a27b-e5980f2801bd"
+   "webhookId": "d08539c5-f7fb-49f4-a6cc-33b1a8917350"
   },
   {
    "parameters": {
     "jsCode": "\n// Un numéro ivoirien s'écrit de dix façons : on le ramène toujours à 225 + 10 chiffres.\nfunction nettoyerTel(t) {\n  let tel = String(t || '').replace(/\\D/g, '');\n  if (tel.startsWith('00225')) tel = tel.slice(2);\n  if (tel.length === 10) tel = '225' + tel;\n  return /^225\\d{10}$/.test(tel) ? tel : '';\n}\n\nconst b = $json.body || {};\nconst id = String(b.id || '').toUpperCase().replace(/[^A-Z2-9]/g, '');\nif (!/^[A-Z2-9]{8}$/.test(id)) throw new Error('Numéro Canari absent ou mal écrit : ' + b.id);\nconst tel = nettoyerTel(b.telephone);\nif (!tel) throw new Error('Numéro WhatsApp invalide : ' + b.telephone);\nconst iso = d => new Date(d).toISOString().slice(0, 10);\nconst auj = new Date();\nreturn [{ json: {\n  canari_id: id,\n  telephone: tel,\n  nom: String(b.nom || '').trim().slice(0, 40) || 'ami commerçant',\n  boutique: String(b.boutique || '').trim().slice(0, 60),\n  langue: b.langue === 'en' ? 'en' : 'fr',\n  date_inscription: b.debut ? iso(b.debut) : iso(auj),\n  fin_essai: b.finEssai ? iso(b.finEssai) : iso(auj.getTime() + 30 * 86400000),\n  statut: 'essai',\n  plan: '',\n  date_expiration: b.finEssai ? iso(b.finEssai) : iso(auj.getTime() + 30 * 86400000),\n  code_activation: '',\n  derniere_transaction: '',\n  dernier_message: '',\n  total_paye: 0\n}}];\n"
    },
-   "id": "4558b99a-6885-44f5-adb0-88017419ca47",
+   "id": "7f4ed70f-5fd0-4fb0-a93b-5699ce12396f",
    "name": "Préparer le client",
    "type": "n8n-nodes-base.code",
    "typeVersion": 2,
@@ -39,7 +39,7 @@
     "documentId": {
      "__rl": true,
      "mode": "id",
-     "value": "ID_DE_TA_GOOGLE_SHEET"
+     "value": "18h46yoM26aMjLrpkVLDuX35r-M3LWCRtGtxQu6Cdjsk"
     },
     "sheetName": {
      "__rl": true,
@@ -56,7 +56,7 @@
      ]
     }
    },
-   "id": "c99d33f2-f960-4ec4-91d9-a18dbfe214a1",
+   "id": "19b11a26-7f79-4734-8748-0488641c839a",
    "name": "Chercher ce numéro Canari",
    "type": "n8n-nodes-base.googleSheets",
    "typeVersion": 4.5,
@@ -70,7 +70,7 @@
    "parameters": {
     "jsCode": "\n// La lecture filtrée renvoie une ligne vide quand le client est nouveau.\nconst clientPrepare = $('Préparer le client').first().json;\nconst lignes = $input.all().map(i => i.json).filter(l => l && l.canari_id);\nconst deja = lignes.find(l => String(l.canari_id).toUpperCase() === clientPrepare.canari_id);\n// Un client déjà inscrit qui change de numéro ou de boutique : on met à jour\n// sans lui renvoyer le message de bienvenue (il l'a déjà reçu).\nreturn [{ json: Object.assign({}, clientPrepare, { _nouveau: !deja,\n  _change: !!deja && (deja.telephone !== clientPrepare.telephone || deja.boutique !== clientPrepare.boutique),\n  statut: deja ? deja.statut : 'essai',\n  plan: deja ? deja.plan : '',\n  date_expiration: deja ? deja.date_expiration : clientPrepare.date_expiration,\n  code_activation: deja ? deja.code_activation : '',\n  derniere_transaction: deja ? deja.derniere_transaction : '',\n  dernier_message: deja ? deja.dernier_message : '',\n  total_paye: deja ? deja.total_paye : 0 }) }];\n"
    },
-   "id": "5b49e5b1-118d-47a8-8fd0-36b1e08801fa",
+   "id": "c69b624e-b81f-441e-a21c-0819b8c65911",
    "name": "Trier nouveau ou ancien",
    "type": "n8n-nodes-base.code",
    "typeVersion": 2,
@@ -89,7 +89,7 @@
      "combinator": "and",
      "conditions": [
       {
-       "id": "2b3827f0-1fbf-429c-9b25-09df69004f08",
+       "id": "b1e97756-16ea-4f3a-a552-fce38d7b1701",
        "leftValue": "={{ $json._nouveau }}",
        "rightValue": true,
        "operator": {
@@ -102,7 +102,7 @@
     },
     "options": {}
    },
-   "id": "03c453c7-7098-4616-8b8d-c248bd7f6d7c",
+   "id": "d41de014-7899-4c18-9084-594bda74a199",
    "name": "Nouveau client ?",
    "type": "n8n-nodes-base.if",
    "typeVersion": 2,
@@ -115,7 +115,7 @@
    "parameters": {
     "jsCode": "\n// Les colonnes qui commencent par « _ » servent au scénario, pas à la Sheet.\nconst j = {};\nfor (const [k, v] of Object.entries($json)) if (!k.startsWith('_')) j[k] = v;\nreturn [{ json: j }];\n"
    },
-   "id": "db8ba583-f7f6-4f30-8086-2471b9a04232",
+   "id": "d53d63ac-e245-49ef-abbd-7391fab9265a",
    "name": "Retirer les colonnes de travail",
    "type": "n8n-nodes-base.code",
    "typeVersion": 2,
@@ -130,7 +130,7 @@
     "documentId": {
      "__rl": true,
      "mode": "id",
-     "value": "ID_DE_TA_GOOGLE_SHEET"
+     "value": "18h46yoM26aMjLrpkVLDuX35r-M3LWCRtGtxQu6Cdjsk"
     },
     "sheetName": {
      "__rl": true,
@@ -147,7 +147,7 @@
     },
     "options": {}
    },
-   "id": "cc7b0fee-0e0b-433f-94c4-26f41e2f4172",
+   "id": "71354079-1346-4ba2-b168-b67578b12023",
    "name": "Écrire dans la Sheet",
    "type": "n8n-nodes-base.googleSheets",
    "typeVersion": 4.5,
@@ -174,7 +174,7 @@
     "jsonBody": "={{ JSON.stringify({ messaging_product: 'whatsapp', to: $('Trier nouveau ou ancien').first().json.telephone, type: 'template', template: { name: 'canari_bienvenue', language: { code: $('Trier nouveau ou ancien').first().json.langue }, components: [{ type: 'body', parameters: ([ $('Trier nouveau ou ancien').first().json.nom, $('Trier nouveau ou ancien').first().json.fin_essai ]).map(t => ({ type: 'text', text: String(t) })) }] } }) }}",
     "options": {}
    },
-   "id": "ccc7aac8-2dbd-450b-8f78-771b2a67fdd7",
+   "id": "e3311d4c-e1ea-43a4-b015-fa3911f0ee79",
    "name": "WhatsApp de bienvenue",
    "type": "n8n-nodes-base.httpRequest",
    "typeVersion": 4.2,
@@ -193,7 +193,7 @@
     "responseBody": "={{ JSON.stringify({ ok: true, finEssai: $('Trier nouveau ou ancien').first().json.fin_essai }) }}",
     "options": {}
    },
-   "id": "eb540cac-4a90-418f-8852-337ae96b704b",
+   "id": "0365270a-94c6-4baf-a016-00ae2481b771",
    "name": "Répondre à l'app",
    "type": "n8n-nodes-base.respondToWebhook",
    "typeVersion": 1.1,
@@ -206,7 +206,7 @@
    "parameters": {
     "jsCode": "\n// Les colonnes qui commencent par « _ » servent au scénario, pas à la Sheet.\nconst j = {};\nfor (const [k, v] of Object.entries($json)) if (!k.startsWith('_')) j[k] = v;\nreturn [{ json: j }];\n"
    },
-   "id": "5ed962c9-3297-40c2-9a2d-f51fc4b8a8e3",
+   "id": "7b8df167-b87b-472c-b2ef-7755c85faabc",
    "name": "Mettre à jour l'ancien",
    "type": "n8n-nodes-base.code",
    "typeVersion": 2,
@@ -221,7 +221,7 @@
     "documentId": {
      "__rl": true,
      "mode": "id",
-     "value": "ID_DE_TA_GOOGLE_SHEET"
+     "value": "18h46yoM26aMjLrpkVLDuX35r-M3LWCRtGtxQu6Cdjsk"
     },
     "sheetName": {
      "__rl": true,
@@ -238,7 +238,7 @@
     },
     "options": {}
    },
-   "id": "205ec6f3-13ce-4fe1-830b-b0f5d37ab53b",
+   "id": "eda5eb31-3b49-41c8-823f-5240dee0c0b9",
    "name": "Corriger la Sheet",
    "type": "n8n-nodes-base.googleSheets",
    "typeVersion": 4.5,

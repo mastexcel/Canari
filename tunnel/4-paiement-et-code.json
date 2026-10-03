@@ -8,7 +8,7 @@
     "responseMode": "onReceived",
     "options": {}
    },
-   "id": "09ca7ef3-dc71-4df6-b4e8-860018c53dd9",
+   "id": "260528cb-bcdd-4f29-8d46-c87ed9ed880c",
    "name": "Notification CinetPay",
    "type": "n8n-nodes-base.webhook",
    "typeVersion": 2,
@@ -16,7 +16,7 @@
     0,
     0
    ],
-   "webhookId": "97a82f19-fa7f-46f4-a381-76d7ec7321cc"
+   "webhookId": "dd62a8f2-7f5e-4a75-8367-0bc11fd8a327"
   },
   {
    "parameters": {
@@ -27,7 +27,7 @@
     "jsonBody": "={{ JSON.stringify({ apikey: 'APIKEY_CINETPAY', site_id: 'SITE_ID_CINETPAY', transaction_id: $json.body.cpm_trans_id }) }}",
     "options": {}
    },
-   "id": "dc8c5baa-6843-488e-84b8-fbc9fff44591",
+   "id": "ac0d480f-658d-4b3e-9bb0-4da4ca372e86",
    "name": "Redemander à CinetPay",
    "type": "n8n-nodes-base.httpRequest",
    "typeVersion": 4.2,
@@ -49,7 +49,7 @@
      "combinator": "and",
      "conditions": [
       {
-       "id": "a5a308b9-16ec-4376-a2c4-84c87f2963ac",
+       "id": "4c59b61c-aa03-4bf5-b4ab-a8b09b1e491f",
        "leftValue": "={{ $json.data.status }}",
        "rightValue": "ACCEPTED",
        "operator": {
@@ -61,7 +61,7 @@
     },
     "options": {}
    },
-   "id": "33bc8b39-411a-4700-98e8-8f69438967ca",
+   "id": "7f9742cb-cd95-4a81-bfe4-2310e426574d",
    "name": "Paiement accepté ?",
    "type": "n8n-nodes-base.if",
    "typeVersion": 2,
@@ -76,7 +76,7 @@
     "documentId": {
      "__rl": true,
      "mode": "id",
-     "value": "ID_DE_TA_GOOGLE_SHEET"
+     "value": "18h46yoM26aMjLrpkVLDuX35r-M3LWCRtGtxQu6Cdjsk"
     },
     "sheetName": {
      "__rl": true,
@@ -85,7 +85,7 @@
     },
     "options": {}
    },
-   "id": "4a875a0c-12db-49de-a97a-433ecdd28048",
+   "id": "5881f2b3-e62b-453a-b9e0-10dcfcf64b5a",
    "name": "Lire ce client",
    "type": "n8n-nodes-base.googleSheets",
    "typeVersion": 4.5,
@@ -99,7 +99,7 @@
    "parameters": {
     "jsCode": "\n// --- La clé SECRÈTE du serveur. Elle vit ici et nulle part ailleurs.\n//     Fabriquée une fois avec tunnel/fabriquer-cle-serveur.html.\n//     Ne JAMAIS la mettre dans l'application : n'importe qui pourrait alors\n//     fabriquer des abonnements gratuits.\nconst CLE_PRIVEE = { \"kty\": \"EC\", \"crv\": \"P-256\", \"d\": \"COLLE_ICI_LA_CLE_SECRETE\", \"x\": \"COLLE_ICI_X\", \"y\": \"COLLE_ICI_Y\" };\n\nconst B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';\nfunction base64url(ab) {\n  const o = new Uint8Array(ab); let s = '';\n  for (let i = 0; i < o.length; i += 3) {\n    const a = o[i], b = o[i + 1], c = o[i + 2];\n    s += B64[a >> 2] + B64[((a & 3) << 4) | ((b || 0) >> 4)];\n    if (b !== undefined) s += B64[((b & 15) << 2) | ((c || 0) >> 6)];\n    if (c !== undefined) s += B64[c & 63];\n  }\n  return s;\n}\nasync function fabriquerCode(idCanari, jours, conseil) {\n  const sub = globalThis.crypto && globalThis.crypto.subtle;\n  if (!sub) throw new Error(\"Ce n8n n'a pas crypto.subtle : mets-le à jour (Node 18 ou plus récent).\");\n  const charge = idCanari + '.' + (conseil ? 'C' : '') + jours + '.' + Date.now().toString(36);\n  const cle = await sub.importKey('jwk', CLE_PRIVEE, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign']);\n  const signature = await sub.sign({ name: 'ECDSA', hash: 'SHA-256' }, cle, new TextEncoder().encode(charge));\n  return charge + '.' + base64url(signature);\n}\n\n// CinetPay prévient le serveur, mais on ne le croit pas sur parole : on vient de\n// REDEMANDER à CinetPay l'état de la transaction (nœud précédent). C'est la seule\n// réponse qui compte — la notification, elle, peut venir de n'importe qui.\nconst verif = $('Redemander à CinetPay').first().json;\nconst d = verif.data || {};\nlet meta = {};\ntry { meta = JSON.parse(d.metadata || '{}'); } catch (e) { meta = {}; }\nconst id = String(meta.id || '').toUpperCase();\nif (!/^[A-Z2-9]{8}$/.test(id)) throw new Error('Pas de numéro Canari dans le paiement ' + d.payment_token);\n\n// Déjà traité ? CinetPay peut prévenir deux fois pour le même paiement. Sans ce\n// garde-fou, le client recevrait deux codes — et deux fois ses jours.\nconst lignes = $('Lire ce client').all().map(i => i.json).filter(l => l && l.canari_id);\nconst client = lignes.find(l => String(l.canari_id).toUpperCase() === id) || {};\nconst transaction = String(d.payment_token || $('Notification CinetPay').first().json.body.cpm_trans_id || '');\nif (client.derniere_transaction && String(client.derniere_transaction) === transaction) {\n  return [{ json: { _deja: true } }];\n}\n\nconst jours = Number(meta.jours) || 31;\nconst conseil = !!meta.conseil;\nconst code = await fabriquerCode(id, jours, conseil);\n\n// La date de fin pour la Sheet et pour les messages de renouvellement. L'appli,\n// elle, ajoute les jours à la suite de ce qu'il reste : c'est elle qui a la\n// vérité, le serveur ne fait qu'une estimation pour savoir quand relancer.\nconst depart = new Date(Math.max(Date.now(), new Date((client.date_expiration || '') + 'T00:00:00Z').getTime() || 0));\nconst fin = new Date(depart.getTime() + jours * 86400000).toISOString().slice(0, 10);\nconst enFrancais = d2 => d2.split('-').reverse().join('/');\n\nreturn [{ json: {\n  canari_id: id,\n  telephone: meta.tel || client.telephone || '',\n  nom: client.nom || 'ami commerçant',\n  langue: meta.langue === 'en' ? 'en' : 'fr',\n  boutique: meta.boutique || client.boutique || '',\n  email: meta.email || client.email || '',\n  statut: conseil ? (client.statut || 'essai') : 'paye',\n  plan: meta.plan || '',\n  date_expiration: conseil ? (client.date_expiration || fin) : fin,\n  code_activation: code,\n  derniere_transaction: transaction,\n  total_paye: Number(client.total_paye || 0) + Number(d.amount || 0),\n  _lien: 'https://mastexcel.github.io/Canari/#code=' + code,\n  _date_fr: enFrancais(fin),\n  _deja: false\n}}];\n"
    },
-   "id": "b6ccdc0b-d826-47cf-9399-26e7d4f438b5",
+   "id": "990fd251-4ba9-473f-8913-13b852054556",
    "name": "Signer le code Canari",
    "type": "n8n-nodes-base.code",
    "typeVersion": 2,
@@ -118,7 +118,7 @@
      "combinator": "and",
      "conditions": [
       {
-       "id": "3daa6529-d5b8-408f-a88c-5c4d3ee2805c",
+       "id": "b4947675-1439-4046-bca1-aebec654a8bb",
        "leftValue": "={{ $json._deja }}",
        "rightValue": false,
        "operator": {
@@ -131,7 +131,7 @@
     },
     "options": {}
    },
-   "id": "58851dd2-43d0-444c-8944-d2667876c2fb",
+   "id": "c705e5fe-1d72-4809-b614-ad31f4b66228",
    "name": "Code à envoyer ?",
    "type": "n8n-nodes-base.if",
    "typeVersion": 2,
@@ -144,7 +144,7 @@
    "parameters": {
     "jsCode": "\nconst j = {};\nfor (const [k, v] of Object.entries($json)) if (!k.startsWith('_')) j[k] = v;\nreturn [{ json: j }];\n"
    },
-   "id": "a2eda1f5-6244-4691-8d77-a7ad32d66e13",
+   "id": "0fdd865e-af40-41db-b2a4-a67096670097",
    "name": "Retirer les colonnes de travail",
    "type": "n8n-nodes-base.code",
    "typeVersion": 2,
@@ -159,7 +159,7 @@
     "documentId": {
      "__rl": true,
      "mode": "id",
-     "value": "ID_DE_TA_GOOGLE_SHEET"
+     "value": "18h46yoM26aMjLrpkVLDuX35r-M3LWCRtGtxQu6Cdjsk"
     },
     "sheetName": {
      "__rl": true,
@@ -176,7 +176,7 @@
     },
     "options": {}
    },
-   "id": "7b6da8f5-65a9-41bc-a4e0-b5f41b8a7ce6",
+   "id": "08cb3567-392a-4c23-b3d6-9edf8aefce0e",
    "name": "Activer dans la Sheet",
    "type": "n8n-nodes-base.googleSheets",
    "typeVersion": 4.5,
@@ -203,7 +203,7 @@
     "jsonBody": "={{ JSON.stringify({ messaging_product: 'whatsapp', to: $('Signer le code Canari').first().json.telephone, type: 'template', template: { name: 'canari_code', language: { code: $('Signer le code Canari').first().json.langue }, components: [{ type: 'body', parameters: ([ $('Signer le code Canari').first().json.nom, $('Signer le code Canari').first().json._date_fr, $('Signer le code Canari').first().json._lien ]).map(t => ({ type: 'text', text: String(t) })) }] } }) }}",
     "options": {}
    },
-   "id": "60fa66cd-e385-497e-97e6-cee2937c30e5",
+   "id": "bae74818-dc23-4136-b84d-b2b71ba09d1f",
    "name": "Envoyer le code sur WhatsApp",
    "type": "n8n-nodes-base.httpRequest",
    "typeVersion": 4.2,

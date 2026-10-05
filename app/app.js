@@ -1751,6 +1751,7 @@ chargerDonnees().then(function (d) {
   initCharges();
   initTableau();
   initComptes();
+  initOhada();
   initExport();
   initConseil();
   initFiches();

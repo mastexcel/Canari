@@ -3135,8 +3135,10 @@ body::after {
    tabulaires, alignés à droite, et des totaux qu'on repère sans lire. */
 
 /* Le choix « 7 jours · Mois · Tableau de bord · Comptes annuels ». Quatre
-   boutons ne tiennent pas sur une ligne à 320 px : deux par deux. */
-.quatre-choix {
+   boutons ne tiennent pas sur une ligne à 320 px : deux par deux.
+   Il a son PROPRE nom : « .quatre-choix » sert déjà à l'écran « Télécharger
+   mes chiffres », et réutiliser le nom écrasait son dessin. */
+.choix-bilan {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 6px;
@@ -3145,7 +3147,7 @@ body::after {
   border-radius: 16px;
   padding: 4px;
 }
-.quatre-choix .choix { font-size: 15px; padding: 10px 4px; min-height: 48px; }
+.choix-bilan .choix { font-size: 15px; line-height: 1.15; padding: 10px 4px; min-height: 48px; }
 
 .annees-choix {
   display: flex;
@@ -3335,3 +3337,82 @@ body::after {
   .comptes-table th, .comptes-table td { padding: 6px 3px; }
   .cascade li { grid-template-columns: 5.4em 1fr auto; }
 }
+
+/* ===========================================================================
+   LES ÉTATS FINANCIERS OHADA (voir ohada.js)
+   ===========================================================================
+   Ce n'est pas un écran de commerçant : c'est une pièce administrative, qu'on
+   imprime, qu'on tend à un comptable ou à une banque. Le dessin le dit — pas
+   de couleur inutile, des colonnes strictes, les codes du modèle à gauche. */
+
+.ohada-entete {
+  background: var(--ivoire);
+  border: 1px solid var(--bord);
+  border-radius: 18px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+.ohada-entete h2 { margin: 0; font-family: var(--titre); font-size: 1.15rem; }
+.ohada-entete p { margin: 3px 0 0; font-size: .92rem; color: var(--gris-600); }
+.ohada-entete .aide { margin: 2px 0 0; font-size: .82rem; }
+
+/* L'avertissement se lit AVANT les chiffres, pas après : ces états ne sont
+   pas certifiés, et personne ne doit l'apprendre en bas de page. */
+.ohada-avertissement {
+  background: #FBEDE9;
+  border: 1px solid #E9C8BE;
+  border-left: 4px solid var(--sort);
+  border-radius: 16px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+.ohada-avertissement b { font-family: var(--titre); display: block; margin-bottom: 4px; }
+.ohada-avertissement p { margin: 6px 0 0; font-size: .92rem; line-height: 1.45; }
+.ohada-avertissement p:first-of-type { margin-top: 0; }
+
+.ohada-regime {
+  background: var(--ivoire);
+  border: 1px solid var(--bord);
+  border-left: 4px solid var(--entre);
+  border-radius: 16px;
+  padding: 12px 14px;
+}
+.ohada-regime.ohada-normal { border-left-color: var(--credit); }
+.ohada-regime b { font-family: var(--titre); font-size: 1rem; }
+.ohada-regime p { margin: 6px 0 0; font-size: .95rem; line-height: 1.45; }
+
+/* Le tableau du modèle : la colonne des codes à gauche, les montants à droite,
+   et les soldes (MARGE COMMERCIALE, VALEUR AJOUTÉE, TOTAL…) qui ressortent. */
+.ohada-table { font-size: 13.5px; }
+.ohada-table .ohada-ref {
+  font-family: var(--chiffres);
+  font-size: 11.5px;
+  color: var(--gris-400);
+  text-align: left;
+  width: 2.6em;
+  letter-spacing: .3px;
+}
+.ohada-table tbody th { font-size: 13.5px; }
+.ohada-table .ohada-detail { padding-left: 14px; color: var(--texte-doux); font-size: 12.5px; }
+.ohada-table .ohada-vide { color: var(--gris-200); }
+.ohada-table .ohada-total th, .ohada-table .ohada-total td {
+  border-top: 1px solid var(--bord);
+  font-weight: 600;
+  color: var(--gris-900);
+  background: var(--ivoire-2);
+}
+.ohada-table .ohada-total .ohada-ref { background: var(--ivoire-2); color: var(--gris-600); }
+.ohada-table + .ohada-table { margin-top: 18px; }
+
+.ohada-notes { margin: 6px 0 0; padding-left: 20px; }
+.ohada-notes li { margin-bottom: 6px; line-height: 1.45; }
+
+@media (max-width: 380px) {
+  .ohada-table { font-size: 12.5px; }
+  .ohada-table .ohada-ref { width: 2.2em; font-size: 11px; }
+}
+.ohada-manques { list-style: none; margin: 8px 0 0; padding: 0; }
+.ohada-manques li { margin-bottom: 9px; }
+.ohada-manques b { font-family: var(--titre); font-size: .95rem; color: var(--gris-800); display: block; }
+.ohada-manques p { margin: 2px 0 0; font-size: .9rem; line-height: 1.4; color: var(--texte-doux); }

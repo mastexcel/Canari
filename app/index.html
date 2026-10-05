@@ -156,7 +156,7 @@
 
   <!-- Onglet Semaine -->
   <div id="vue-semaine" class="vue" hidden>
-    <div class="quatre-choix" role="group" aria-label="Période du bilan">
+    <div class="choix-bilan" role="group" aria-label="Période du bilan">
       <button type="button" class="choix" data-bilan="semaine" aria-pressed="true">7 jours</button>
       <button type="button" class="choix" data-bilan="mois" aria-pressed="false">Mois</button>
       <button type="button" class="choix" data-bilan="tableau" aria-pressed="false">Tableau de bord</button>
@@ -354,6 +354,14 @@
   </section>
 
   <section class="carte-reglage">
+    <h2>Mes états financiers OHADA</h2>
+    <p>Ton bilan et ton compte de résultat présentés dans le cadre officiel de l'OHADA, avec les codes du modèle. C'est ce que demandent un comptable, une banque ou les impôts.</p>
+    <button type="button" class="bouton bouton-annuler" id="reglages-ohada">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 13h6M9 17h4"/></svg>Ouvrir mes états OHADA
+    </button>
+  </section>
+
+  <section class="carte-reglage">
     <h2>Récupérer une sauvegarde</h2>
     <p>Sur un nouveau téléphone : ouvre Canari, puis choisis le fichier de sauvegarde. Attention, cela remplace ce qui est noté sur ce téléphone.</p>
     <label class="bouton bouton-annuler bouton-fichier">
@@ -425,6 +433,17 @@
 </section>
 
 <!-- Écran « Demande à Canari » (option Conseil, payante) -->
+<!-- Les états financiers au format OHADA, consultés à la demande (voir ohada.js) -->
+<section id="ohada" class="ecran reglages" hidden>
+  <header class="entete">
+    <button type="button" class="bouton-retour" id="ohada-fermer" aria-label="Retour">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H6m5-6-6 6 6 6"/></svg>
+    </button>
+    <h1 class="titre-ecran">États financiers OHADA</h1>
+  </header>
+  <div id="vue-ohada"></div>
+</section>
+
 <section id="conseil" class="ecran conseil" hidden>
   <header class="entete">
     <button type="button" class="bouton-retour" id="conseil-fermer" aria-label="Retour">
@@ -1028,12 +1047,14 @@
 <script src="langues/en-extras.js"></script>
 <script src="langues/en-tableau.js"></script>
 <script src="langues/en-comptes.js"></script>
+<script src="langues/en-ohada.js"></script>
 <script src="langues/en-conseil.js"></script>
 <script src="voix.js"></script>
 <script src="paiements.js"></script>
 <script src="charges.js"></script>
 <script src="tableau.js"></script>
 <script src="comptes.js"></script>
+<script src="ohada.js"></script>
 <script src="export.js"></script>
 <script src="conseil.js"></script>
 <script src="fiches.js"></script>

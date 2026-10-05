@@ -808,6 +808,13 @@ function afficherComptes() {
       '<li>L\'argent en caisse part de ce que tu as déclaré dans Réglages → Argent en caisse.</li>' +
       '<li>Ce sont des comptes de gestion, faits pour décider. Pour les impôts ou une banque, fais-les vérifier par un comptable.</li>' +
     '</ul></section>';
+  // Le format officiel est à côté, pas à la place : cet écran-ci parle au
+  // commerçant, celui-là parle à son comptable et à sa banque.
+  html += '<section class="famille"><h2 class="titre-liste">Le même, au format officiel</h2>' +
+    '<p class="aide famille-aide">Ton bilan et ton compte de résultat rangés dans le cadre de l\'OHADA, avec les codes du modèle (TA, XA, AZ, CP…). C\'est cette présentation que demandent un comptable, une banque ou les impôts.</p>' +
+    '<button type="button" class="bouton bouton-annuler" id="comptes-ohada">' +
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 13h6M9 17h4"/></svg>Voir mes états financiers OHADA</button>' +
+    '</section>';
   html += '<div class="comptes-boutons">' +
     '<button type="button" class="bouton bouton-sauver" id="comptes-pdf">' +
       '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM14 3v5h5"/></svg>Télécharger en PDF</button>' +
@@ -920,6 +927,7 @@ function initComptes() {
       afficherComptes();
       return;
     }
+    if (e.target.closest("#comptes-ohada")) { ouvrirOhada("principal"); return; }
     if (e.target.closest("#comptes-pdf")) telechargerComptes("pdf");
     else if (e.target.closest("#comptes-excel")) telechargerComptes("excel");
   });

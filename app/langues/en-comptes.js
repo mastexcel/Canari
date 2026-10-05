@@ -213,7 +213,10 @@ Object.assign(EN, {
   "Ce qu'il faut faire": "What to do",
   "Partie": "Part",
   "Phrase": "Sentence",
-  "Le fichier n'a pas pu être fabriqué. Réessaie.": "The file could not be made. Try again."
+  "Le fichier n'a pas pu être fabriqué. Réessaie.": "The file could not be made. Try again.",
+  "Rien de noté ces années-là.": "Nothing recorded in those years.",
+  "Note tes ventes et tes dépenses : les comptes se feront tout seuls.":
+    "Record your sales and expenses: the accounts will take care of themselves."
 });
 
 EN_MOTIFS.push(

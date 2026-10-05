@@ -81,7 +81,7 @@ function afficherStock() {
 
   if (!produits.length) {
     $("stock-produits").innerHTML =
-      '<div class="vide"><img src="icones/canari-pensif.webp" width="96" height="101" alt="">' +
+      '<div class="vide"><img class="scene" src="icones/fonds/canari-boutique.webp" width="210" height="280" alt="">' +
       '<p>Ajoute les produits que tu vends avec leur prix.<br>Tes ventes iront plus vite, tes factures seront détaillées et Canari comptera ton stock.</p></div>' +
       '<button type="button" class="bouton bouton-sauver" data-nouveau-produit>' +
       '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Ajouter un produit</button>';

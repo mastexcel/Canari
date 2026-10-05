@@ -2378,7 +2378,7 @@ body {
 .ligne-texte small { font-size: clamp(12.5px, 3.8vw, 14px); }
 
 /* Le symbole de la monnaie, à côté du montant : gris de la charte. */
-.montant-f, .lc-f { color: var(--gris-500); }
+.montant-f, .lc-f { color: var(--gris-400); }
 
 /* Les champs : un <select> prend par défaut la largeur de sa plus longue
    option (« Franc CFA d'Afrique de l'Ouest (XOF) ») et poussait l'écran
@@ -3026,3 +3026,312 @@ body { overflow-wrap: break-word; }
 .tons .choix[aria-pressed="true"] { --teinte: var(--credit); }
 .saisie .trois-choix .choix[aria-pressed="true"],
 #arrivage-paye .choix[aria-pressed="true"] { --teinte: var(--gris-700); }
+
+/* ===========================================================================
+   LES FONDS DESSINÉS (images fournies par le propriétaire, 05/10/2026)
+   ===========================================================================
+   Demande : « utilise ces arrière-plans en fonction des interfaces dans
+   l'application ». Le propriétaire a livré deux sortes d'images :
+
+   1. des PLAQUES VIDES — `fond-page` (ivoire et sauge, filets dorés, grille
+      de points) et `fond-carte` (ivoire, vague verte et or, frise ethnique).
+      Ce sont de vrais fonds : on écrit par-dessus ;
+   2. des SCÈNES — la mascotte dans un décor (le marché, la boutique, les
+      outils, la courbe qui monte). Ce sont des illustrations : on ne met
+      jamais de texte dessus, elles remplacent une vignette.
+
+   Pourquoi elles ne vont pas partout : ces images sont VERTES, et la charte
+   de l'appli est passée au graphite et à la braise de BIP le 02/10/2026. Les
+   fonds verts sont donc posés là où ils ne croisent pas une couleur de sens
+   (vert = argent qui entre, rouge = argent qui sort) : le fond de page, les
+   écrans vides, le questionnaire et les comptes annuels. Les écrans de
+   travail — listes, saisie, réglages — gardent l'ivoire, parce qu'on y lit
+   longtemps, en plein soleil, sur un écran bon marché.
+
+   Poids : 6 images WebP, 87 Ko en tout. Chacune est redimensionnée à la
+   taille où elle s'affiche vraiment : une image deux fois trop grande coûte
+   quatre fois plus cher à décoder sur un téléphone d'entrée de gamme. */
+
+/* Le fond de la page : la plaque du propriétaire remplace les rubans
+   dessinés en CSS. Elle reste FIXE derrière le contenu (posée par
+   `body::after`, qui ne se redessine pas au défilement) et s'efface en haut
+   et en bas, comme les rubans avant elle. La teinte chaude du `body` et les
+   deux lueurs continuent de passer au travers : c'est ce qui l'accorde à la
+   braise de la charte au lieu de la recouvrir. */
+body::after {
+  background: url("icones/fonds/fond-page.webp") center top / cover no-repeat;
+  opacity: .78;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 7%, #000 88%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0, #000 7%, #000 88%, transparent 100%);
+}
+
+/* Une SCÈNE : la mascotte dans son décor. Elle garde ses proportions (3:4),
+   ses coins sont arrondis et un filet très clair la détache du fond. */
+.scene {
+  width: min(190px, 56%);
+  height: auto;
+  border-radius: 18px;
+  box-shadow: 0 6px 18px rgba(26, 27, 32, .13), 0 0 0 1px rgba(255, 255, 255, .55) inset;
+}
+.vide .scene { width: min(210px, 62%); }
+
+/* Un écran vide devient une carte posée sur la plaque claire du propriétaire :
+   la vague verte, le filet doré et la frise ethnique.
+   LE VOILE EST OBLIGATOIRE. La plaque porte une large vague vert foncé ; sans
+   voile, la phrase « Ajoute les produits que tu vends » tombait dessus en gris
+   sur vert et devenait illisible — vu à l'écran le 05/10/2026. Un dégradé
+   ivoire presque opaque est posé PAR-DESSUS l'image : le motif se devine, le
+   texte garde son fond clair quoi qu'il arrive, et le contraste ne dépend plus
+   de la hauteur de la carte ni de la longueur du texte. */
+.vide {
+  background:
+    linear-gradient(rgba(252, 250, 247, .88), rgba(252, 250, 247, .88)),
+    url("icones/fonds/fond-carte.webp") right bottom / cover no-repeat,
+    var(--ivoire);
+  border: 1px solid var(--bord);
+  border-radius: 20px;
+  padding: 22px 16px 26px;
+  box-shadow: 0 2px 10px rgba(26, 27, 32, .05);
+}
+
+/* Le questionnaire de départ : la même plaque, en bandeau derrière la
+   mascotte. C'est le premier écran que voit un commerçant — c'est là que
+   l'image du propriétaire sert le plus. */
+.param-corps .scene,
+#param-image.scene { width: min(170px, 50%); }
+
+/* L'illustration des comptes annuels : la courbe qui monte, sur fond vert
+   sombre. Elle est posée en haut de l'écran, à côté du titre. */
+.comptes-entete {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  /* Même voile que les écrans vides, pour la même raison : le titre et la
+     phrase doivent rester lisibles sur toute la largeur de la carte. */
+  background:
+    linear-gradient(rgba(252, 250, 247, .80), rgba(252, 250, 247, .80)),
+    url("icones/fonds/fond-carte.webp") right center / cover no-repeat,
+    var(--ivoire);
+  border: 1px solid var(--bord);
+  border-radius: 20px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+.comptes-entete img {
+  width: 92px;
+  height: auto;
+  border-radius: 14px;
+  flex: 0 0 auto;
+  box-shadow: 0 4px 12px rgba(26, 27, 32, .16);
+}
+.comptes-entete p { margin: 4px 0 0; font-size: .9rem; color: var(--gris-600); }
+.comptes-entete h3 { margin: 0; font-family: var(--titre); font-size: 1.05rem; }
+
+/* ===========================================================================
+   LES COMPTES ANNUELS (voir comptes.js)
+   ===========================================================================
+   Un bilan et un compte de résultat se lisent en COLONNES : l'œil descend une
+   colonne et compare avec la voisine. Tout le dessin sert ça — des chiffres
+   tabulaires, alignés à droite, et des totaux qu'on repère sans lire. */
+
+/* Le choix « 7 jours · Mois · Tableau de bord · Comptes annuels ». Quatre
+   boutons ne tiennent pas sur une ligne à 320 px : deux par deux. */
+.quatre-choix {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  background: var(--ivoire-2);
+  border: 1px solid var(--bord);
+  border-radius: 16px;
+  padding: 4px;
+}
+.quatre-choix .choix { font-size: 15px; padding: 10px 4px; min-height: 48px; }
+
+.annees-choix {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0 2px;
+}
+.annees-choix .choix {
+  flex: 1 1 64px;
+  min-height: 44px;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.vues-comptes { margin-top: 10px; }
+
+/* La carte qui porte un tableau ou un graphique. */
+.carte-graphe {
+  background: var(--ivoire);
+  border: 1px solid var(--bord);
+  border-radius: 18px;
+  padding: 12px;
+  margin-top: 10px;
+  overflow-x: auto;              /* cinq colonnes d'années : on fait glisser */
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ---------- Le tableau des comptes ---------- */
+.comptes-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-size: 14px;
+}
+.comptes-table caption {
+  font-family: var(--titre);
+  font-size: 16px;
+  text-align: left;
+  padding: 0 0 8px;
+  color: var(--gris-800);
+}
+.comptes-table th, .comptes-table td { padding: 7px 4px; }
+.comptes-table thead th {
+  font-size: 13px;
+  color: var(--texte-doux);
+  border-bottom: 2px solid var(--bord);
+  text-align: right;
+  white-space: nowrap;
+}
+.comptes-table thead th:first-child { text-align: left; }
+.comptes-table tbody th {
+  font-weight: 400;
+  text-align: left;
+  color: var(--brun);
+  line-height: 1.3;
+}
+.comptes-table td {
+  text-align: right;
+  white-space: nowrap;
+  font-family: var(--chiffres);
+}
+.comptes-table tbody tr + tr th, .comptes-table tbody tr + tr td {
+  border-top: 1px solid var(--ivoire-2);
+}
+/* Une ligne de total : un filet au-dessus, et le chiffre en gras. */
+.comptes-table .ligne-total th, .comptes-table .ligne-total td,
+.comptes-table .ligne-forte th, .comptes-table .ligne-forte td {
+  border-top: 1px solid var(--bord);
+  font-weight: 600;
+  color: var(--gris-900);
+}
+.comptes-table .ligne-forte th, .comptes-table .ligne-forte td { font-size: 15px; }
+.comptes-table .ligne-finale th, .comptes-table .ligne-finale td {
+  background: var(--ivoire-2);
+  border-top: 2px solid var(--gris-200);
+}
+.comptes-table .ligne-section th {
+  padding-top: 14px;
+  font-family: var(--titre);
+  font-size: 13px;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+  color: var(--texte-doux);
+  border-top: 0;
+}
+.comptes-table .ligne-moins th { padding-left: 10px; color: var(--texte-doux); }
+/* « Pris pour la maison » n'est pas une perte : c'est de l'argent qui change
+   de poche. Il garde donc l'ardoise de la maison, jamais le rouge. */
+.comptes-table .m-maison { color: var(--maison); font-weight: 600; }
+
+/* ---------- La cascade du compte de résultat ---------- */
+.cascade { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+.cascade li { display: grid; grid-template-columns: 6.5em 1fr auto; align-items: center; gap: 8px; }
+.cascade-nom { font-size: 13px; color: var(--texte-doux); line-height: 1.2; }
+.cascade-piste { background: var(--ivoire-2); border-radius: 7px; height: 14px; }
+.cascade-barre { display: block; height: 14px; border-radius: 7px; }
+.etage-ventes { background: linear-gradient(90deg, var(--gris-400), var(--gris-600)); }
+.etage-marge { background: linear-gradient(90deg, var(--entre-clair), var(--entre)); }
+.etage-avant { background: linear-gradient(90deg, var(--credit-clair), var(--credit)); }
+.etage-net { background: linear-gradient(90deg, var(--entre), var(--entre-fonce)); }
+.etage-perte { background: linear-gradient(90deg, var(--sort-clair), var(--sort)); }
+.cascade-valeur { font-family: var(--chiffres); font-variant-numeric: tabular-nums lining-nums; font-size: 14px; white-space: nowrap; }
+
+/* ---------- Le bilan en deux piles ---------- */
+.pile-titre { margin: 12px 0 6px; font-size: 13px; color: var(--texte-doux); }
+.pile { display: flex; height: 22px; border-radius: 8px; overflow: hidden; background: var(--ivoire-2); }
+.pile-part { display: block; height: 100%; }
+.p-caisse { background: var(--entre); }
+.p-stock { background: var(--credit); }
+.p-creances { background: var(--dore); }
+.p-materiel { background: var(--maison); }
+.p-dettes { background: var(--sort); }
+.p-propres { background: var(--entre-fonce); }
+
+/* La légende d'un graphique : un rond de couleur, puis son nom. */
+.graphe-legende {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--texte-doux);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+}
+.leg-point {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 4px;
+  flex: 0 0 auto;
+}
+.leg-ventes { background: var(--gris-400); }
+.leg-net { background: var(--entre); }
+
+/* ---------- Les colonnes année par année ---------- */
+.graphe-annees { display: block; width: 100%; height: 120px; }
+.graphe-annees .axe { stroke: var(--bord); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.col-ventes { fill: var(--gris-400); }
+.col-net { fill: var(--entre); }
+.col-perte { fill: var(--sort); }
+.graphe-annees-noms {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: flex;
+  font-size: 12px;
+  color: var(--texte-doux);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.graphe-annees-noms li { flex: 1 1 0; text-align: center; min-width: 0; }
+
+/* ---------- L'analyse écrite ---------- */
+.analyse-bloc {
+  background: var(--ivoire);
+  border: 1px solid var(--bord);
+  border-left: 4px solid var(--braise);
+  border-radius: 16px;
+  padding: 12px 14px;
+  margin-top: 10px;
+}
+.analyse-bloc h3 { margin: 0 0 6px; font-family: var(--titre); font-size: 16px; color: var(--gris-800); }
+.analyse-bloc p { margin: 0 0 6px; font-size: 15px; line-height: 1.5; color: var(--brun); }
+.analyse-bloc p:last-child { margin-bottom: 0; }
+
+/* ---------- Les conseils ---------- */
+.gestes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.geste {
+  background: var(--ivoire);
+  border: 1px solid var(--bord);
+  border-left: 4px solid var(--gris-200);
+  border-radius: 16px;
+  padding: 11px 14px;
+}
+.geste b { font-family: var(--titre); font-size: 15px; display: block; color: var(--gris-800); }
+.geste p { margin: 4px 0 0; font-size: 15px; line-height: 1.45; color: var(--brun); }
+.geste-alerte { border-left-color: var(--sort); }
+.geste-attention { border-left-color: var(--credit); }
+.geste-bon { border-left-color: var(--entre); }
+
+.note-comptes ul { margin: 6px 0 0; padding-left: 20px; }
+.note-comptes li { margin-bottom: 5px; line-height: 1.45; }
+
+.comptes-boutons { display: flex; flex-direction: column; gap: 10px; margin: 20px 0 8px; }
+
+/* Sur un écran étroit, le tableau pluriannuel se resserre au lieu de déborder. */
+@media (max-width: 380px) {
+  .comptes-table { font-size: 13px; }
+  .comptes-table th, .comptes-table td { padding: 6px 3px; }
+  .cascade li { grid-template-columns: 5.4em 1fr auto; }
+}

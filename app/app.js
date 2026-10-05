@@ -439,7 +439,8 @@ function afficher() {
   else if (onglet === "credits") afficherCredits();
   else if (onglet === "relances") afficherRelances();
   else if (onglet === "semaine") {
-    if (!$("vue-tableau").hidden) afficherTableau();
+    if (!$("vue-comptes").hidden) afficherComptes();
+    else if (!$("vue-tableau").hidden) afficherTableau();
     else if ($("vue-mois").hidden) afficherSemaine();
     else afficherMois();
   }
@@ -1749,6 +1750,7 @@ chargerDonnees().then(function (d) {
   initPaiements();
   initCharges();
   initTableau();
+  initComptes();
   initExport();
   initConseil();
   initFiches();

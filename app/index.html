@@ -136,7 +136,7 @@
     <ul class="liste" id="liste"></ul>
 
     <div class="vide" id="vide">
-      <img src="icones/canari-tranquille.webp" width="96" height="101" alt="">
+      <img class="scene" src="icones/fonds/canari-marche.webp" width="210" height="280" alt="">
       <p>Rien de noté aujourd'hui.<br>Appuie sur <strong>Vente</strong> quand un client achète.</p>
     </div>
   </div>
@@ -156,14 +156,16 @@
 
   <!-- Onglet Semaine -->
   <div id="vue-semaine" class="vue" hidden>
-    <div class="trois-choix" role="group" aria-label="Période du bilan">
+    <div class="quatre-choix" role="group" aria-label="Période du bilan">
       <button type="button" class="choix" data-bilan="semaine" aria-pressed="true">7 jours</button>
       <button type="button" class="choix" data-bilan="mois" aria-pressed="false">Mois</button>
       <button type="button" class="choix" data-bilan="tableau" aria-pressed="false">Tableau de bord</button>
+      <button type="button" class="choix" data-bilan="comptes" aria-pressed="false">Comptes annuels</button>
     </div>
     <div id="vue-7jours"></div>
     <div id="vue-mois" hidden></div>
     <div id="vue-tableau" hidden></div>
+    <div id="vue-comptes" hidden></div>
   </div>
 
   <!-- Onglet Stock -->
@@ -1025,11 +1027,13 @@
 <script src="langues/en-boutique.js"></script>
 <script src="langues/en-extras.js"></script>
 <script src="langues/en-tableau.js"></script>
+<script src="langues/en-comptes.js"></script>
 <script src="langues/en-conseil.js"></script>
 <script src="voix.js"></script>
 <script src="paiements.js"></script>
 <script src="charges.js"></script>
 <script src="tableau.js"></script>
+<script src="comptes.js"></script>
 <script src="export.js"></script>
 <script src="conseil.js"></script>
 <script src="fiches.js"></script>

@@ -327,7 +327,7 @@ function afficherEtape() {
   let image = "canari-tranquille", titre = "", html = "";
 
   if (nom === "intro") {
-    image = "mascotte-canari-3d";
+    image = "fonds/canari-outils";   // la scène « les outils » fournie par le propriétaire
     titre = "Calculons ton vrai bénéfice";
     html = '<p>Quelques questions sur ta boutique, tes charges et tes taxes. Ça prend 2 minutes.</p>' +
       '<p>Tu peux passer une question, et tout changer plus tard dans Réglages ⚙.</p>';
@@ -422,7 +422,10 @@ function afficherEtape() {
     html += '<p>Sur l\'écran du jour, tu verras tes ventes, ta marge et ton bénéfice net.</p>';
   }
 
+  // Une image du dossier « fonds/ » est une scène : elle se montre plus grande,
+  // avec ses coins arrondis (classe « scene »), au lieu d'une vignette carrée.
   $("param-image").src = "icones/" + image + ".webp";
+  $("param-image").className = image.indexOf("fonds/") === 0 ? "scene" : "";
   $("param-titre").textContent = titre;
   $("param-contenu").innerHTML = html;
   $("param-progres").innerHTML = etapes.map(function (e, i) {
@@ -571,8 +574,10 @@ function initCharges() {
       $("vue-7jours").hidden = quoi !== "semaine";
       $("vue-mois").hidden = quoi !== "mois";
       $("vue-tableau").hidden = quoi !== "tableau";
+      $("vue-comptes").hidden = quoi !== "comptes";
       if (quoi === "mois") afficherMois();
       else if (quoi === "tableau") afficherTableau();
+      else if (quoi === "comptes") afficherComptes();
       else afficherSemaine();
       return;
     }

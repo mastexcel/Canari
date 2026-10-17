@@ -2,6 +2,35 @@
    formules d'abonnement (abonnement.js). */
 
 Object.assign(EN, {
+  /* --- La boutique de démonstration (demo.js) --- */
+  "Montrer Canari à quelqu'un": "Show Canari to someone",
+  "Boutique de démonstration": "Demonstration shop",
+  "Chiffres d'exemple, numéros faux.": "Example figures, fake numbers.",
+  "Mes vrais chiffres": "My real figures",
+  "Créer la démonstration": "Create the demonstration",
+  "Ouvrir la démonstration": "Open the demonstration",
+  "Remettre à neuf": "Reset it",
+  "Retirer la démonstration": "Remove the demonstration",
+  "Démonstration · chiffres d'exemple": "Demonstration · example figures",
+  "C'est une entreprise à part : tes vrais chiffres ne sont jamais touchés, et elle ne prend pas une place de ton abonnement.":
+    "It is a separate business: your real figures are never touched, and it does not use up a slot in your subscription.",
+  "Une boutique d'exemple avec un an de ventes, de crédits clients, de dettes fournisseurs, de charges et de matériel. Parfaite pour montrer Canari à quelqu'un.":
+    "An example shop with a year of sales, customer credit, supplier debts, running costs and equipment. Perfect for showing Canari to someone.",
+  "La boutique de démonstration est prête. Tu peux l'ouvrir quand tu veux.":
+    "The demonstration shop is ready. You can open it whenever you like.",
+  "Tu es dans la boutique de démonstration. Tes vrais chiffres sont intacts dans tes autres entreprises.":
+    "You are in the demonstration shop. Your real figures are untouched in your other businesses.",
+  "La boutique de démonstration est prête : un an de ventes, de crédits et de charges.":
+    "The demonstration shop is ready: a year of sales, credit and running costs.",
+  "Remettre la boutique de démonstration à neuf ? Ce qui a été noté pendant la présentation sera effacé.":
+    "Reset the demonstration shop? Anything noted during the presentation will be erased.",
+  "La démonstration est repartie à neuf.": "The demonstration has been reset.",
+  "Retirer la boutique de démonstration ? Tes vraies entreprises ne sont pas touchées.":
+    "Remove the demonstration shop? Your real businesses are not affected.",
+  "La démonstration est retirée.": "The demonstration has been removed.",
+  "La démonstration est retirée. Tu retrouves tes vrais chiffres.":
+    "The demonstration has been removed. You are back to your real figures.",
+
   /* --- L'écran et la liste --- */
   "Mes entreprises": "My businesses",
   "Tu peux tenir plusieurs entreprises sur le même téléphone, chacune avec ses propres chiffres, et passer de l'une à l'autre quand tu veux.":

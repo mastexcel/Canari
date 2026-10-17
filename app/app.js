@@ -454,6 +454,8 @@ function afficher() {
   // Le nom de l'entreprise ouverte, en haut : il n'apparaît que s'il y en a
   // plusieurs (voir entreprises.js).
   if (typeof majBandeauEntreprise === "function") majBandeauEntreprise();
+  // Le rappel « boutique de démonstration » (voir demo.js).
+  if (typeof majBandeauDemo === "function") majBandeauDemo();
   afficherRappelSauvegarde();
   afficherBandeauAbonnement();
   majPastilles();
@@ -1587,7 +1589,11 @@ function joursDepuisSauvegarde() {
 function afficherRappelSauvegarde() {
   const premier = donnees.mouvements.reduce(function (min, m) { return Math.min(min, m.t); }, Infinity);
   const j = joursDepuisSauvegarde();
-  const montrerRappel = premier !== Infinity && joursDepuis(premier) >= 2 && (j === null || j >= 7);
+  // Jamais dans la boutique de démonstration : ses chiffres sont inventés et
+  // n'entrent même pas dans la sauvegarde. Pendant une présentation, ce
+  // rappel ne ferait que prendre la place du chiffre du jour (voir demo.js).
+  const demo = typeof estEntrepriseDemo === "function" && estEntrepriseDemo();
+  const montrerRappel = !demo && premier !== Infinity && joursDepuis(premier) >= 2 && (j === null || j >= 7);
   $("rappel-sauvegarde").hidden = !montrerRappel;
   if (montrerRappel) {
     $("rappel-texte").textContent = j === null
@@ -1605,6 +1611,7 @@ function afficherReglages() {
   remplirFormCaisse();
   afficherAbonnementReglages();
   afficherRappelsReglages();
+  afficherReglagesDemo();
   const parJour = Math.round((fixeMensuel("charge") + fixeMensuel("impot")) / joursTravail());
   const taux = tauxVentes("charge") + tauxVentes("impot");
   $("resume-charges").textContent = aDesCharges()
@@ -1648,7 +1655,11 @@ function fichierSauvegarde() {
 
 // Les dossiers de toutes les entreprises, celui qui est ouvert compris.
 function rassemblerEntreprises() {
-  const liste = typeof listeEntreprises === "function" ? listeEntreprises() : [{ cle: cleDossier, nom: "" }];
+  const toutes = typeof listeEntreprises === "function" ? listeEntreprises() : [{ cle: cleDossier, nom: "" }];
+  // La boutique de démonstration reste dehors : des chiffres inventés
+  // n'ont rien à faire dans une sauvegarde, et ils y pèseraient plus
+  // lourd que les vrais (voir demo.js).
+  const liste = toutes.filter(function (e) { return !e.demo || e.cle === cleDossier; });
   return Promise.all(liste.map(function (e) {
     if (e.cle === cleDossier) return Promise.resolve({ cle: e.cle, nom: e.nom || "", donnees: donnees });
     const secours = function () {
@@ -1878,6 +1889,7 @@ chargerEntreprises().then(chargerDonnees).then(function (d) {
   initContacts();
   initAbonnement();
   initEntreprises();
+  initDemo();
   initTunnel();
   initVoix();
   montrer(lire(CLE_DEJA_VU) ? "principal" : "accueil");

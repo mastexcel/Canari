@@ -68,6 +68,13 @@
     <svg class="bandeau-fleche" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg>
   </button>
 
+  <!-- Boutique de démonstration : il faut qu'on le voie, sinon on prend ces
+       chiffres pour les siens après la présentation (demo.js) -->
+  <div class="bandeau-demo" id="bandeau-demo" hidden>
+    <span><b>Boutique de démonstration</b><small>Chiffres d'exemple, numéros faux.</small></span>
+    <button type="button" id="demo-quitter">Mes vrais chiffres</button>
+  </div>
+
   <div class="rappel-sauvegarde rappel-parametrage" id="rappel-parametrage" hidden>
     <img src="icones/canari-clin-doeil.webp" width="44" height="46" alt="">
     <span>Calcule ton vrai bénéfice net : 6 petites questions.</span>
@@ -225,6 +232,22 @@
     <p>Tu peux tenir plusieurs entreprises sur le même téléphone, chacune avec ses propres chiffres, et passer de l'une à l'autre quand tu veux.</p>
     <button type="button" class="bouton bouton-sauver" id="reglage-entreprises">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21V9l6-4 6 4v12M9 21v-5h3v5M15 21h6V13l-6-4"/></svg>Mes entreprises
+    </button>
+  </section>
+
+  <!-- Montrer Canari à quelqu'un : une boutique d'exemple déjà remplie (demo.js) -->
+  <section class="carte-reglage" id="carte-demo">
+    <h2>Montrer Canari à quelqu'un</h2>
+    <p id="demo-etat"></p>
+    <p class="aide">C'est une entreprise à part : tes vrais chiffres ne sont jamais touchés, et elle ne prend pas une place de ton abonnement.</p>
+    <button type="button" class="bouton bouton-sauver" id="demo-ouvrir">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l5-5 4 3 5-7"/><path d="M3 21h18"/></svg>Créer la démonstration
+    </button>
+    <button type="button" class="bouton bouton-annuler" id="demo-refaire" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v4h-4"/></svg>Remettre à neuf
+    </button>
+    <button type="button" class="bouton bouton-danger" id="demo-retirer" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M9 7V5h6v2M7 7l1 13h8l1-13"/></svg>Retirer la démonstration
     </button>
   </section>
 
@@ -1104,6 +1127,7 @@
 <script src="tunnel.js"></script>
 <script src="abonnement.js"></script>
 <script src="entreprises.js"></script>
+<script src="demo.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

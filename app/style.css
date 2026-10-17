@@ -134,7 +134,9 @@ body {
 .entete {
   display: flex;
   align-items: center;
-  gap: 10px;
+  /* 7 px et non 10 : sur 360 px, les trois espaces gagnés sont exactement ce
+     qu'il faut pour que la date tienne en entier à côté du nom de la marque. */
+  gap: 7px;
   margin-bottom: 14px;
 }
 .entete img { flex-shrink: 0; height: auto; }
@@ -2329,12 +2331,20 @@ body {
 
 /* L'en-tête : le logo, la date et les deux boutons sur une seule ligne. */
 .entete { min-width: 0; }
-.logo-petit { font-size: clamp(22px, 7vw, 28px); min-width: 0; }
+/* LE NOM DE LA MARQUE NE SE COUPE JAMAIS EN DEUX. Sur un écran de 360 px,
+   l'image, la date et les deux boutons prenaient toute la place et « canari »
+   se cassait en « canar / i » — sur l'écran d'accueil, la première chose que
+   l'on voit. C'est la DATE qui doit céder la place, pas la marque : elle se
+   raccourcit, et au pire se termine par des points de suspension. */
+.logo-petit { font-size: clamp(22px, 7vw, 28px); flex: 0 0 auto; white-space: nowrap; }
 .date {
   font-size: clamp(12px, 3.6vw, 15px);
   line-height: 1.25;
   white-space: nowrap;
-  flex: none;
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Le grand chiffre : il ne touche jamais les bords de sa carte. */
@@ -3512,3 +3522,52 @@ body::after {
 
 /* Les trois formules d'abonnement : elles tiennent sur une ligne de trois. */
 .abo-plans { margin-bottom: 4px; }
+
+/* ===========================================================================
+   LA BOUTIQUE DE DÉMONSTRATION (voir demo.js)
+
+   Le bandeau doit se voir SANS être beau : c'est un avertissement, pas une
+   décoration. Pendant une présentation on l'oublie, et après on prend ces
+   chiffres pour les siens — ou on relance un client qui n'existe pas. Il
+   porte donc la braise de la marque (jamais le rouge : rien ne sort de la
+   caisse ici) et reste collé au-dessus du contenu.
+   =========================================================================== */
+
+.bandeau-demo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 10px;
+  padding: 9px 12px;
+  min-height: 44px;
+  background: linear-gradient(118deg,
+      color-mix(in srgb, var(--braise) 14%, var(--ivoire)) 0%,
+      color-mix(in srgb, var(--braise) 7%, var(--ivoire)) 100%);
+  border: 1px solid color-mix(in srgb, var(--braise) 34%, transparent);
+  border-radius: 14px;
+  font-size: 13.5px;
+  line-height: 1.35;
+  color: var(--braise-profonde);
+}
+.bandeau-demo span { flex: 1 1 auto; min-width: 0; }
+.bandeau-demo b { font-family: var(--titre); display: block; font-size: 14.5px; }
+.bandeau-demo small { display: block; font-size: 12.5px; color: color-mix(in srgb, var(--braise-profonde) 78%, #FFFFFF); }
+/* Le raccourci de sortie : petit, mais 44 px de haut — on le touche en vrai,
+   au milieu d'une démonstration, avec le pouce. */
+.bandeau-demo button {
+  flex: 0 0 auto;
+  min-height: 44px;
+  padding: 0 12px;
+  background: #FFFFFF;
+  border: 2px solid color-mix(in srgb, var(--braise) 38%, #FFFFFF);
+  border-radius: 14px;
+  font: inherit;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--braise-profonde);
+  cursor: pointer;
+}
+.bandeau-demo button:active { background: color-mix(in srgb, var(--braise) 12%, #FFFFFF); transform: translateY(1px); }
+
+/* Les trois boutons de la carte des Réglages se suivent : un peu d'air. */
+#carte-demo .bouton + .bouton { margin-top: 8px; }

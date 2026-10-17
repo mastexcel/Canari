@@ -211,9 +211,12 @@ function calculExerciceOhada(annee) {
   //        encore vendu. C'est un produit, pas une charge : il s'ajoute.
   const stockDebut = valeurStockAu(debut - 1);
   const stockFin = valeurStockAu(fin);
-  e.RB = stockDebut.marchandises - stockFin.marchandises;
-  e.RD = stockDebut.intrants - stockFin.intrants;
-  e.TE = stockFin.produitsFinis - stockDebut.produitsFinis;
+  // Le stock apporté le premier jour compte comme du stock de DÉBUT : il
+  // n'a été ni acheté ni fabriqué pendant l'exercice (voir stockApporte).
+  const apporte = stockApporte(debut, fin);
+  e.RB = (stockDebut.marchandises + apporte.marchandises) - stockFin.marchandises;
+  e.RD = (stockDebut.intrants + apporte.intrants) - stockFin.intrants;
+  e.TE = stockFin.produitsFinis - (stockDebut.produitsFinis + apporte.produitsFinis);
 
   // RL · Dotations aux amortissements : l'usure du matériel sur l'année.
   e.RL = usureDeLAnnee(annee, fin);
@@ -291,6 +294,39 @@ function valeurStockAu(ts) {
 
 // L'apport de départ : ce que le commerçant a mis dans la boutique le premier
 // jour — son argent, et la marchandise qu'il avait déjà. C'est le capital.
+/* LE STOCK DU PREMIER JOUR N'A PAS ÉTÉ ACHETÉ : C'EST UN APPORT.
+   Il est déjà compté dans le capital (CA). Sans cette correction il entrait
+   une SECONDE fois dans le résultat, par la variation de stock de la première
+   année : la marchandise apparaissait en stock sans achat en face, donc le
+   bénéfice gonflait d'autant. Le bilan affichait alors un « Écart à
+   régulariser » exactement égal au stock de départ — sur des données
+   pourtant complètes, ce qui est le pire des cas : l'écart doit signaler un
+   trou dans le carnet, jamais un calcul de Canari.
+   Vu le 17/10/2026 sur la boutique de démonstration : 256 343 F d'écart sur
+   un bilan de 1,2 million, soit 21 % des capitaux propres.
+   Pas de « memo » ici : la fonction est appelée une fois par exercice, et sa
+   clé dépendrait de « fin », qui vaut Date.now() pour l'année en cours. */
+function stockApporte(debut, fin) {
+  let marchandises = 0, produitsFinis = 0, intrants = 0;
+  donnees.mouvements.forEach(function (m) {
+    if (m.raison !== "depart" || m.t < debut || m.t > fin) return;
+    if (m.type === "stock") {
+      const p = donnees.produits[m.produitId];
+      if (!p) return;
+      const valeur = m.quantite * (coutProduit(p) || 0);
+      if (typeDe(p) === "revente") marchandises += valeur; else produitsFinis += valeur;
+    } else if (m.type === "intrant") {
+      const i = donnees.intrants[m.intrantId];
+      if (i) intrants += m.quantite * (i.cout || 0);
+    }
+  });
+  return {
+    marchandises: Math.round(marchandises),
+    produitsFinis: Math.round(produitsFinis),
+    intrants: Math.round(intrants)
+  };
+}
+
 function apportDeDepart() {
   return memo("ohada-apport", function () {
     let argent = 0;

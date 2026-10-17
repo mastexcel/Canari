@@ -101,8 +101,15 @@ function entreprisesAutorisees() {
   const e = etatAbonnement();
   return e.paye ? Math.max(1, a.entreprises || 1) : 1;
 }
+// Les entreprises qui comptent dans l'abonnement : toutes, SAUF la boutique
+// de démonstration (voir demo.js). Sinon la démo prendrait l'unique place
+// permise pendant l'essai gratuit — exactement le moment où l'on cherche à
+// convaincre quelqu'un.
+function entreprisesComptees() {
+  return listeEntreprises().filter(function (e) { return !e.demo; });
+}
 function peutCreerEntreprise() {
-  return listeEntreprises().length < Math.min(MAX_ENTREPRISES, entreprisesAutorisees());
+  return entreprisesComptees().length < Math.min(MAX_ENTREPRISES, entreprisesAutorisees());
 }
 
 /* ---------- Changer d'entreprise ---------- */
@@ -229,7 +236,8 @@ function afficherEntreprises() {
     return '<li class="ent' + (ouverte ? " ent-ouverte" : "") + '">' +
       '<button type="button" class="ent-choisir" data-ouvrir-entreprise="' + e.cle + '"' + (ouverte ? ' aria-current="true"' : '') + '>' +
         '<b translate="no">' + echapper(nomEntreprise(e)) + '</b>' +
-        '<small>' + (ouverte ? tr("Ouverte en ce moment") : tr("Touche pour travailler dedans")) + '</small>' +
+        '<small>' + (e.demo ? tr("Démonstration · chiffres d'exemple") :
+          ouverte ? tr("Ouverte en ce moment") : tr("Touche pour travailler dedans")) + '</small>' +
       '</button>' +
       '<button type="button" class="ent-modifier" data-renommer-entreprise="' + e.cle + '" aria-label="' + tr("Renommer") + '">' +
         '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16zM13 7l4 4"/></svg></button>' +
@@ -238,9 +246,10 @@ function afficherEntreprises() {
       '</li>';
   }).join("");
 
-  $("entreprises-compte").textContent = liste.length === 1
+  const vraies = entreprisesComptees().length;
+  $("entreprises-compte").textContent = vraies === 1
     ? tr("1 entreprise sur ce téléphone.")
-    : tr(liste.length + " entreprises sur ce téléphone.");
+    : tr(vraies + " entreprises sur ce téléphone.");
 
   $("entreprises-ajouter").hidden = !peut;
   $("entreprises-limite").hidden = peut;
@@ -250,6 +259,9 @@ function afficherEntreprises() {
       : tr("Ta formule te donne droit à " + autorisees + " entreprises, et tu les as toutes.");
   }
   $("entreprises-abonnement").hidden = peut;
+  // La carte « Montrer Canari à quelqu'un » des Réglages suit : la démo peut
+  // avoir été supprimée d'ici, avec le ✕ de la liste (voir demo.js).
+  if (typeof afficherReglagesDemo === "function") afficherReglagesDemo();
 }
 
 function ouvrirEntreprises() {

@@ -25,9 +25,13 @@ function numeroFactureAbo(n) {
   return "CAN-" + donnees.abonnement.id + "-" + String(n).padStart(2, "0");
 }
 
-// La formule correspondant à un nombre de jours payés.
-function formuleDeJours(jours) {
-  return FORMULES.find(function (f) { return f.jours === jours; }) || null;
+// La formule correspondant à un code payé. Depuis que les formules se
+// distinguent par le NOMBRE D'ENTREPRISES, trois d'entre elles partagent les
+// mêmes 31 jours : il faut donc les deux pour tomber sur la bonne.
+function formuleDeJours(jours, entreprises) {
+  const n = Math.max(1, entreprises || 1);
+  return FORMULES.find(function (f) { return f.jours === jours && f.entreprises === n; })
+    || FORMULES.find(function (f) { return f.jours === jours; }) || null;
 }
 
 /* Note la facture d'un abonnement qui vient d'être activé, et la rend.
@@ -36,9 +40,10 @@ function noterFactureAbonnement(code, finApres) {
   const a = donnees.abonnement;
   if (!a.factures) a.factures = [];
   const demande = a.demande || {};
-  const formule = code.conseil ? null : formuleDeJours(code.jours);
+  const formule = code.conseil ? null : formuleDeJours(code.jours, code.entreprises);
   // Le prix vient de la formule demandée sur ce téléphone ; sinon de la liste.
-  const memeDemande = demande.jours === code.jours && !!demande.conseil === !!code.conseil;
+  const memeDemande = demande.jours === code.jours && !!demande.conseil === !!code.conseil &&
+    (code.conseil || (demande.entreprises || 1) === (code.entreprises || 1));
   const doc = {
     numero: numeroFactureAbo(a.factures.length + 1),
     t: Date.now(),

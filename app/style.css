@@ -3416,3 +3416,99 @@ body::after {
 .ohada-manques li { margin-bottom: 9px; }
 .ohada-manques b { font-family: var(--titre); font-size: .95rem; color: var(--gris-800); display: block; }
 .ohada-manques p { margin: 2px 0 0; font-size: .9rem; line-height: 1.4; color: var(--texte-doux); }
+
+/* ===========================================================================
+   PLUSIEURS ENTREPRISES (voir entreprises.js)
+   =========================================================================== */
+
+/* Le nom de l'entreprise ouverte, juste sous l'en-tête. Il ne s'affiche que
+   s'il y en a plusieurs : sur un téléphone à une seule entreprise, ce serait
+   une ligne de plus à lire pour rien. */
+.bandeau-entreprise {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin: 0 0 10px;
+  padding: 9px 12px;
+  min-height: 44px;
+  background: var(--ivoire);
+  border: 1px solid var(--bord);
+  border-radius: 14px;
+  font: inherit;
+  font-family: var(--titre);
+  font-size: 15px;
+  color: var(--gris-800);
+  text-align: left;
+  cursor: pointer;
+}
+.bandeau-entreprise svg {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: var(--maison);
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.bandeau-entreprise span {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bandeau-entreprise .bandeau-fleche { stroke: var(--gris-400); width: 18px; height: 18px; }
+
+/* La liste des entreprises : un grand bouton pour ouvrir, deux petits pour
+   renommer et supprimer. Les deux petits font 44 px — on ne les touche pas par
+   erreur quand on visait le grand. */
+.entreprises { list-style: none; margin: 10px 0 14px; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.ent {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  background: var(--ivoire);
+  border: 1px solid var(--bord);
+  border-radius: 14px;
+  padding: 4px;
+}
+.ent-ouverte { border-color: var(--maison); box-shadow: 0 0 0 1px var(--maison) inset; }
+.ent-choisir {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: left;
+  background: none;
+  border: 0;
+  font: inherit;
+  padding: 8px 10px;
+  min-height: 48px;
+  cursor: pointer;
+}
+.ent-choisir b {
+  display: block;
+  font-family: var(--titre);
+  font-size: 16px;
+  color: var(--gris-900);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ent-choisir small { display: block; font-size: 13px; color: var(--texte-doux); margin-top: 1px; }
+.ent-ouverte .ent-choisir small { color: var(--maison); font-weight: 600; }
+.ent-modifier {
+  flex: 0 0 auto;
+  width: 44px;
+  min-height: 44px;
+  align-self: center;
+  background: none;
+  border: 0;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.ent-modifier svg { width: 20px; height: 20px; fill: none; stroke: var(--gris-600); stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.ent .retirer { align-self: center; }
+
+/* Les trois formules d'abonnement : elles tiennent sur une ligne de trois. */
+.abo-plans { margin-bottom: 4px; }

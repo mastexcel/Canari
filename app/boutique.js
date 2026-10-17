@@ -712,6 +712,8 @@ function enregistrerBoutique(e) {
   b.symbole = symbole;
   appliquerDevise();
   sauver();
+  // La liste des entreprises porte le nom de la boutique : elle suit.
+  if (typeof majNomEntreprise === "function") { majNomEntreprise(); majBandeauEntreprise(); }
   if (document.activeElement) document.activeElement.blur();
   message("Infos de la boutique enregistrées.", null, true);
 }

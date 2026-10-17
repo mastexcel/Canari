@@ -8,7 +8,7 @@
     "responseMode": "responseNode",
     "options": {}
    },
-   "id": "e28de865-a9bb-4b2c-af79-6e3d872fef71",
+   "id": "b45b4945-ad0b-4895-83ed-423e3f8a3b05",
    "name": "Lien « Payer »",
    "type": "n8n-nodes-base.webhook",
    "typeVersion": 2,
@@ -16,13 +16,13 @@
     0,
     0
    ],
-   "webhookId": "58e90736-7e51-44fa-8c8e-10f1c3dfbc1d"
+   "webhookId": "eb5acef8-497f-4ec0-98b2-dd170f6ef9aa"
   },
   {
    "parameters": {
-    "jsCode": "\n// Un numéro ivoirien s'écrit de dix façons : on le ramène toujours à 225 + 10 chiffres.\nfunction nettoyerTel(t) {\n  let tel = String(t || '').replace(/\\D/g, '');\n  if (tel.startsWith('00225')) tel = tel.slice(2);\n  if (tel.length === 10) tel = '225' + tel;\n  return /^225\\d{10}$/.test(tel) ? tel : '';\n}\n\nconst FORMULES = {\n  mois:      { nom: '1 mois',  jours: 31,  prix: 1000 },\n  trimestre: { nom: '3 mois',  jours: 92,  prix: 2500 },\n  an:        { nom: '1 an',    jours: 366, prix: 9000 },\n  // L'option Conseil (« Demande à Canari »), signée avec un C devant les jours.\n  conseil_mois:      { nom: 'Conseil 1 mois', jours: 31,  prix: 500,  conseil: true },\n  conseil_trimestre: { nom: 'Conseil 3 mois', jours: 92,  prix: 1200, conseil: true },\n  conseil_an:        { nom: 'Conseil 1 an',   jours: 366, prix: 4000, conseil: true }\n};\n\nconst q = $json.query || {};\nconst id = String(q.id || '').toUpperCase().replace(/[^A-Z2-9]/g, '');\nif (!/^[A-Z2-9]{8}$/.test(id)) throw new Error('Numéro Canari absent : ' + q.id);\nconst f = FORMULES[q.plan];\nif (!f) throw new Error('Formule inconnue : ' + q.plan);\n// Le prix et les jours viennent d'ICI, jamais du lien : sinon n'importe qui\n// paierait 1 F pour un an en changeant l'adresse dans son navigateur.\nreturn [{ json: {\n  transaction_id: 'CAN-' + id + '-' + Date.now().toString(36).toUpperCase(),\n  canari_id: id,\n  plan: q.plan,\n  jours: f.jours,\n  conseil: !!f.conseil,\n  montant: f.prix,\n  description: 'Canari — ' + f.nom,\n  telephone: nettoyerTel(q.tel),\n  boutique: String(q.boutique || '').slice(0, 60),\n  email: String(q.email || '').slice(0, 80),\n  langue: q.langue === 'en' ? 'en' : 'fr'\n}}];\n"
+    "jsCode": "\n// Un numéro ivoirien s'écrit de dix façons : on le ramène toujours à 225 + 10 chiffres.\nfunction nettoyerTel(t) {\n  let tel = String(t || '').replace(/\\D/g, '');\n  if (tel.startsWith('00225')) tel = tel.slice(2);\n  if (tel.length === 10) tel = '225' + tel;\n  return /^225\\d{10}$/.test(tel) ? tel : '';\n}\n\n// Les neuf formules de l'appli (FORMULES de app/abonnement.js), plus l'option\n// Conseil. « entreprises » est le nombre d'entreprises que le code permet : il\n// part dans le code signé, derrière un E (…​.366E3.). Si un prix change ici,\n// il doit changer dans app/abonnement.js AUSSI : c'est le serveur qui encaisse.\nconst FORMULES = {\n  'solo-mois':       { nom: 'Solo 1 mois',  jours: 31,  prix: 3000,  entreprises: 1 },\n  'solo-trimestre':  { nom: 'Solo 3 mois',  jours: 92,  prix: 8000,  entreprises: 1 },\n  'solo-an':         { nom: 'Solo 1 an',    jours: 366, prix: 27000, entreprises: 1 },\n  'multi-mois':      { nom: 'Multi 1 mois', jours: 31,  prix: 5000,  entreprises: 3 },\n  'multi-trimestre': { nom: 'Multi 3 mois', jours: 92,  prix: 13500, entreprises: 3 },\n  'multi-an':        { nom: 'Multi 1 an',   jours: 366, prix: 45000, entreprises: 3 },\n  'pro-mois':        { nom: 'Pro 1 mois',   jours: 31,  prix: 8000,  entreprises: 10 },\n  'pro-trimestre':   { nom: 'Pro 3 mois',   jours: 92,  prix: 21500, entreprises: 10 },\n  'pro-an':          { nom: 'Pro 1 an',     jours: 366, prix: 72000, entreprises: 10 },\n  // L'option Conseil (« Demande à Canari »), signée avec un C devant les jours.\n  'conseil-mois':      { nom: 'Conseil 1 mois', jours: 31,  prix: 500,  conseil: true, entreprises: 1 },\n  'conseil-trimestre': { nom: 'Conseil 3 mois', jours: 92,  prix: 1200, conseil: true, entreprises: 1 },\n  'conseil-an':        { nom: 'Conseil 1 an',   jours: 366, prix: 4000, conseil: true, entreprises: 1 }\n};\n\nconst q = $json.query || {};\nconst id = String(q.id || '').toUpperCase().replace(/[^A-Z2-9]/g, '');\nif (!/^[A-Z2-9]{8}$/.test(id)) throw new Error('Numéro Canari absent : ' + q.id);\nconst f = FORMULES[q.plan];\nif (!f) throw new Error('Formule inconnue : ' + q.plan);\n// Le prix et les jours viennent d'ICI, jamais du lien : sinon n'importe qui\n// paierait 1 F pour un an en changeant l'adresse dans son navigateur.\nreturn [{ json: {\n  transaction_id: 'CAN-' + id + '-' + Date.now().toString(36).toUpperCase(),\n  canari_id: id,\n  plan: q.plan,\n  jours: f.jours,\n  conseil: !!f.conseil,\n  entreprises: f.entreprises || 1,\n  montant: f.prix,\n  description: 'Canari — ' + f.nom,\n  telephone: nettoyerTel(q.tel),\n  boutique: String(q.boutique || '').slice(0, 60),\n  email: String(q.email || '').slice(0, 80),\n  langue: q.langue === 'en' ? 'en' : 'fr'\n}}];\n"
    },
-   "id": "b92b96cc-180e-4d32-9c24-9ad36c8c2574",
+   "id": "651a6f15-bb63-4fea-8a88-a127fef5d549",
    "name": "Préparer la transaction",
    "type": "n8n-nodes-base.code",
    "typeVersion": 2,
@@ -37,10 +37,10 @@
     "url": "https://api-checkout.cinetpay.com/v2/payment",
     "sendBody": true,
     "specifyBody": "json",
-    "jsonBody": "={{ JSON.stringify({ apikey: 'APIKEY_CINETPAY', site_id: 'SITE_ID_CINETPAY', transaction_id: $json.transaction_id, amount: $json.montant, currency: 'XOF', description: $json.description, channels: 'MOBILE_MONEY', lang: $json.langue.toUpperCase(), customer_phone_number: $json.telephone, metadata: JSON.stringify({ id: $json.canari_id, plan: $json.plan, jours: $json.jours, conseil: $json.conseil, tel: $json.telephone, boutique: $json.boutique, email: $json.email, langue: $json.langue }), notify_url: 'https://TON-N8N.app.n8n.cloud/webhook/canari-notification', return_url: 'https://mastexcel.github.io/Canari/#paiement=ok' }) }}",
+    "jsonBody": "={{ JSON.stringify({ apikey: 'APIKEY_CINETPAY', site_id: 'SITE_ID_CINETPAY', transaction_id: $json.transaction_id, amount: $json.montant, currency: 'XOF', description: $json.description, channels: 'MOBILE_MONEY', lang: $json.langue.toUpperCase(), customer_phone_number: $json.telephone, metadata: JSON.stringify({ id: $json.canari_id, plan: $json.plan, jours: $json.jours, conseil: $json.conseil, entreprises: $json.entreprises, tel: $json.telephone, boutique: $json.boutique, email: $json.email, langue: $json.langue }), notify_url: 'https://TON-N8N.app.n8n.cloud/webhook/canari-notification', return_url: 'https://mastexcel.github.io/Canari/#paiement=ok' }) }}",
     "options": {}
    },
-   "id": "b767fc51-9fa2-4651-8441-23273e2a7b85",
+   "id": "c302bee9-03af-4653-b92d-1bd3b38bd382",
    "name": "Ouvrir le guichet CinetPay",
    "type": "n8n-nodes-base.httpRequest",
    "typeVersion": 4.2,
@@ -58,7 +58,7 @@
     "redirectURL": "={{ $json.data.payment_url }}",
     "options": {}
    },
-   "id": "eb0bfcf7-292b-4325-bf8b-351a5081b316",
+   "id": "4155337e-cf55-40e8-803d-5b5e0ec4d05f",
    "name": "Envoyer vers le guichet",
    "type": "n8n-nodes-base.respondToWebhook",
    "typeVersion": 1.1,

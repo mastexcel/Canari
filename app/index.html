@@ -61,6 +61,13 @@
     </button>
   </header>
 
+  <!-- L'entreprise ouverte : montrée seulement s'il y en a plusieurs (entreprises.js) -->
+  <button type="button" class="bandeau-entreprise" id="ouvrir-entreprises" hidden>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21V9l6-4 6 4v12M9 21v-5h3v5M15 21h6V13l-6-4"/></svg>
+    <span id="entreprise-nom" translate="no"></span>
+    <svg class="bandeau-fleche" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg>
+  </button>
+
   <div class="rappel-sauvegarde rappel-parametrage" id="rappel-parametrage" hidden>
     <img src="icones/canari-clin-doeil.webp" width="44" height="46" alt="">
     <span>Calcule ton vrai bénéfice net : 6 petites questions.</span>
@@ -211,6 +218,14 @@
       <button type="button" class="choix-carte" data-pref-voix="lecture" aria-pressed="false"><b>Canari lit ses messages à voix haute</b><small>Chaque message en bas de l'écran est dit à voix haute.</small></button>
       <button type="button" class="choix-carte" data-pref-voix="lent" aria-pressed="false"><b>Parler plus lentement</b><small>Canari parle moins vite.</small></button>
     </div>
+  </section>
+
+  <section class="carte-reglage">
+    <h2>Mes entreprises</h2>
+    <p>Tu peux tenir plusieurs entreprises sur le même téléphone, chacune avec ses propres chiffres, et passer de l'une à l'autre quand tu veux.</p>
+    <button type="button" class="bouton bouton-sauver" id="reglage-entreprises">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21V9l6-4 6 4v12M9 21v-5h3v5M15 21h6V13l-6-4"/></svg>Mes entreprises
+    </button>
   </section>
 
   <section class="carte-reglage">
@@ -896,15 +911,36 @@
   <button type="button" class="bouton bouton-annuler" id="relance-fermer">Fermer</button>
 </form>
 
+<!-- Mes entreprises : la liste, la bascule, l'ajout (voir entreprises.js) -->
+<div class="saisie" id="entreprises" hidden style="--couleur-saisie: var(--maison)">
+  <h2 class="saisie-titre">Mes entreprises</h2>
+  <p class="aide" id="entreprises-compte"></p>
+  <ul class="entreprises" id="entreprises-liste"></ul>
+  <button type="button" class="bouton bouton-ok" id="entreprises-ajouter">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Ajouter une entreprise
+  </button>
+  <p class="aide" id="entreprises-limite" hidden></p>
+  <button type="button" class="bouton bouton-sauver" id="entreprises-abonnement" hidden>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>Voir les formules
+  </button>
+  <p class="aide">Chaque entreprise a ses propres ventes, ses clients, ses produits et ses chiffres. Rien ne se mélange. L'abonnement, lui, est le même pour tout le téléphone.</p>
+  <div class="saisie-boutons">
+    <button type="button" class="bouton bouton-annuler" id="entreprises-fermer">Fermer</button>
+  </div>
+</div>
+
 <!-- Abonnement : formules, paiement, code d'activation -->
 <div class="saisie" id="abonnement" hidden style="--couleur-saisie: var(--vert-foret)">
   <h2 class="saisie-titre">Mon abonnement</h2>
   <p class="abo-raison" id="abo-raison" hidden></p>
   <p class="abo-etat" id="abo-etat"></p>
-  <p class="champ-etiquette">1. Choisis ta formule</p>
+  <p class="champ-etiquette">1. Combien d'entreprises ?</p>
+  <div class="abo-formules abo-plans" id="abo-plans"></div>
+  <p class="aide" id="abo-entreprises"></p>
+  <p class="champ-etiquette">2. Pour combien de temps ?</p>
   <div class="abo-formules" id="abo-formules"></div>
   <p class="aide">Sans publicité, et tes chiffres restent toujours à toi.</p>
-  <p class="champ-etiquette">2. Paie <span id="abo-montant"></span></p>
+  <p class="champ-etiquette">3. Paie <span id="abo-montant"></span></p>
   <!-- Paiement automatique (tunnel) : l'abonnement s'active tout seul après le paiement. -->
   <div class="abo-auto" id="abo-auto" hidden>
     <a class="bouton bouton-ok abo-auto-bouton" id="abo-auto-lien" target="_blank" rel="noopener">
@@ -947,16 +983,16 @@
   <p class="aide">Dans le message du paiement, écris ton numéro Canari : <b id="abo-id"></b>
     <button type="button" class="lien-bouton" id="abo-copier-id">Copier</button></p>
   </div><!-- /abo-manuel -->
-  <label class="champ-etiquette" for="abo-email">3. Ton e-mail (pour recevoir ta facture)</label>
+  <label class="champ-etiquette" for="abo-email">4. Ton e-mail (pour recevoir ta facture)</label>
   <input id="abo-email" class="note" type="email" inputmode="email" autocomplete="email" placeholder="ex. awa@gmail.com">
   <div id="abo-demande-bloc">
-    <p class="champ-etiquette">4. Envoie ta demande</p>
+    <p class="champ-etiquette">5. Envoie ta demande</p>
     <a class="bouton bouton-whatsapp" id="abo-demande" target="_blank" rel="noopener">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.7z"/></svg>Envoyer sur WhatsApp
     </a>
   </div>
   <p class="aide">Tu reçois ton code d'activation sur WhatsApp. Touche le lien, ou colle le code ici :</p>
-  <label class="champ-etiquette" for="abo-code">5. Ton code d'activation</label>
+  <label class="champ-etiquette" for="abo-code">6. Ton code d'activation</label>
   <textarea id="abo-code" class="note abo-code" rows="3" placeholder="Colle ici le code reçu"></textarea>
   <p class="erreur" id="abo-erreur" hidden></p>
   <section id="abo-factures" hidden>
@@ -1048,6 +1084,7 @@
 <script src="langues/en-tableau.js"></script>
 <script src="langues/en-comptes.js"></script>
 <script src="langues/en-ohada.js"></script>
+<script src="langues/en-entreprises.js"></script>
 <script src="langues/en-conseil.js"></script>
 <script src="voix.js"></script>
 <script src="paiements.js"></script>
@@ -1066,6 +1103,7 @@
 <script src="contacts.js"></script>
 <script src="tunnel.js"></script>
 <script src="abonnement.js"></script>
+<script src="entreprises.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

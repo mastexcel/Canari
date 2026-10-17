@@ -1,3 +1,7 @@
+> **Prix revus le 17/10/2026** : la grille de cette page n'est plus celle de
+> l'appli. Voir **`analyse-prix.md`** — trois formules (Solo, Multi, Pro) qui se
+> distinguent par le nombre d'entreprises, de 3 000 F à 8 000 F par mois.
+
 # Abonnement Canari : analyse et proposition
 
 ## Décision du propriétaire

@@ -26,11 +26,61 @@ function francCFA(n) {
 // Le bandeau prévient 7 jours avant la fin : sur un essai d'un mois, dix
 // jours d'avertissement, c'était un tiers de l'essai passé à être relancé.
 const PREVENIR_JOURS = 7;
-const FORMULES = [
-  { id: "mois", nom: "1 mois", jours: 31, prix: 1000, detail: function () { return "Environ " + francCFA(35) + " par jour"; } },
-  { id: "trimestre", nom: "3 mois", jours: 92, prix: 2500, detail: function () { return "Tu économises " + francCFA(500); } },
-  { id: "an", nom: "1 an", jours: 366, prix: 9000, detail: function () { return "3 mois offerts"; }, conseil: true }
+/* LES FORMULES (revues le 17/10/2026 à la demande du propriétaire : « aligne-toi
+   sur la tarification des applications similaires avec un léger avantage prix
+   en notre faveur ; les prix pratiqués actuellement me semblent trop petits »).
+
+   Ce que fait le marché, relevé en octobre 2026 (voir docs/analyse-prix.md) :
+     · les carnets de crédit pour micro-commerçants (OkCredit, Khatabook) sont
+       gratuits, payés par la publicité. Canari refuse la publicité : il doit
+       donc faire payer ;
+     · les logiciels de gestion pour PME d'Afrique francophone vont de
+       3 000 F/mois (GestionsPro Basic) à 8 900 F/mois (FiaVia Essentiel, UNE
+       boutique, 3 utilisateurs), 10 000 F (Ngavix Starter), 15 000 F et plus
+       (Madata), jusqu'à 59 900 F (KiboERP Pro) et 52 000 à 117 000 F (Odoo).
+   Canari est entre les deux : plus qu'un carnet de crédit, moins qu'un ERP.
+   La formule d'entrée est donc à 3 000 F/mois — trois fois l'ancien prix, et
+   encore trois fois moins cher que le concurrent le plus proche.
+
+   TROIS FORMULES, qui se distinguent par le NOMBRE D'ENTREPRISES (demande du
+   propriétaire). L'abonnement annuel se paie neuf mois pour douze, comme avant. */
+const PLANS = [
+  { id: "solo", nom: "Solo", entreprises: 1, aide: "Une seule entreprise" },
+  { id: "multi", nom: "Multi", entreprises: 3, aide: "Jusqu'à 3 entreprises", conseil: true },
+  { id: "pro", nom: "Pro", entreprises: 10, aide: "Jusqu'à 10 entreprises" }
 ];
+const DUREES_ABO = [
+  { id: "mois", nom: "1 mois", jours: 31, mois: 1 },
+  { id: "trimestre", nom: "3 mois", jours: 92, mois: 3 },
+  { id: "an", nom: "1 an", jours: 366, mois: 12, conseil: true }
+];
+const PRIX = {
+  solo: { mois: 3000, trimestre: 8000, an: 27000 },
+  multi: { mois: 5000, trimestre: 13500, an: 45000 },
+  pro: { mois: 8000, trimestre: 21500, an: 72000 }
+};
+// La liste à plat, une entrée par couple formule × durée : c'est elle que
+// lisent l'écran, la facture d'abonnement et la page du propriétaire.
+const FORMULES = [];
+PLANS.forEach(function (p) {
+  DUREES_ABO.forEach(function (d) {
+    const prix = PRIX[p.id][d.id];
+    FORMULES.push({
+      id: p.id + "-" + d.id, plan: p.id, duree: d.id,
+      nom: p.nom + " " + d.nom, nomCourt: d.nom, entreprises: p.entreprises,
+      jours: d.jours, prix: prix, conseil: d.conseil,
+      detail: function () {
+        // « chaque mois » et pas « par mois » : en-boutique.js traduit déjà
+        // « … F par mois » et prendrait la phrase entière (le premier motif qui
+        // correspond gagne, dans l'ordre de chargement des dictionnaires).
+        if (d.id === "an") return "3 mois offerts, " + francCFA(Math.round(prix / 12)) + " chaque mois";
+        if (d.id === "trimestre") return "Tu économises " + francCFA(PRIX[p.id].mois * 3 - prix);
+        return francCFA(Math.round(prix / 30)) + " par jour";
+      }
+    });
+  });
+});
+function planDe(id) { return PLANS.find(function (p) { return p.id === id; }) || PLANS[0]; }
 // Comptes de Canari (le propriétaire) qui reçoivent les abonnements, tous sur son
 // compte entreprise Djamo. À remplir avant le lancement.
 const RECEPTION = {
@@ -91,10 +141,11 @@ function completerAbonnement() {
   let a = donnees.abonnement;
   if (!a || !a.id) {
     const premier = donnees.mouvements.reduce(function (min, m) { return Math.min(min, m.t || min); }, Date.now());
-    a = donnees.abonnement = { id: nouvelIdCanari(), debut: premier, fin: 0, codes: [], conseil: 0, essaisConseil: 0 };
+    a = donnees.abonnement = { id: nouvelIdCanari(), debut: premier, fin: 0, codes: [], conseil: 0, essaisConseil: 0, entreprises: 1 };
   }
   if (!a.codes) a.codes = [];
   if (!a.conseil) a.conseil = 0;              // fin de l'option Conseil
+  if (!a.entreprises) a.entreprises = 1;      // combien d'entreprises la formule permet
   if (!a.essaisConseil) a.essaisConseil = 0;  // questions déjà offertes
   // L'essai est passé de trois mois à un mois. Un commerçant qui utilise déjà
   // Canari depuis plus d'un mois se retrouverait coupé net, du jour au
@@ -108,11 +159,22 @@ function completerAbonnement() {
   }
   let miroir = null;
   try { miroir = JSON.parse(lire(CLE_MIROIR_ABONNEMENT)); } catch (e) { miroir = null; }
+  // L'ABONNEMENT EST CELUI DU TÉLÉPHONE, PAS DE L'ENTREPRISE. Une entreprise
+  // qui vient d'être créée a un numéro Canari tout neuf : si on le gardait,
+  // elle repartirait pour un mois d'essai gratuit, et il suffirait d'en créer
+  // une nouvelle chaque mois pour ne jamais payer. Le numéro du miroir —
+  // celui du téléphone — fait donc loi, et le dossier adopte l'abonnement
+  // déjà en cours.
+  if (miroir && miroir.id && miroir.id !== a.id && !a.fin && !(a.codes || []).length) {
+    a.id = miroir.id;
+    a.debut = Math.min(a.debut, miroir.debut || a.debut);
+  }
   if (miroir && miroir.id === a.id) {
     a.debut = Math.min(a.debut, miroir.debut || a.debut);
     a.fin = Math.max(a.fin || 0, miroir.fin || 0);
     a.conseil = Math.max(a.conseil || 0, miroir.conseil || 0);
     a.essaisConseil = Math.max(a.essaisConseil || 0, miroir.essaisConseil || 0);
+    a.entreprises = Math.max(a.entreprises || 1, miroir.entreprises || 1);
     if (miroir.essaiJusqua !== undefined) a.essaiJusqua = Math.max(a.essaiJusqua || 0, miroir.essaiJusqua || 0);
     (miroir.codes || []).forEach(function (c) { if (a.codes.indexOf(c) === -1) a.codes.push(c); });
     a.vu = Math.max(a.vu || 0, miroir.vu || 0);
@@ -128,7 +190,8 @@ function garderAbonnement(avant) {
 function garderMiroir() {
   const a = donnees.abonnement;
   ecrire(CLE_MIROIR_ABONNEMENT, JSON.stringify({ id: a.id, debut: a.debut, fin: a.fin, codes: a.codes, vu: a.vu,
-    conseil: a.conseil, essaisConseil: a.essaisConseil, essaiJusqua: a.essaiJusqua || 0 }));
+    conseil: a.conseil, essaisConseil: a.essaisConseil, essaiJusqua: a.essaiJusqua || 0,
+    entreprises: a.entreprises || 1 }));
 }
 
 // L'heure du téléphone, sans pouvoir revenir en arrière pour allonger l'essai.
@@ -182,11 +245,20 @@ function base64urlVersOctets(texte) {
 function lireCode(texte) {
   // On accepte le code seul, le lien entier, avec espaces ou retours à la ligne.
   const brut = String(texte || "").replace(/\s+/g, "");
-  const m = brut.match(/([A-Z2-9]{8})\.(C?\d{1,4})\.([a-z0-9]{4,12})\.([A-Za-z0-9_-]{80,90})/);
+  const m = brut.match(/([A-Z2-9]{8})\.(C?\d{1,4}(?:E\d{1,2})?)\.([a-z0-9]{4,12})\.([A-Za-z0-9_-]{80,90})/);
   if (!m) return null;
+  // Le champ du milieu : les jours, avec deux marques possibles —
+  //   « C » devant : c'est l'option Conseil, pas l'abonnement ;
+  //   « E » derrière : le nombre d'entreprises permises (…​.366E3. = 3).
+  // Sans « E », c'est une entreprise : tous les codes d'avant restent valables.
   const conseil = m[2].charAt(0) === "C";
-  return { id: m[1], jours: Number(conseil ? m[2].slice(1) : m[2]), conseil: conseil,
-    emis: m[3], signature: m[4], charge: m[1] + "." + m[2] + "." + m[3] };
+  const champ = conseil ? m[2].slice(1) : m[2];
+  const morceaux = champ.split("E");
+  return {
+    id: m[1], jours: Number(morceaux[0]), conseil: conseil,
+    entreprises: morceaux.length > 1 ? Math.max(1, Number(morceaux[1])) : 1,
+    emis: m[3], signature: m[4], charge: m[1] + "." + m[2] + "." + m[3]
+  };
 }
 // Un code est bon s'il est signé par N'IMPORTE LAQUELLE des clés publiques
 // (le téléphone du propriétaire, ou le serveur du tunnel).
@@ -233,6 +305,10 @@ function activerCode(texte) {
       const e = etatAbonnement();
       // Les jours payés s'ajoutent à la fin de l'essai ou de l'abonnement en cours.
       a.fin = Math.max(e.actif ? e.fin : t, a.fin || 0) + code.jours * JOUR;
+      // Le nombre d'entreprises que la formule permet. On prend le plus grand
+      // des deux : un commerçant qui ajoute un mois « Solo » à un abonnement
+      // « Multi » encore en cours ne doit pas perdre ses entreprises en route.
+      a.entreprises = Math.max(a.entreprises || 1, code.entreprises || 1);
     }
     a.codes.push(code.emis);
     // La facture de l'abonnement qui vient d'être payé (voir facture-abo.js).
@@ -246,7 +322,10 @@ let derniereFactureAbo = null;
 
 /* ---------- Écran « Mon abonnement » ---------- */
 
-let formuleChoisie = "an";
+let formuleChoisie = "solo-an";
+let planChoisi = "solo";
+// « dureeAbo » et pas « dureeChoisie » : ce nom sert déjà aux investissements.
+let dureeAbo = "an";
 
 function ouvrirAbonnement(raison) {
   const e = etatAbonnement();
@@ -255,12 +334,15 @@ function ouvrirAbonnement(raison) {
   $("abo-etat").textContent = texteEtat(e);
   $("abo-etat").className = "abo-etat " + (e.actif ? (e.bientot ? "bientot" : "ok") : "fini");
   $("abo-id").textContent = idAffiche(donnees.abonnement.id);
-  $("abo-formules").innerHTML = FORMULES.map(function (f) {
-    return '<button type="button" class="choix-carte abo-formule" data-formule="' + f.id + '">' +
-      (f.conseil ? '<span class="abo-conseil">Conseillé</span>' : '') +
-      '<b>' + f.nom + '</b><span class="abo-prix">' + francCFA(f.prix) + '</span><small>' + f.detail() + '</small></button>';
+  // Deux choix, dans cet ordre : COMBIEN D'ENTREPRISES, puis COMBIEN DE TEMPS.
+  // C'est le nombre d'entreprises qui change le prix du simple au double : il
+  // se choisit donc en premier, pas caché derrière une durée.
+  $("abo-plans").innerHTML = PLANS.map(function (p) {
+    return '<button type="button" class="choix-carte abo-plan" data-plan="' + p.id + '">' +
+      (p.conseil ? '<span class="abo-conseil">Conseillé</span>' : '') +
+      '<b>' + p.nom + '</b><small>' + p.aide + '</small></button>';
   }).join("");
-  choisirFormule(formuleChoisie);
+  choisirPlan(planChoisi);
   // Quand le tunnel de vente est allumé (voir tunnel.js), le paiement est
   // automatique : un seul bouton, et l'abonnement s'active tout seul. L'ancien
   // chemin (payer, puis écrire sur WhatsApp) reste là, replié derrière « Je
@@ -299,18 +381,41 @@ function ouvrirAbonnement(raison) {
   afficherFacturesAbo();
   ouvrirFeuille("abonnement");
 }
+// La formule choisie : combien d'entreprises. Elle redessine les durées, car
+// leurs prix en dépendent.
+function choisirPlan(id) {
+  planChoisi = PLANS.some(function (p) { return p.id === id; }) ? id : PLANS[0].id;
+  document.querySelectorAll("[data-plan]").forEach(function (b) {
+    b.setAttribute("aria-pressed", String(b.dataset.plan === planChoisi));
+  });
+  $("abo-formules").innerHTML = FORMULES.filter(function (f) { return f.plan === planChoisi; })
+    .map(function (f) {
+      return '<button type="button" class="choix-carte abo-formule" data-formule="' + f.id + '">' +
+        (f.conseil ? '<span class="abo-conseil">Conseillé</span>' : '') +
+        '<b>' + f.nomCourt + '</b><span class="abo-prix">' + francCFA(f.prix) + '</span><small>' + f.detail() + '</small></button>';
+    }).join("");
+  const voulue = planChoisi + "-" + dureeAbo;
+  choisirFormule(FORMULES.some(function (f) { return f.id === voulue; }) ? voulue : planChoisi + "-an");
+}
+
 function choisirFormule(id) {
   formuleChoisie = id;
   const f = FORMULES.find(function (x) { return x.id === id; }) || FORMULES[0];
+  planChoisi = f.plan;
+  dureeAbo = f.duree;
   document.querySelectorAll("[data-formule]").forEach(function (b) {
     b.setAttribute("aria-pressed", String(b.dataset.formule === id));
   });
   $("abo-montant").textContent = francCFA(f.prix);
+  $("abo-entreprises").textContent = f.entreprises === 1
+    ? tr("Une entreprise sur ce téléphone.")
+    : tr("Jusqu'à " + f.entreprises + " entreprises sur ce téléphone.");
   const b = donnees.boutique;
   const email = ($("abo-email").value || "").trim();
   // La formule demandée est gardée : à l'activation, c'est elle qui donne le prix
   // à écrire sur la facture (le code d'activation ne contient que des jours).
-  donnees.abonnement.demande = { jours: f.jours, prix: f.prix, nom: f.nom, email: email, conseil: false };
+  donnees.abonnement.demande = { jours: f.jours, prix: f.prix, nom: f.nom, email: email, conseil: false,
+    entreprises: f.entreprises };
   const texte = tr("Bonjour Canari, je veux l'abonnement " + f.nom + " (" + francCFA(f.prix) + ").") + "\n" +
     tr("Mon numéro Canari : " + idAffiche(donnees.abonnement.id)) + "\n" +
     (b.nom ? tr("Boutique : " + b.nom) + "\n" : "") +
@@ -322,7 +427,7 @@ function choisirFormule(id) {
   // (numéro Canari, formule, nom de la boutique). Sans sa clé secrète, ce lien ne
   // permet de fabriquer aucun code : il ne fait que remplir le formulaire.
   const lienGerant = new URL("gerant.html", location.href).href + "#id=" + donnees.abonnement.id +
-    "&j=" + f.jours + "&f=" + encodeURIComponent(f.nom) + "&p=" + f.prix +
+    "&j=" + f.jours + "&e=" + f.entreprises + "&f=" + encodeURIComponent(f.nom) + "&p=" + f.prix +
     (b.nom ? "&b=" + encodeURIComponent(b.nom.slice(0, 40)) : "") +
     (email ? "&m=" + encodeURIComponent(email) : "") +
     (b.tel ? "&t=" + b.tel : "");   // pour que la réponse parte dans la bonne conversation
@@ -406,6 +511,10 @@ function initAbonnement() {
   reserverAuxAbonnes("ouvrirSaisie", function (mode) { return mode === "paye"; });
   reserverAuxAbonnes("ouvrirArrivage");
   reserverAuxAbonnes("ouvrirAchatIntrant");
+  $("abo-plans").addEventListener("click", function (e) {
+    const b = e.target.closest("[data-plan]");
+    if (b) choisirPlan(b.dataset.plan);
+  });
   $("abo-formules").addEventListener("click", function (e) {
     const b = e.target.closest("[data-formule]");
     if (b) choisirFormule(b.dataset.formule);

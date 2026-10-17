@@ -454,6 +454,8 @@ function terminerParametrage() {
   // On ne garde que les lignes remplies.
   donnees.charges = brouillon.charges.filter(function (l) { return l.mode === "pourcent" ? l.taux > 0 : l.montant > 0; });
   sauver();
+  // La liste des entreprises porte le nom de la boutique : elle suit.
+  if (typeof majNomEntreprise === "function") { majNomEntreprise(); majBandeauEntreprise(); }
   // L'accord pour les rappels WhatsApp (il n'est demandé que si le tunnel est allumé).
   if (brouillon.rappels !== undefined) reglerRappels(brouillon.rappels, brouillon.rappelNom, brouillon.rappelTel);
   montrer(retourApres);

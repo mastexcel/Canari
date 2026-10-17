@@ -12,7 +12,7 @@ d'écran changent, on relance les deux scripts et les sept images se refont.
 | `statut-credit.png` | 1080 × 1920 | **Statut WhatsApp**, story. Pour parler des crédits et des relances — c'est le problème que les commerçants ressentent le plus. |
 | `carre-marque.png` | 1080 × 1080 | **Post Facebook / Instagram.** La carte de visite : la mascotte, le nom, le slogan, ce que l'appli fait. À utiliser en premier post. |
 | `carre-relance.png` | 1080 × 1080 | **Post.** Montre le message de relance tout écrit. C'est celui qui fait comprendre l'intérêt en deux secondes. |
-| `carre-prix.png` | 1080 × 1080 | **Post.** Le prix, annoncé franchement : 1 mois gratuit, puis 1 000 F. Et « zéro publicité ». |
+| `carre-prix.png` | 1080 × 1080 | **Post.** Le prix, annoncé franchement : 1 mois gratuit, puis 3 000 F. Et « zéro publicité ». |
 | `banniere.png` | 1200 × 630 | **Couverture de page Facebook**, et c'est aussi elle qui sert d'aperçu quand on envoie le lien (voir plus bas). |
 | `flyer.png` | 1748 × 2480 | **Flyer A5 à imprimer** (300 points par pouce). Avec le **QR code** : le commerçant le scanne avec son appareil photo et l'appli s'installe. À distribuer au marché, à laisser chez les grossistes. |
 

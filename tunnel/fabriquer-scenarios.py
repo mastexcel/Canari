@@ -133,10 +133,14 @@ function base64url(ab) {
   }
   return s;
 }
-async function fabriquerCode(idCanari, jours, conseil) {
+async function fabriquerCode(idCanari, jours, conseil, entreprises) {
   const sub = globalThis.crypto && globalThis.crypto.subtle;
   if (!sub) throw new Error("Ce n8n n'a pas crypto.subtle : mets-le à jour (Node 18 ou plus récent).");
-  const charge = idCanari + '.' + (conseil ? 'C' : '') + jours + '.' + Date.now().toString(36);
+  // Un « E » derrière les jours : le nombre d'entreprises que la formule
+  // permet (…​.366E3.). Sans « E », c'est une seule, comme les codes d'avant.
+  const ent = Math.max(1, Number(entreprises) || 1);
+  const suffixe = conseil || ent <= 1 ? '' : 'E' + ent;
+  const charge = idCanari + '.' + (conseil ? 'C' : '') + jours + suffixe + '.' + Date.now().toString(36);
   const cle = await sub.importKey('jwk', CLE_PRIVEE, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign']);
   const signature = await sub.sign({ name: 'ECDSA', hash: 'SHA-256' }, cle, new TextEncoder().encode(charge));
   return charge + '.' + base64url(signature);
@@ -146,14 +150,24 @@ async function fabriquerCode(idCanari, jours, conseil) {
 # Les trois formules, les mêmes que dans l'appli (FORMULES de app/abonnement.js).
 # Si un prix change, il change ici AUSSI : c'est le serveur qui encaisse.
 FORMULES = r"""
+// Les neuf formules de l'appli (FORMULES de app/abonnement.js), plus l'option
+// Conseil. « entreprises » est le nombre d'entreprises que le code permet : il
+// part dans le code signé, derrière un E (…​.366E3.). Si un prix change ici,
+// il doit changer dans app/abonnement.js AUSSI : c'est le serveur qui encaisse.
 const FORMULES = {
-  mois:      { nom: '1 mois',  jours: 31,  prix: 1000 },
-  trimestre: { nom: '3 mois',  jours: 92,  prix: 2500 },
-  an:        { nom: '1 an',    jours: 366, prix: 9000 },
+  'solo-mois':       { nom: 'Solo 1 mois',  jours: 31,  prix: 3000,  entreprises: 1 },
+  'solo-trimestre':  { nom: 'Solo 3 mois',  jours: 92,  prix: 8000,  entreprises: 1 },
+  'solo-an':         { nom: 'Solo 1 an',    jours: 366, prix: 27000, entreprises: 1 },
+  'multi-mois':      { nom: 'Multi 1 mois', jours: 31,  prix: 5000,  entreprises: 3 },
+  'multi-trimestre': { nom: 'Multi 3 mois', jours: 92,  prix: 13500, entreprises: 3 },
+  'multi-an':        { nom: 'Multi 1 an',   jours: 366, prix: 45000, entreprises: 3 },
+  'pro-mois':        { nom: 'Pro 1 mois',   jours: 31,  prix: 8000,  entreprises: 10 },
+  'pro-trimestre':   { nom: 'Pro 3 mois',   jours: 92,  prix: 21500, entreprises: 10 },
+  'pro-an':          { nom: 'Pro 1 an',     jours: 366, prix: 72000, entreprises: 10 },
   // L'option Conseil (« Demande à Canari »), signée avec un C devant les jours.
-  conseil_mois:      { nom: 'Conseil 1 mois', jours: 31,  prix: 500,  conseil: true },
-  conseil_trimestre: { nom: 'Conseil 3 mois', jours: 92,  prix: 1200, conseil: true },
-  conseil_an:        { nom: 'Conseil 1 an',   jours: 366, prix: 4000, conseil: true }
+  'conseil-mois':      { nom: 'Conseil 1 mois', jours: 31,  prix: 500,  conseil: true, entreprises: 1 },
+  'conseil-trimestre': { nom: 'Conseil 3 mois', jours: 92,  prix: 1200, conseil: true, entreprises: 1 },
+  'conseil-an':        { nom: 'Conseil 1 an',   jours: 366, prix: 4000, conseil: true, entreprises: 1 }
 };
 """
 
@@ -362,6 +376,7 @@ return [{ json: {
   plan: q.plan,
   jours: f.jours,
   conseil: !!f.conseil,
+  entreprises: f.entreprises || 1,
   montant: f.prix,
   description: 'Canari — ' + f.nom,
   telephone: nettoyerTel(q.tel),
@@ -376,7 +391,8 @@ GUICHET = ("={{ JSON.stringify({ apikey: '%s', site_id: '%s', "
            "description: $json.description, channels: 'MOBILE_MONEY', lang: $json.langue.toUpperCase(), "
            "customer_phone_number: $json.telephone, "
            "metadata: JSON.stringify({ id: $json.canari_id, plan: $json.plan, jours: $json.jours, "
-           "conseil: $json.conseil, tel: $json.telephone, boutique: $json.boutique, email: $json.email, "
+           "conseil: $json.conseil, entreprises: $json.entreprises, "
+           "tel: $json.telephone, boutique: $json.boutique, email: $json.email, "
            "langue: $json.langue }), "
            "notify_url: '%s/webhook/canari-notification', "
            "return_url: '%s/#paiement=ok' }) }}") % (CP_KEY, CP_SITE, N8N, APP)
@@ -422,7 +438,7 @@ if (client.derniere_transaction && String(client.derniere_transaction) === trans
 
 const jours = Number(meta.jours) || 31;
 const conseil = !!meta.conseil;
-const code = await fabriquerCode(id, jours, conseil);
+const code = await fabriquerCode(id, jours, conseil, Number(meta.entreprises) || 1);
 
 // La date de fin pour la Sheet et pour les messages de renouvellement. L'appli,
 // elle, ajoute les jours à la suite de ce qu'il reste : c'est elle qui a la

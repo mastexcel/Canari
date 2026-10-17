@@ -6,7 +6,7 @@
 
 const CLE_DEJA_VU = "canari.accueilVu";
 const CLE_DONNEES = "canari.donnees";
-const CLE_DERNIERE_SAUVEGARDE = "canari.derniereSauvegarde";
+const CLE_DERNIERE_SAUVEGARDE = "canari.derniereSauvegarde";   // + « .cle » pour les autres entreprises
 const CLE_AVANT_RESTAURATION = "canari.avantRestauration";
 const JOUR = 864e5;
 
@@ -51,6 +51,23 @@ const BASE = "canari", MAGASIN = "donnees";
 let modeStockage = "local"; // "base" (IndexedDB) ou "local" (localStorage)
 let baseOuverte = null;
 
+/* PLUSIEURS ENTREPRISES SUR LE MÊME TÉLÉPHONE (demande du propriétaire).
+   Chaque entreprise a son propre dossier, rangé sous sa propre clé. La première
+   garde la clé « principal » : c'est celle de toutes les versions d'avant, et un
+   commerçant qui met à jour ne doit rien perdre ni rien avoir à faire.
+   Voir entreprises.js pour la liste et la bascule. */
+let cleDossier = "principal";
+// La clé localStorage du repli : « canari.donnees » pour la première entreprise
+// (comme avant), « canari.donnees.xxx » pour les suivantes.
+function cleLocaleDossier(cle) {
+  return cle === "principal" ? CLE_DONNEES : CLE_DONNEES + "." + cle;
+}
+// Chaque entreprise a sa propre date de dernière sauvegarde : le rappel ne doit
+// pas se taire sur la boutique B parce qu'on a sauvegardé la boutique A.
+function cleSauvegarde() {
+  return cleDossier === "principal" ? CLE_DERNIERE_SAUVEGARDE : CLE_DERNIERE_SAUVEGARDE + "." + cleDossier;
+}
+
 function ouvrirBase() {
   if (!baseOuverte) {
     baseOuverte = new Promise(function (ok, ko) {
@@ -87,13 +104,14 @@ function ecrireBase(cle, valeur) {
 // y sont déplacées une fois, puis effacées de localStorage.
 function chargerDonnees() {
   let ancien = null;
-  try { ancien = JSON.parse(lire(CLE_DONNEES)); } catch (e) { ancien = null; }
+  try { ancien = JSON.parse(lire(cleLocaleDossier(cleDossier))); } catch (e) { ancien = null; }
   const ancienValide = ancien && Array.isArray(ancien.mouvements);
-  return lireBase("principal").then(function (d) {
+  const cle = cleDossier;
+  return lireBase(cle).then(function (d) {
     modeStockage = "base";
     if (ancienValide) {
-      return ecrireBase("principal", ancien).then(function () {
-        try { localStorage.removeItem(CLE_DONNEES); } catch (e) { /* rien */ }
+      return ecrireBase(cle, ancien).then(function () {
+        try { localStorage.removeItem(cleLocaleDossier(cle)); } catch (e) { /* rien */ }
         return ancien;
       });
     }
@@ -106,12 +124,13 @@ function chargerDonnees() {
 
 function sauver() {
   versionDonnees++;
+  const cle = cleDossier;
   const alerte = function () { message("Attention : impossible d'enregistrer sur ce téléphone. Fais une sauvegarde (Réglages ⚙)."); };
   if (modeStockage === "base") {
-    ecrireBase("principal", donnees).catch(function () {
-      if (!ecrire(CLE_DONNEES, JSON.stringify(donnees))) alerte();
+    ecrireBase(cle, donnees).catch(function () {
+      if (!ecrire(cleLocaleDossier(cle), JSON.stringify(donnees))) alerte();
     });
-  } else if (!ecrire(CLE_DONNEES, JSON.stringify(donnees))) {
+  } else if (!ecrire(cleLocaleDossier(cle), JSON.stringify(donnees))) {
     alerte();
   }
 }
@@ -432,6 +451,9 @@ let coteCredits = "clients";
 // Dessine seulement l'onglet affiché (les autres le seront quand on les ouvrira).
 function afficher() {
   appliquerDevise();
+  // Le nom de l'entreprise ouverte, en haut : il n'apparaît que s'il y en a
+  // plusieurs (voir entreprises.js).
+  if (typeof majBandeauEntreprise === "function") majBandeauEntreprise();
   afficherRappelSauvegarde();
   afficherBandeauAbonnement();
   majPastilles();
@@ -1548,7 +1570,7 @@ function repartirDeZero() {
   donnees = { mouvements: [], clients: {}, fournisseurs: {}, meta: {} };
   if (abonnement) donnees.abonnement = abonnement;
   completerDonnees();
-  try { localStorage.removeItem(CLE_DERNIERE_SAUVEGARDE); } catch (e) { /* rien */ }
+  try { localStorage.removeItem(cleSauvegarde()); } catch (e) { /* rien */ }
   sauver();
   fermerFeuilles();
   montrer("principal");
@@ -1557,7 +1579,7 @@ function repartirDeZero() {
 }
 
 function joursDepuisSauvegarde() {
-  const t = Number(lire(CLE_DERNIERE_SAUVEGARDE));
+  const t = Number(lire(cleSauvegarde()));
   return t ? joursDepuis(t) : null;
 }
 
@@ -1575,6 +1597,7 @@ function afficherRappelSauvegarde() {
 }
 
 function afficherReglages() {
+  prechargerDossiers();
   demanderVersion();
   afficherVersion();
   remplirFormBoutique();
@@ -1589,18 +1612,61 @@ function afficherReglages() {
     : "Aucune charge enregistrée. Ajoute ton loyer, tes salaires et tes taxes pour voir ton bénéfice net.";
   const j = joursDepuisSauvegarde();
   $("derniere-sauvegarde").textContent = j === null ? "Aucune sauvegarde pour l'instant."
-    : "Dernière sauvegarde : " + ilYA(Number(lire(CLE_DERNIERE_SAUVEGARDE))) + ".";
+    : "Dernière sauvegarde : " + ilYA(Number(lire(cleSauvegarde()))) + ".";
   $("derniere-sauvegarde").classList.toggle("a-faire", j === null || j >= 7);
   $("annuler-restauration").hidden = lire(CLE_AVANT_RESTAURATION) !== "oui";
 }
 
+/* La sauvegarde emporte TOUTES les entreprises du téléphone, pas seulement
+   celle qui est ouverte : « ne rien perdre si le téléphone change » n'aurait
+   aucun sens si deux entreprises sur trois restaient sur l'ancien.
+   Le champ « donnees » reste celui de l'entreprise ouverte : une sauvegarde
+   neuve se récupère donc aussi sur une version ancienne de Canari. */
+/* Les dossiers des AUTRES entreprises sont lus d'avance, à l'ouverture des
+   Réglages : c'est de là qu'on sauvegarde. Ainsi le fichier se fabrique sans
+   attendre la base — et « Partager » garde le droit d'ouvrir le menu
+   d'Android, qu'un téléphone retire si on le fait attendre. */
+let dossiersPrets = null;
+function prechargerDossiers() {
+  rassemblerEntreprises().then(function (t) { dossiersPrets = t; }).catch(function () { dossiersPrets = null; });
+}
+
 function fichierSauvegarde() {
-  const contenu = JSON.stringify({ app: "canari", version: 1, date: new Date().toISOString(), donnees: donnees });
+  // L'entreprise ouverte est toujours prise en direct : la copie lue d'avance
+  // pourrait dater d'avant la dernière vente.
+  const autres = (dossiersPrets || []).filter(function (e) { return e.cle !== cleDossier; });
+  const ouverte = { cle: cleDossier, nom: (typeof entrepriseActive === "function" && entrepriseActive().nom) || "", donnees: donnees };
+  const contenu = JSON.stringify({
+    app: "canari", version: 2, date: new Date().toISOString(),
+    donnees: donnees,            // l'entreprise ouverte, pour les versions d'avant
+    actif: cleDossier,
+    entreprises: [ouverte].concat(autres)
+  });
   const nom = tr("canari-sauvegarde") + "-" + cleJour(Date.now()) + ".json";
   return new File([contenu], nom, { type: "application/json" });
 }
+
+// Les dossiers de toutes les entreprises, celui qui est ouvert compris.
+function rassemblerEntreprises() {
+  const liste = typeof listeEntreprises === "function" ? listeEntreprises() : [{ cle: cleDossier, nom: "" }];
+  return Promise.all(liste.map(function (e) {
+    if (e.cle === cleDossier) return Promise.resolve({ cle: e.cle, nom: e.nom || "", donnees: donnees });
+    const secours = function () {
+      let d = null;
+      try { d = JSON.parse(lire(cleLocaleDossier(e.cle))); } catch (err) { d = null; }
+      return d;
+    };
+    const lu = modeStockage === "base"
+      ? lireBase(e.cle).catch(function () { return null; })
+      : Promise.resolve(null);
+    return lu.then(function (d) {
+      const bon = d && Array.isArray(d.mouvements) ? d : secours();
+      return bon ? { cle: e.cle, nom: e.nom || "", donnees: bon } : null;
+    });
+  })).then(function (tous) { return tous.filter(Boolean); });
+}
 function sauvegardeFaite() {
-  ecrire(CLE_DERNIERE_SAUVEGARDE, String(Date.now()));
+  ecrire(cleSauvegarde(), String(Date.now()));
   afficherReglages();
   afficher();
 }
@@ -1642,11 +1708,28 @@ function restaurer(fichier) {
       return;
     }
     const quand = contenu.date ? new Date(contenu.date).toLocaleDateString(LOCALE, { day: "numeric", month: "long", year: "numeric" }) : "?";
-    const ok = window.confirm(tr("Récupérer la sauvegarde du " + quand + " (" + d.mouvements.length + " lignes) ?") + "\n\n" +
-      tr("Ce qui est noté sur ce téléphone sera remplacé."));
-    if (!ok) return;
-    garderAvantRestauration(donnees);
+    // Une sauvegarde récente porte TOUTES les entreprises du téléphone ; une
+    // sauvegarde ancienne n'en porte qu'une. On dit lequel des deux c'est, et
+    // combien d'entreprises vont être remplacées : c'est irréversible, donc
+    // personne ne doit le découvrir après coup.
+    const toutes = Array.isArray(contenu.entreprises)
+      ? contenu.entreprises.filter(function (e) { return e && e.cle && e.donnees && Array.isArray(e.donnees.mouvements); })
+      : [];
+    const ici = typeof listeEntreprises === "function" ? listeEntreprises().length : 1;
+    const combien = toutes.length > 1
+      ? tr("Cette sauvegarde contient " + toutes.length + " entreprises.") + "\n" +
+        (ici > 1 ? tr("Les " + ici + " entreprises de ce téléphone seront remplacées.") : tr("Ce qui est noté sur ce téléphone sera remplacé."))
+      : tr("Ce qui est noté sur ce téléphone sera remplacé.") +
+        (ici > 1 ? "\n" + tr("Seule l'entreprise ouverte en ce moment est touchée.") : "");
+    if (!window.confirm(tr("Récupérer la sauvegarde du " + quand + " (" + d.mouvements.length + " lignes) ?") + "\n\n" + combien)) return;
+
     const abonnement = donnees.abonnement;
+    if (toutes.length > 1) {
+      garderAvantRestauration(donnees);
+      restaurerPlusieurs(toutes, contenu.actif, abonnement);
+      return;
+    }
+    garderAvantRestauration(donnees);
     donnees = d;
     completerDonnees();
     garderAbonnement(abonnement);
@@ -1657,6 +1740,38 @@ function restaurer(fichier) {
   };
   lecteur.onerror = function () { message("Impossible de lire ce fichier."); };
   lecteur.readAsText(fichier);
+}
+
+// Récupérer une sauvegarde qui porte plusieurs entreprises : chaque dossier
+// est réécrit sous sa clé, et la liste des entreprises est refaite à neuf.
+function restaurerPlusieurs(toutes, actif, abonnement) {
+  const ecrireDossier = function (cle, d) {
+    if (modeStockage === "base") return ecrireBase(cle, d).catch(function () { ecrire(cleLocaleDossier(cle), JSON.stringify(d)); });
+    ecrire(cleLocaleDossier(cle), JSON.stringify(d));
+    return Promise.resolve();
+  };
+  const cleActive = toutes.some(function (e) { return e.cle === actif; }) ? actif : toutes[0].cle;
+  Promise.all(toutes.map(function (e) { return ecrireDossier(e.cle, e.donnees); })).then(function () {
+    indexEntreprises = {
+      actif: cleActive,
+      liste: toutes.map(function (e) { return { cle: e.cle, nom: e.nom || "", cree: Date.now() }; })
+    };
+    enregistrerEntreprises();
+    cleDossier = cleActive;
+    versionDonnees++;
+    const bonne = toutes.find(function (e) { return e.cle === cleActive; });
+    donnees = bonne.donnees;
+    completerDonnees();
+    garderAbonnement(abonnement);
+    sauver();
+    appliquerDevise();
+    afficher();
+    afficherReglages();
+    majBandeauEntreprise();
+    message("Sauvegarde récupérée : " + toutes.length + " entreprises.", null, true);
+  }).catch(function () {
+    message("La récupération a échoué. Rien n'a été changé.");
+  });
 }
 
 function ouvrirReglages() {
@@ -1742,7 +1857,8 @@ document.querySelectorAll("[data-langue]").forEach(function (b) {
   b.setAttribute("aria-pressed", String(b.dataset.langue === LANGUE));
   b.addEventListener("click", function () { if (b.dataset.langue !== LANGUE) choisirLangue(b.dataset.langue); });
 });
-chargerDonnees().then(function (d) {
+// L'index des entreprises se lit AVANT les données : il dit quel dossier ouvrir.
+chargerEntreprises().then(chargerDonnees).then(function (d) {
   if (d) donnees = d;
   completerDonnees();
   appliquerDevise();
@@ -1761,6 +1877,7 @@ chargerDonnees().then(function (d) {
   initFactureAbo();
   initContacts();
   initAbonnement();
+  initEntreprises();
   initTunnel();
   initVoix();
   montrer(lire(CLE_DEJA_VU) ? "principal" : "accueil");

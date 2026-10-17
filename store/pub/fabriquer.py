@@ -192,8 +192,9 @@ V.append(section("carre-prix", 1080, 1080, "clair", f"""
 <div style="position:absolute;inset:0;padding:80px;display:flex;flex-direction:column;align-items:center;text-align:center;justify-content:center">
   <div class="logo" style="font-size:46px;color:#1A1B20">canari</div>
   <h1 style="font-size:104px;margin-top:30px;color:#1A1B20">1 mois <span style="color:#5E7033">gratuit</span>.</h1>
-  <p style="font-size:46px;margin-top:22px;color:#22242A;font-weight:600">Puis 1 000 F par mois.</p>
-  <p style="font-size:34px;margin-top:14px;color:#5B5A5E">ou 9 000 F l'année — trois mois offerts</p>
+  <p style="font-size:46px;margin-top:22px;color:#22242A;font-weight:600">Puis 3 000 F par mois.</p>
+  <p style="font-size:34px;margin-top:14px;color:#5B5A5E">ou 27 000 F l'année — trois mois offerts</p>
+  <p style="font-size:30px;margin-top:10px;color:#5B5A5E">Plusieurs boutiques ? 5 000 F par mois pour trois.</p>
   <div style="display:flex;align-items:center;gap:26px;margin-top:46px;background:#fff;border:2px solid #E8DFD7;border-radius:24px;padding:26px 40px">
     <img src="{yeux}" style="width:110px;height:auto;border-radius:22px">
     <div style="text-align:left">
@@ -257,7 +258,7 @@ V.append(section("flyer", 1748, 2480, "clair", f"""
   </div>
 
   <div style="background:#1A1B20;color:#F3EFEA;padding:52px 90px;text-align:center">
-    <div style="font-size:46px;font-weight:700;font-family:var(--titre)">1 mois gratuit, puis 1 000 F par mois.</div>
+    <div style="font-size:46px;font-weight:700;font-family:var(--titre)">1 mois gratuit, puis 3 000 F par mois.</div>
     <div style="font-size:34px;color:#CFC8C2;margin-top:12px">Marche sans internet · Zéro publicité · Tes chiffres restent chez toi</div>
     <div style="font-size:32px;color:#F46134;margin-top:22px;font-weight:600">mastexcel.github.io/Canari</div>
     <div style="font-size:24px;color:#8E929B;margin-top:26px">Une application de Bridge Investment Partners</div>

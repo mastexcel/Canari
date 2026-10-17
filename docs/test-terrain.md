@@ -3,7 +3,7 @@
 Ce guide sert à répondre à **deux questions**, et à rien d'autre :
 
 1. **Un commerçant comprend-il Canari tout seul, sans qu'on l'aide ?**
-2. **Est-il prêt à payer 1 000 F par mois ?**
+2. **Est-il prêt à payer 3 000 F par mois ?** (prix revu le 17/10/2026, voir `analyse-prix.md`)
 
 Vise **10 commerçants** différents (boutique de quartier, marché, vente à la sauvette, un peu de fabrication). Compte 20 à 30 minutes par personne. Fais-les sur 2 ou 3 jours, pas tous le même jour : tu auras le temps de corriger entre deux.
 
@@ -69,12 +69,12 @@ Fais attention à ces moments précis, ce sont les plus risqués :
 
 ## 5. Les questions sur le prix
 
-**Ne demande jamais** « est-ce que tu paierais 1 000 F ? ». Tout le monde dit oui par politesse. Demande plutôt, dans cet ordre :
+**Ne demande jamais** « est-ce que tu paierais 3 000 F ? ». Tout le monde dit oui par politesse. Demande plutôt, dans cet ordre :
 
 1. « Aujourd'hui, comment tu notes tes crédits ? » *(cahier, tête, rien, autre appli)*
 2. « Le mois dernier, combien d'argent tu as perdu parce qu'un client a oublié de payer ? » **→ Note le montant.**
 3. « Combien de temps tu passes chaque soir à faire tes comptes ? »
-4. Montre l'écran d'abonnement : « Après 3 mois gratuits, c'est 1 000 F par mois, ou 9 000 F l'année. Qu'est-ce que tu en penses ? » **→ Note sa première réaction, pas sa phrase polie d'après.**
+4. Montre l'écran d'abonnement : « Après 1 mois gratuit, c'est 3 000 F par mois, ou 27 000 F l'année. Qu'est-ce que tu en penses ? » **→ Note sa première réaction, pas sa phrase polie d'après.**
 5. **Le vrai test** : « Si je te l'installe aujourd'hui, tu prends les 3 mois gratuits ? » Puis, à ceux qui disent oui : « Et si tu paies l'année tout de suite, je te fais 7 500 F au lieu de 9 000. Ça t'intéresse ? »
 
 **Celui qui sort son téléphone pour payer vaut cent qui disent « c'est bien ».**
@@ -107,7 +107,8 @@ GESTE                        SEUL   AVEC PEINE   ÉCHOUÉ   Où il a bloqué
 Ses mots exacts (surtout sur l'argent) : ___________________________
 ___________________________________________________________________
 
-Réaction au prix (1 000 F/mois) : sourire / hésite / grimace / refus net
+Réaction au prix (3 000 F/mois) : sourire / hésite / grimace / refus net
+A-t-il plusieurs commerces ? oui / non — si oui, Multi à 5 000 F l'intéresse-t-il ?
 Prend les 3 mois gratuits ?      oui / non        A payé l'année ? oui / non
 La phrase la plus importante qu'il a dite :
 ___________________________________________________________________

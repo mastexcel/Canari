@@ -184,8 +184,8 @@ FAIT POUR NOS RÉALITÉS
 
 ESSAI GRATUIT DE 3 MOIS
 
-Tout est ouvert pendant 90 jours. Ensuite, l'abonnement coûte 1 000 F par mois,
-ou 9 000 F l'année. Même sans abonnement, tu gardes l'accès à tous tes chiffres,
+Tout est ouvert pendant 30 jours. Ensuite, l'abonnement coûte 3 000 F par mois,
+ou 27 000 F l'année (formule Solo, une entreprise). Même sans abonnement, tu gardes l'accès à tous tes chiffres,
 tu peux relancer tes clients, noter leurs remboursements et faire tes
 sauvegardes : seules les nouvelles ventes demandent un abonnement.
 

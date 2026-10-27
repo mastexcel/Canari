@@ -506,32 +506,60 @@ Demande du 27/10/2026 : « ajoute un onglet profil à Canari ». Code : `app/pro
 - **Six onglets tiennent sur 320 px** (vérifié : aucun mot coupé, aucun débordement). Le mot « Profil » est court, c'est ce qui le permet.
 - **Règle pour la suite** : le Profil ne reçoit jamais un champ de saisie. S'il faut pouvoir changer quelque chose, on ajoute un bouton vers la carte des Réglages qui le fait déjà.
 
-## Portrait ET paysage (fait, demande du propriétaire)
+## Les tailles d'écran : portrait, paysage, tablette, PC (fait, demande du propriétaire)
 
-Demande du 27/10/2026 : « avec affichage en mode portrait et paysage ». L'appli était verrouillée en portrait à **deux endroits**, et il fallait lever les deux :
+Demande du 27/10/2026, en deux temps : « avec affichage en mode portrait et paysage », puis — après une première version — « **la configuration en mode paysage n'est pas bonne du tout ; recherche ce qui se fait de mieux en la matière et fais de même. La taille des objets, la taille de police, la largeur des colonnes : tout doit être recalculé et redéfini pour assurer la meilleure expérience possible à l'utilisateur.** » Il avait raison : la première version était du rafistolage — on rétrécissait des choses au jugé jusqu'à ce que ça rentre. Tout a été repris. Section « LES TAILLES D'ÉCRAN » de `app/style.css`.
+
+### Le déverrouillage, à DEUX endroits
+
+L'appli était verrouillée en portrait dans deux fichiers, et il fallait lever les deux :
 1. `app/manifest.webmanifest` → `"orientation": "any"` (l'appli installée depuis le navigateur) ;
 2. `twa-manifest.json` → `"orientation": "any"` (l'application Android du Play Store). **Oublier celui-ci annulait tout le travail CSS** : l'appli serait restée debout quoi qu'il arrive. Le workflow Android vérifie maintenant ce point et **échoue** s'il trouve `screenOrientation="portrait"`.
 
-Le CSS vit dans la section « LE MODE PAYSAGE » de `app/style.css`, enfermé dans `@media (orientation: landscape) and (max-height: 560px)` : **le portrait ne bouge pas**, et une tablette ou un PC, où la hauteur ne manque pas, n'est pas touché.
+### Les classes de taille de fenêtre de Material 3, et rien d'autre
 
-Deux choses cassaient vraiment, vues à l'écran avant d'être corrigées :
-- **L'accueil demandait 624 px pour 360 px** : « Commencer » tombait sous la ligne de flottaison, et le tout premier écran de l'appli n'offrait aucune action visible. Couché, il passe donc **sur deux colonnes** — la marque à gauche, les boutons à droite. Il tient maintenant en 360 px exactement.
-- **Dans la fenêtre de saisie, « Enregistrer » tombait à 668 px**, invisible, et rien ne disait qu'il fallait faire défiler *à l'intérieur* de la fenêtre. Les deux boutons sont maintenant **collés en bas** (`position: sticky`) : « Enregistrer » est toujours sous le pouce. Le bas de la fenêtre perd sa marge, sinon le formulaire défile dans cette marge et on voit un bout de bouton dépasser **sous** la barre.
-- Au passage : la barre d'onglets passe en ligne (icône à côté du mot, 44 px au lieu de 58), et **les pastilles rouges se rangent au-dessus de l'icône** — en ligne, elles tombaient sur la première lettre (« .elances », « .tock »).
+Plus aucun seuil choisi au hasard. Tout est posé sur les **classes de taille de fenêtre** qu'Android publie, avec la part du parc réel qu'elles couvrent :
 
-Vérifié sans erreur ni débordement, les six onglets et la fenêtre de saisie, sur **320, 360, 740 × 360, 844 × 390 et 1280 px**.
+| | Largeur | | Hauteur |
+|---|---|---|---|
+| **compacte** | < 600 px — 99,96 % des téléphones **debout** | **compacte** | < 480 px — 99,78 % des téléphones **couchés** |
+| **moyenne** | 600 – 839 — 93,73 % des tablettes debout | **moyenne** | 480 – 899 |
+| **étendue** | 840 – 1199 — 97,22 % des tablettes couchées | **étendue** | ≥ 900 |
+| **grande** | ≥ 1200 — grandes tablettes et PC | | |
 
-### Occuper toute la place (demande du propriétaire : « en mode paysage, reconfigure l'interface pour qu'elle occupe tout l'espace »)
+### La navigation suit la règle officielle d'Android, mot pour mot
 
-Couché, le contenu restait une colonne de 520 px au milieu de l'écran, avec deux bandes vides sur les côtés : l'appli était une appli debout posée dans un cadre trop grand. Section « L'ÉCRAN LARGE » de `app/style.css`.
+« *Navigation bar if the width **or height** is compact — navigation rail for everything else.* » C'est le **« ou hauteur »** qui a corrigé mon premier réflexe : un téléphone couché a beau être large, sa hauteur est compacte, donc il **garde la barre du bas**. Un rail vertical sur 360 px de haut ne tiendrait de toute façon pas six destinations à 48 px.
 
-- **Le déclencheur est la LARGEUR, pas l'orientation** (`@media (min-width: 720px)`) : un téléphone couché, une tablette et un PC ont le même problème et la même solution, et un téléphone debout de 360 px ne doit jamais tomber là-dedans. Le bloc « paysage » continue de s'occuper de ce qui manque de **hauteur**. Les deux se cumulent sur un téléphone couché, où `.ecran` perd même son plafond.
-- **La largeur n'est pas illimitée : 1 100 px.** Au-delà, une ligne de texte devient trop longue pour se lire sans perdre son fil, et les montants se retrouvent à un bras de leur libellé. Sur un téléphone couché (740 à 950 px), 1 100 px veut dire « tout l'écran ».
-- **L'écran du jour se coupe en deux** : **agir à gauche** (la carte du jour, les trois gros boutons, les trois petits), **lire à droite** (le bilan en une phrase, puis la liste des mouvements). C'est `grid-auto-flow: dense` qui le permet : sans lui, la colonne de droite attendrait d'être arrivée à la hauteur des boutons pour commencer, et démarrerait au milieu de l'écran.
-- **Les listes de cartes passent côte à côte** (`.clients`, `.produits` → `repeat(auto-fill, minmax(300px, 1fr))`) : clients, fournisseurs, relances, produits, intrants. La **liste des mouvements du jour reste d'un bloc** : c'est UNE carte avec des lignes séparées, la couper en deux ferait deux moitiés de tableau.
-- Le **Profil** passe à deux colonnes, sa carte d'identité à cheval sur les deux. Les **Réglages** aussi, mais seulement **à partir de 900 px** : ce sont des formulaires denses (le logo, les quatre soldes, les comptes mobiles) et deux colonnes de 350 px les écrasaient — « Pas de logo » tenait sur quatre lignes. Les **quatre choix du Bilan** passent sur une seule ligne. Les **bascules** (On me doit / Je dois, Produits / Intrants) sont plafonnées à 620 px : un interrupteur de 1 100 px de long ne se lit plus comme un interrupteur.
-- **Le piège, rencontré et corrigé** : une colonne `1fr` ne descend **jamais** sous la largeur de son contenu. Sans `minmax(0, 1fr)`, une carte un peu large écrase sa voisine et fait déborder l'écran sur le côté — mesuré sur les Réglages : **773 px de contenu dans une fenêtre de 740**. **Règle pour la suite** : toute colonne de grille qui reçoit du contenu de largeur inconnue s'écrit `minmax(0, 1fr)`, jamais `1fr`.
-- Vérifié sans débordement ni erreur, les six onglets **et** les Réglages, sur **320, 360, 740 × 360, 844 × 390, 1024 × 768, 1280 × 800 et 1920 × 1080**.
+| Appareil | Classe | Navigation |
+|---|---|---|
+| Téléphone debout (360 × 740) | largeur compacte | **barre du bas** |
+| Téléphone couché (740 × 360) | hauteur compacte | **barre du bas**, fine (icône à côté du mot, 48 px) |
+| Tablette, PC (≥ 600 × ≥ 480) | moyenne et plus | **rail vertical à gauche**, 80 px (valeur Material), destinations de 56 px |
+
+Le rail libère **toute la hauteur** de l'écran, et sur une tablette tenue à deux mains les destinations tombent sous le pouce.
+
+### Ce qui a été recalculé
+
+- **La largeur du texte n'est pas la largeur de l'écran.** « Occuper tout l'espace » ne veut pas dire étirer les phrases : la recherche en typographie situe le confort entre **50 et 75 signes par ligne**, avec 65 comme cible, et le WCAG pose 80 en limite haute. L'écran prend donc toute la place, mais chaque bloc de **texte** est plafonné à 65 signes (`--mesure: 65ch`).
+- **Les cibles tactiles ne descendent jamais sous 48 px**, dans aucun mode — le minimum Material. Ma première version était tombée à **44 px** sur la barre couchée : corrigé, et vérifié automatiquement sur les huit formats.
+- **Les marges suivent la classe** : 16 px en compact, **24 px dès la largeur moyenne**. C'est l'échelle de Material, et elle évite l'effet « téléphone agrandi » où tout reste collé aux bords d'un grand écran.
+- **Les tailles de police se calculent sur la dimension qui abonde.** Couché, le chiffre du jour était rétréci au jugé (32 px) ; il se calcule maintenant sur la **largeur** — `clamp(34px, 6vw, 48px)` — et retrouve `clamp(48px, 4.4vw, 62px)` en largeur étendue. **Le corps du texte, lui, ne bouge jamais** : l'appli doit rester lisible en plein soleil sur un écran bon marché, et rogner les phrases pour gagner trois pixels serait un mauvais échange.
+- **L'écran du jour en deux volets, à la manière « liste-détail » de Material** : un volet de largeur **fixe** (`minmax(300px, 380px)`) pour **agir** — le chiffre du jour, les six boutons — et un volet **souple** pour **lire** — le bilan, puis les mouvements. Une proportion (1fr/1,1fr) aurait étiré les boutons sur un écran de PC ; une largeur fixe les garde à la taille de la main. C'est `grid-auto-flow: dense` qui fait démarrer la colonne de droite tout en haut, au lieu d'attendre la hauteur des boutons.
+- **Les listes de cartes** (clients, fournisseurs, relances, produits, intrants) prennent autant de colonnes de 320 px que l'écran en porte : trois sur un PC, une sur un téléphone. La **liste des mouvements du jour reste d'un bloc** — c'est UNE carte à lignes séparées, la couper en deux ferait deux moitiés de tableau.
+- **La fenêtre de saisie change de forme avec l'écran.** Une feuille collée en bas est une forme de téléphone : sur une tablette ou un PC elle oblige à descendre l'œil et la main tout en bas d'un grand écran. Dès la largeur moyenne **avec de la hauteur**, elle devient une **boîte de dialogue centrée** (560 px) où tout le formulaire tient d'un coup. En hauteur compacte elle reste une feuille, avec les deux boutons **collés en bas** : sans ça « Enregistrer » tombait à 668 px dans une fenêtre de 360, invisible, et rien ne disait qu'il fallait faire défiler *à l'intérieur*. Le fond de cette barre est **plein**, pas dégradé — avec le dégradé, les montants rapides se devinaient à demi effacés derrière et on croyait à un bug.
+- **L'accueil couché passe sur deux colonnes** (la marque à gauche, les boutons à droite) : empilé, il demandait 624 px pour 360 et « Commencer » tombait sous la ligne de flottaison. Le tout premier écran de l'appli n'offrait aucune action visible.
+- **Les pastilles rouges se rangent au-dessus de l'icône** quand la barre passe en ligne : elles tombaient sur la première lettre du mot (« .elances », « .tock »).
+
+### Le piège à retenir
+
+Une colonne `1fr` **ne descend jamais sous la largeur de son contenu**. Sans `minmax(0, 1fr)`, une carte un peu large écrase sa voisine et fait déborder l'écran sur le côté — mesuré sur les Réglages : **773 px de contenu dans une fenêtre de 740**. **Règle pour la suite** : toute colonne de grille qui reçoit du contenu de largeur inconnue s'écrit `minmax(0, 1fr)`, jamais `1fr`.
+
+### Vérifié automatiquement
+
+Sur **huit formats** — 320 × 740, 360 × 740, 740 × 360, 844 × 390, 600 × 960, 1024 × 768, 1280 × 800, 1920 × 1080 — et pour chacun : la bonne forme de navigation, **aucune cible tactile sous 48 px**, « Enregistrer » visible sans chercher, aucun débordement horizontal sur les six onglets, aucune erreur de script.
+
+**Règle pour la suite** : un nouvel écran ne reçoit pas son propre seuil. Il se range dans les classes existantes — largeur compacte / moyenne / étendue, hauteur compacte — et hérite des marges, de la mesure de 65 signes et du plancher tactile de 48 px.
 
 ## L'application Android : APK et AAB (fait)
 
@@ -560,7 +588,7 @@ Compte en ligne et synchronisation, plusieurs vendeurs par boutique, paiement mo
 7 septies. **Plusieurs entreprises par téléphone** et **nouvelle grille de prix** (Solo / Multi / Pro, 3 000 à 8 000 F par mois), alignée sur le marché (fait).
 7 sexies. **Comptes annuels** : bilan, compte de résultat, ratios, analyse et conseils, sur une ou plusieurs années (fait). Et les mêmes états **au format OHADA** (SYSCOHADA révisé), à consulter à la demande (fait).
 7 quinquies. **Tunnel de vente autonome (préparé)** : inscription, messages de suivi, paiement et activation sans intervention (`tunnel/`). Reste au propriétaire : le numéro WhatsApp Business, CinetPay et n8n.
-7 nonies. **Onglet Profil**, **mode paysage** et **APK Android installable** (fait).
+7 nonies. **Onglet Profil**, **tailles d'écran** (portrait, paysage, tablette, PC, sur les classes Material) et **APK Android installable** (fait).
 7 octies. **Boutique de démonstration** : une boutique d'exemple déjà remplie, pour montrer l'appli à un auditoire (fait).
 8. **Play Store (préparé)** : politique de confidentialité, visuels de la fiche, réglages TWA, guide pas à pas (`docs/play-store.md`). Reste au propriétaire : le compte développeur, les 12 testeurs et le choix du domaine.
 

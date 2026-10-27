@@ -521,6 +521,18 @@ Deux choses cassaient vraiment, vues à l'écran avant d'être corrigées :
 
 Vérifié sans erreur ni débordement, les six onglets et la fenêtre de saisie, sur **320, 360, 740 × 360, 844 × 390 et 1280 px**.
 
+### Occuper toute la place (demande du propriétaire : « en mode paysage, reconfigure l'interface pour qu'elle occupe tout l'espace »)
+
+Couché, le contenu restait une colonne de 520 px au milieu de l'écran, avec deux bandes vides sur les côtés : l'appli était une appli debout posée dans un cadre trop grand. Section « L'ÉCRAN LARGE » de `app/style.css`.
+
+- **Le déclencheur est la LARGEUR, pas l'orientation** (`@media (min-width: 720px)`) : un téléphone couché, une tablette et un PC ont le même problème et la même solution, et un téléphone debout de 360 px ne doit jamais tomber là-dedans. Le bloc « paysage » continue de s'occuper de ce qui manque de **hauteur**. Les deux se cumulent sur un téléphone couché, où `.ecran` perd même son plafond.
+- **La largeur n'est pas illimitée : 1 100 px.** Au-delà, une ligne de texte devient trop longue pour se lire sans perdre son fil, et les montants se retrouvent à un bras de leur libellé. Sur un téléphone couché (740 à 950 px), 1 100 px veut dire « tout l'écran ».
+- **L'écran du jour se coupe en deux** : **agir à gauche** (la carte du jour, les trois gros boutons, les trois petits), **lire à droite** (le bilan en une phrase, puis la liste des mouvements). C'est `grid-auto-flow: dense` qui le permet : sans lui, la colonne de droite attendrait d'être arrivée à la hauteur des boutons pour commencer, et démarrerait au milieu de l'écran.
+- **Les listes de cartes passent côte à côte** (`.clients`, `.produits` → `repeat(auto-fill, minmax(300px, 1fr))`) : clients, fournisseurs, relances, produits, intrants. La **liste des mouvements du jour reste d'un bloc** : c'est UNE carte avec des lignes séparées, la couper en deux ferait deux moitiés de tableau.
+- Le **Profil** passe à deux colonnes, sa carte d'identité à cheval sur les deux. Les **Réglages** aussi, mais seulement **à partir de 900 px** : ce sont des formulaires denses (le logo, les quatre soldes, les comptes mobiles) et deux colonnes de 350 px les écrasaient — « Pas de logo » tenait sur quatre lignes. Les **quatre choix du Bilan** passent sur une seule ligne. Les **bascules** (On me doit / Je dois, Produits / Intrants) sont plafonnées à 620 px : un interrupteur de 1 100 px de long ne se lit plus comme un interrupteur.
+- **Le piège, rencontré et corrigé** : une colonne `1fr` ne descend **jamais** sous la largeur de son contenu. Sans `minmax(0, 1fr)`, une carte un peu large écrase sa voisine et fait déborder l'écran sur le côté — mesuré sur les Réglages : **773 px de contenu dans une fenêtre de 740**. **Règle pour la suite** : toute colonne de grille qui reçoit du contenu de largeur inconnue s'écrit `minmax(0, 1fr)`, jamais `1fr`.
+- Vérifié sans débordement ni erreur, les six onglets **et** les Réglages, sur **320, 360, 740 × 360, 844 × 390, 1024 × 768, 1280 × 800 et 1920 × 1080**.
+
 ## L'application Android : APK et AAB (fait)
 
 - **Deux fichiers, et ils ne servent pas à la même chose** : `canari.apk` s'installe **directement sur un téléphone** (on l'envoie par WhatsApp, on l'ouvre) ; `canari.aab` ne sert qu'au **Play Store** — Android ne sait pas installer un `.aab`. L'ancien workflow ne sortait que le `.aab`, donc rien d'installable.

@@ -3767,3 +3767,115 @@ body::after {
   .profil-vignette { width: 56px; height: 56px; }
   .profil-compteurs { grid-template-columns: repeat(4, 1fr); margin-top: 10px; padding-top: 10px; }
 }
+
+/* ===========================================================================
+   L'ÉCRAN LARGE  ·  occuper toute la place (demande du propriétaire, 27/10/2026 :
+   « en mode paysage, reconfigure l'interface pour qu'elle occupe tout l'espace »)
+
+   Jusqu'ici, couché, le contenu restait une colonne de 520 px au milieu de
+   l'écran, avec deux bandes vides de chaque côté : l'appli était simplement
+   une appli debout, posée dans un cadre trop grand.
+
+   LE DÉCLENCHEUR EST LA LARGEUR, PAS L'ORIENTATION. Un téléphone couché, une
+   tablette et un PC ont le même problème et la même solution ; et un téléphone
+   debout de 360 px ne doit jamais tomber là-dedans. C'est donc
+   « min-width: 720px », et le bloc « paysage » plus haut continue de s'occuper
+   de ce qui manque de HAUTEUR.
+
+   LA LARGEUR N'EST PAS ILLIMITÉE : 1100 px. Au-delà, une ligne de texte
+   devient trop longue pour se lire sans perdre son fil, et les montants se
+   retrouvent à un bras du libellé. Sur un téléphone couché (740 à 950 px),
+   1100 px veut dire « tout l'écran ».
+   =========================================================================== */
+
+@media (min-width: 720px) {
+
+  .ecran { max-width: 1100px; }
+
+  /* ---------- L'écran du jour : agir à gauche, lire à droite ---------- */
+  /* « dense » est ce qui fait tenir la chose : sans lui, le bilan et la liste
+     attendraient d'être arrivés à la hauteur des boutons avant de commencer,
+     et la colonne de droite démarrerait au milieu de l'écran. */
+  #vue-jour {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    grid-auto-flow: dense;
+    align-items: start;
+    column-gap: 18px;
+  }
+  #vue-jour > * { grid-column: 2; }
+  #vue-jour > .carte-gain,
+  #vue-jour > .gros-boutons,
+  #vue-jour > .petits-boutons { grid-column: 1; }
+  #vue-jour > .bilan { margin-top: 0; }
+
+  /* ---------- Les listes de cartes se mettent côte à côte ----------
+     Clients, fournisseurs, relances, produits, intrants : ce sont des cartes
+     indépendantes, elles se rangent donc en colonnes dès qu'il y a 300 px
+     pour chacune. La liste des mouvements du jour, elle, reste d'un bloc :
+     c'est UNE carte avec des lignes séparées, la couper en deux ferait deux
+     moitiés de tableau. */
+  .clients, .produits {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    align-items: start;
+    gap: 10px;
+  }
+
+  /* Les bascules (7 jours / Mois…, Produits / Intrants, On me doit / Je dois)
+     ne s'étirent pas sur toute la largeur : un interrupteur de 1 100 px de
+     long ne se lit plus comme un interrupteur. */
+  .deux-choix, .trois-choix { max-width: 620px; }
+  /* Les quatre choix du Bilan tiennent sur une seule ligne dès qu'il y a la
+     place : en 2 × 2 sur un écran large, ils laissaient une moitié de ligne
+     vide à côté d'eux. */
+  .choix-bilan { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+  /* ---------- Le Profil ---------- */
+  #vue-profil {
+    display: grid;
+    /* minmax(0, 1fr) et non 1fr : sinon la colonne refuse de descendre sous
+       la largeur de son contenu, écrase sa voisine et fait déborder l'écran
+       sur le côté. Vu à l'écran sur les Réglages : 773 px de contenu dans
+       une fenêtre de 740. */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    column-gap: 18px;
+  }
+  #vue-profil > .profil-tete { grid-column: 1 / -1; }
+
+
+  /* ---------- La fenêtre de saisie ---------- */
+  /* Elle reste centrée — une fenêtre de 1 100 px de large pour y taper un
+     montant serait absurde — mais elle respire un peu plus. */
+  .saisie { max-width: 680px; }
+
+  /* ---------- Les écrans vides ---------- */
+  /* La mascotte et sa phrase au milieu, pas collées à gauche d'un grand vide. */
+  .vide { max-width: 560px; margin-left: auto; margin-right: auto; }
+}
+
+/* ---------- Les Réglages, à partir de 900 px seulement ----------
+   Ce sont des formulaires denses — le logo, les quatre soldes, les comptes
+   mobiles. Sur un téléphone couché de 740 px, deux colonnes de 350 px les
+   écrasent (« Pas de logo » tenait sur quatre lignes). Ils restent donc d'une
+   seule colonne sur un téléphone, et passent à deux sur une tablette ou un PC. */
+@media (min-width: 900px) {
+  #reglages {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    column-gap: 18px;
+  }
+  #reglages > .entete,
+  #reglages > .aide.version { grid-column: 1 / -1; }
+}
+
+/* Un téléphone couché cumule les deux : la largeur gagnée ci-dessus ET la
+   hauteur qui manque. Les deux colonnes de l'écran du jour se resserrent
+   encore, parce que chaque pixel de haut compte. */
+@media (min-width: 720px) and (orientation: landscape) and (max-height: 560px) {
+  #vue-jour > .gros-boutons { margin-top: 10px; }
+  #vue-jour > .bilan { padding-top: 10px; padding-bottom: 10px; }
+  .ecran { max-width: none; }
+}

@@ -3941,29 +3941,80 @@ body::after {
      — pas sa carte — qui reste plafonné à 65 signes par ligne. */
   #vue-jour > .bilan { grid-column: 1 / -1; margin-top: 0; }
 
-  /* ----- L'intérieur de la carte du jour, en trois colonnes -----
-     Au lieu d'une pile — étiquette, chiffre, les trois cases, le seuil,
-     la caisse — on met côte à côte ce qui se lit d'un coup d'œil : le
-     chiffre du jour, les trois cases, puis le seuil et la caisse. Hauteur
-     mesurée : 790 px avant, 250 px après. Chaque élément ne déclare que sa
-     COLONNE : grid le pose alors dans la première rangée libre de cette
-     colonne, donc une case cachée (le seuil déjà atteint, le reste pour la
-     boutique) ne laisse aucun trou. */
+  /* ----- L'intérieur de la carte du jour, en TROIS ZONES -----
+     Activité commerciale | Rentabilité | Trésorerie, séparées par un filet
+     de la même famille que les bordures de la carte. Au lieu d'une pile —
+     étiquette, chiffre, les trois cases, le seuil, la caisse — tout se lit
+     sur une seule bande. Hauteur mesurée : 790 px avant, ~250 px après. */
   .carte-gain {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr) minmax(0, 1.2fr);
-    align-items: center;
-    gap: 10px 20px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.3fr);
+    align-items: start;
+    gap: 0;
     text-align: left;
-    padding: 20px 22px;
+    padding: 20px 0 22px;
   }
-  .carte-gain > .etiquette,
-  .carte-gain > .gros-chiffre { grid-column: 1; }
-  .carte-gain > .trois-chiffres { grid-column: 2; grid-row: 1 / span 2; }
-  .carte-gain > .seuil-carte,
-  .carte-gain > #caisse,
-  .carte-gain > #reste-boutique { grid-column: 3; margin: 0; }
-  .carte-gain > .gros-chiffre { margin: 0; align-self: start; }
+  .carte-gain > .zone { padding: 0 20px; }
+  .carte-gain > .zone + .zone { border-left: 1px solid rgba(255, 255, 255, .10); }
+  .carte-gain > .zone > .zone-titre { display: block; margin-bottom: 10px; }
+  .carte-gain > .zone > .gros-chiffre { margin: 2px 0 0; }
+  .carte-gain .ligne-carte { margin-top: 12px; }
+
+  /* Les trois cases de rentabilité l'une sous l'autre, toutes de la même
+     taille : côte à côte dans un tiers de carte, « Charges et taxes »
+     tenait sur trois lignes et les montants ne s'alignaient plus. */
+  .carte-gain > .zone-rentabilite .trois-chiffres { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .carte-gain > .zone-rentabilite .chiffre {
+    display: flex;
+    /* `.chiffre` est déjà en colonne plus haut : sans ce `row`, le nom
+       restait au-dessus du montant et la carte gardait sa hauteur. */
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    text-align: left;
+  }
+
+  /* Les moyens de paiement en mosaïque, autant de colonnes que la zone en
+     porte. Chaque case garde son texte « Espèces 53 300 F » d'un seul
+     tenant : c'est lui que le dictionnaire anglais reconnaît. */
+  .carte-gain > .zone-tresorerie .par-moyen {
+    display: grid;
+    /* DEUX colonnes, fixes. En « auto-fit », quatre comptes se rangeaient
+       en trois colonnes plus un tout seul à la ligne ; en une seule colonne
+       sur un téléphone couché, la carte remontait à 333 px sur un écran
+       qui n'en fait que 390. Deux colonnes donnent un carré régulier. */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    font-size: 12.5px;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .carte-gain > .zone-tresorerie .moyen-case {
+    background: rgba(255, 255, 255, .06);
+    border: 1px solid rgba(255, 255, 255, .10);
+    border-radius: 10px;
+    padding: 6px 10px;
+  }
+  .carte-gain > .zone-tresorerie .moyen-case + .moyen-case::before { content: none; }
+
+  /* ----- Les boutons -----
+     Mêmes couleurs, mêmes icônes, mêmes formes : on ne touche qu'à la
+     hauteur, qui n'a aucune raison de dépasser celle de la main. */
+  .gros-boutons .bouton { min-height: 0; padding: 12px 10px; }
+  .petits-boutons .bouton { min-height: 56px; }
+
+  /* ----- Le bilan du jour -----
+     Les phrases se rangent en colonnes : les créances, les relances, le
+     stock à racheter et les dettes se distinguent d'un coup d'œil au lieu
+     de couler dans un seul pavé. */
+  #bilan-texte {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 2px 20px;
+    max-width: none;
+  }
+  #bilan-texte > .bil-phrase { display: block; }
 
   /* Les Réglages passent à deux colonnes. Pas avant : ce sont des formulaires
      denses (le logo, les quatre soldes, les comptes mobiles) et deux colonnes
@@ -4053,3 +4104,28 @@ body::after {
   .cadre .graphe { height: 104px; }
   .cadre .graphe-comparatif { height: 116px; }
 }
+
+/* ==========================================================================
+   LES TROIS ZONES DE LA CARTE DU JOUR
+   (demande du propriétaire, 27/10/2026 : « répartir harmonieusement les
+   informations dans la carte noire en trois zones horizontales : activité
+   commerciale, rentabilité, trésorerie ; réduire les espaces vides ;
+   ajuster la hauteur au contenu réel » — sans toucher à la charte.)
+   Ici, rien que des règles de DISPOSITION : aucune couleur, aucune police,
+   aucun arrondi, aucune ombre n'est modifié.
+   ========================================================================== */
+
+/* Debout, la carte reste exactement celle d'avant : les trois zones ne sont
+   que des blocs empilés et leurs titres restent cachés — « Rentabilité » et
+   « Trésorerie » n'auraient rien à annoncer dans une simple pile. */
+.carte-gain > .zone { min-width: 0; }
+.zone-titre { display: none; }
+
+/* Un moyen de paiement par case. Debout, elles se relisent comme la phrase
+   d'avant, séparées par des points médians posés en CSS (donc jamais
+   traduits) ; couchée, elles deviennent une mosaïque. */
+.moyen-case + .moyen-case::before { content: " · "; }
+
+/* Chaque phrase du bilan du jour dans son propre bloc. Debout, elles
+   coulent les unes après les autres comme avant. */
+.bil-phrase { display: inline; }

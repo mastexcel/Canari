@@ -514,8 +514,13 @@ function afficherJour() {
   const parMoyen = soldesAffichables();
   const detail = parMoyen.length > 1
     ? '<small class="par-moyen">' + parMoyen.map(function (k) {
-        return MOYENS[k] + " " + signe(soldeMoyen(k));
-      }).join(" · ") + '</small>' : '';
+        /* Une case par moyen : sur un grand écran elles se rangent en
+           mosaïque, sur un téléphone elles restent une phrase séparée par
+           des points médians (posés en CSS). Le texte de chaque case reste
+           « Espèces 53 300 F », qui correspond au motif anglais existant :
+           le couper autrement casserait la traduction. */
+        return '<span class="moyen-case">' + MOYENS[k] + " " + signe(soldeMoyen(k)) + '</span>';
+      }).join("") + '</small>' : '';
   $("caisse").innerHTML = '<span>Argent en caisse</span><b>' + signe(enCaisse) + '</b>' +
     '<small>aujourd\'hui : entré ' + franc(t.encaisse) + ' · sorti ' + franc(t.sorti + t.maison) + '</small>' + detail;
   const reste = t.benefice - t.maison;
@@ -695,7 +700,14 @@ function afficherBilan(t) {
     phrases.push("Tu dois " + franc(total) + " à tes fournisseurs.");
   }
   }
-  $("bilan-texte").innerHTML = phrases.join(" ");
+  /* Chaque phrase dans son propre bloc : sur un grand écran elles se rangent
+     en colonnes, donc les créances, les relances, le stock à racheter et les
+     dettes se distinguent d'un coup d'œil au lieu de couler dans un pavé.
+     Sans risque pour l'anglais : en français rien n'est traduit, et en
+     anglais ce bloc porte déjà translate="no". */
+  $("bilan-texte").innerHTML = phrases.map(function (p) {
+    return '<span class="bil-phrase">' + p + '</span>';
+  }).join(" ");
 
   // Humeur du Petit Canari : grand sourire les très bons jours.
   const passes = derniersJours(7).slice(0, 6).map(function (j) { return j.totaux.benefice; })

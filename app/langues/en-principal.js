@@ -38,6 +38,8 @@ Object.assign(EN, {
   "S'abonner": "Subscribe",
   "Sauvegarder": "Back up",
   "Ventes du jour": "Today's sales",
+  "Rentabilité": "Profitability",
+  "Trésorerie": "Cash position",
   "Marge brute": "Gross margin",
   "Charges et taxes": "Costs and taxes",
   "Bénéfice net": "Net profit",

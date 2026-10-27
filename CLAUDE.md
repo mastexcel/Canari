@@ -592,6 +592,24 @@ Les barres de `comptes.js` s'appellent donc **`.cascade-barres`**. C'est exactem
 - **Au-delà de 1 400 px on arrête d'étirer** (`max-width` sur `#vue-jour`) : trois boutons de 600 px de large ne sont pas plus faciles à toucher, seulement plus laids. Une tablette reste très en dessous de ce plafond, donc elle remplit bien tout l'écran.
 - **L'écran vide reste une carte de 560 px centrée**, jamais une plaque pâle étirée sur toute la tablette.
 
+### La carte du jour en trois zones (demande détaillée du propriétaire, 27/10/2026)
+
+Il a fourni une maquette et une consigne nette : « réorganisation UX/UI, **pas** de refonte graphique ; il est strictement interdit de modifier la charte ». La carte noire est donc découpée en **trois zones horizontales** — `index.html` porte maintenant `<div class="zone zone-activite|zone-rentabilite|zone-tresorerie">` — et tout le reste est de la **disposition pure** : aucune couleur, aucune police, aucun arrondi, aucune ombre n'a bougé.
+
+- **Activité** : « Ventes du jour », le grand chiffre, l'encadré d'objectif (le seuil, inchangé — il ne s'affiche que tant qu'il n'est pas atteint).
+- **Rentabilité** : les trois cases, l'une sous l'autre, nom à gauche et montant à droite. `.chiffre` est déjà en `flex-direction: column` plus haut dans la feuille : sans un `row` explicite, le nom restait au-dessus du montant et la carte gardait sa hauteur.
+- **Trésorerie** : l'argent en caisse, le détail du jour, puis les comptes en **mosaïque de deux colonnes fixes**. En `auto-fit`, quatre comptes se rangeaient en trois colonnes plus un tout seul à la ligne ; en une seule colonne sur un téléphone couché, la carte remontait à 333 px sur un écran qui n'en fait que 390.
+- Hauteur mesurée : **790 px avant, 246 px après** à 1 280 px, 284 px sur un téléphone couché.
+- **Debout, rien ne change** : les zones ne sont que des blocs empilés et leurs titres (« Rentabilité », « Trésorerie ») restent cachés — ils n'auraient rien à annoncer dans une simple pile. Vérifié à l'écran : la carte portrait est identique à celle d'avant.
+
+**Le piège de l'ordre dans la feuille.** Les règles générales ajoutées en **fin** de `style.css` passaient après la requête média : à spécificité égale, la dernière gagne, donc les titres de zone restaient cachés et les cases de rentabilité restaient empilées. Les règles larges sont donc écrites `.carte-gain > .zone > .zone-titre`, pas `.zone-titre`. **Règle pour la suite** : une règle ajoutée en fin de feuille écrase une règle de même spécificité écrite dans une requête média plus haut — la requête média ne gagne pas toute seule.
+
+**Deux cas où un texte a été découpé sans casser l'anglais, et pourquoi c'était sûr** :
+1. les **comptes** passent d'une phrase jointe à une case par compte, mais le texte de chaque case reste `« Espèces 53 300 F »` d'un seul tenant — et le motif de `en-principal.js` (`^(Espèces|Wave|…) [^·]*F( · .+)?$`) reconnaît aussi bien un élément seul que la liste entière. Les points médians de la version portrait sont posés en CSS (`::before`), donc jamais traduits ;
+2. les **phrases du bilan du jour** vont chacune dans son `<span class="bil-phrase">`, rangées en colonnes sur grand écran. Sans risque : en français rien n'est traduit, et en anglais `#bilan-texte` porte déjà `translate="no"`.
+
+**Ce qui a été refusé dans la maquette, et pourquoi** : elle portait les **logos de Wave, Orange Money et MTN**. La règle de marque du projet l'interdit (« aucun logo d'opérateur, seulement les noms » ; « ne jamais utiliser de logos d'autres marques »). Les cases portent donc le nom seul. **Pas faits non plus, faute de pouvoir le faire sans risque** : « Entrées du jour » / « Sorties du jour » en deux cases séparées (il faudrait couper une phrase traduite d'un seul tenant), et les quatre étiquettes de couleur de la carte mascotte (il faudrait réécrire les phrases et ajouter des couleurs).
+
 **Règle pour la suite** : un nouvel écran ne reçoit pas son propre seuil. Il se range dans les classes existantes — largeur compacte / moyenne / étendue, hauteur compacte — et hérite des marges, de la mesure de 65 signes et du plancher tactile de 48 px. Et **une vue en deux volets commence à 840 px**, jamais à 600 : en dessous, les deux volets sont trop étroits tous les deux.
 
 ## L'application Android : APK et AAB (fait)

@@ -102,16 +102,25 @@
   <!-- Onglet Jour -->
   <div id="vue-jour" class="vue">
     <div class="carte-gain">
+      <div class="zone zone-activite">
       <p class="etiquette">Ventes du jour</p>
       <p class="gros-chiffre" id="gain">0 F</p>
+      <p class="ligne-carte seuil-carte" id="seuil" hidden></p>
+      </div>
+      <div class="zone zone-rentabilite">
+      <p class="etiquette zone-titre">Rentabilité</p>
       <div class="trois-chiffres">
         <div class="chiffre revient"><span>Marge brute</span><strong id="marge">0 F</strong></div>
         <div class="chiffre sort"><span>Charges et taxes</span><strong id="charges-jour">0 F</strong></div>
         <div class="chiffre entre" id="case-net"><span>Bénéfice net</span><strong id="net">0 F</strong></div>
       </div>
-      <p class="ligne-carte seuil-carte" id="seuil" hidden></p>
+      
+      </div>
+      <div class="zone zone-tresorerie">
+      <p class="etiquette zone-titre">Trésorerie</p>
       <p class="ligne-carte" id="caisse" hidden></p>
       <p class="ligne-carte maison-carte" id="reste-boutique" hidden></p>
+      </div>
     </div>
 
     <div class="gros-boutons">

@@ -150,12 +150,18 @@ jobs:
             exit 1
           fi
           tail -n 5 /tmp/update.log
-          # Les deux mots de passe arrivent par un tube, pas par un clavier.
-          # Ils sont masqués par ::add-mask:: : ils ne peuvent pas fuir ici.
-          if ! printf '%s\n%s\n' "$MOT_DE_PASSE" "$MOT_DE_PASSE" \
-              | timeout 25m bubblewrap build --skipPwaValidation \
+          # LES MOTS DE PASSE PASSENT PAR DES VARIABLES D'ENVIRONNEMENT, pas
+          # par un tube. Bubblewrap les lit explicitement
+          # (BUBBLEWRAP_KEYSTORE_PASSWORD et BUBBLEWRAP_KEY_PASSWORD) et ne
+          # pose alors plus aucune question. Nourrir son invite au clavier par
+          # un tube ne marchait pas : il lit caractère par caractère et les
+          # deux lignes se mélangeaient. Les deux valeurs sont masquées par
+          # ::add-mask:: : elles ne peuvent pas apparaître dans le journal.
+          export BUBBLEWRAP_KEYSTORE_PASSWORD="$MOT_DE_PASSE"
+          export BUBBLEWRAP_KEY_PASSWORD="$MOT_DE_PASSE"
+          if ! timeout 25m bubblewrap build --skipPwaValidation \
                   --signingKeyPath=./android.keystore --signingKeyAlias=canari \
-                  > /tmp/build.log 2>&1; then
+                  < /dev/null > /tmp/build.log 2>&1; then
             raconter "build" /tmp/build.log
             exit 1
           fi

@@ -653,7 +653,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 40px;
+  min-height: 48px;
   color: var(--vert-foret);
   font-weight: 600;
   font-size: 17px;
@@ -3441,7 +3441,7 @@ body::after {
   width: 100%;
   margin: 0 0 10px;
   padding: 9px 12px;
-  min-height: 44px;
+  min-height: 48px;
   background: var(--ivoire);
   border: 1px solid var(--bord);
   border-radius: 14px;
@@ -3539,7 +3539,7 @@ body::after {
   gap: 10px;
   margin: 0 0 10px;
   padding: 9px 12px;
-  min-height: 44px;
+  min-height: 48px;
   background: linear-gradient(118deg,
       color-mix(in srgb, var(--braise) 14%, var(--ivoire)) 0%,
       color-mix(in srgb, var(--braise) 7%, var(--ivoire)) 100%);
@@ -3556,7 +3556,7 @@ body::after {
    au milieu d'une démonstration, avec le pouce. */
 .bandeau-demo button {
   flex: 0 0 auto;
-  min-height: 44px;
+  min-height: 48px;
   padding: 0 12px;
   background: #FFFFFF;
   border: 2px solid color-mix(in srgb, var(--braise) 38%, #FFFFFF);
@@ -3791,7 +3791,7 @@ body::after {
    rangent en colonnes, et le texte garde sa mesure.
    =========================================================================== */
 
-@media (min-width: 600px) {
+@media (orientation: landscape) and (min-width: 600px) {
 
   /* Plus de colonne de 520 px au milieu d'un écran vide. */
   .ecran {
@@ -3807,19 +3807,6 @@ body::after {
      aurait étiré les boutons sur un écran de PC ; une largeur fixe les garde
      à la taille de la main. « dense » est ce qui fait démarrer la colonne de
      droite tout en haut au lieu d'attendre la hauteur des boutons. */
-  #vue-jour {
-    display: grid;
-    grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
-    grid-auto-flow: dense;
-    align-items: start;
-    column-gap: 24px;
-  }
-  #vue-jour > * { grid-column: 2; }
-  #vue-jour > .carte-gain,
-  #vue-jour > .gros-boutons,
-  #vue-jour > .petits-boutons { grid-column: 1; }
-  #vue-jour > .bilan { margin-top: 0; }
-
   /* --- Les listes de cartes ---
      Clients, fournisseurs, relances, produits, intrants : des cartes
      indépendantes, donc autant de colonnes de 320 px que l'écran en porte.
@@ -3867,7 +3854,7 @@ body::after {
    au-dessus du plancher tactile de 48 px.
    =========================================================================== */
 
-@media (min-width: 600px) and (min-height: 480px) {
+@media (orientation: landscape) and (min-width: 600px) and (min-height: 480px) {
   .onglets {
     top: 0;
     bottom: 0;
@@ -3917,7 +3904,35 @@ body::after {
    4 · LARGEUR ÉTENDUE  (≥ 840 px) — tablettes couchées et PC
    =========================================================================== */
 
-@media (min-width: 840px) {
+@media (orientation: landscape) and (min-width: 840px) {
+  /* ----- L'écran du jour en deux volets -----
+     Un volet de largeur FIXE pour agir (le chiffre du jour, les boutons,
+     le bilan) et un volet souple pour lire (les mouvements).
+     Seulement à partir de 840 px : à 740 px — un téléphone couché — le
+     volet des mouvements tombait à 336 px, les libellés se coupaient au
+     milieu d'un mot et la colonne de gauche restait vide sur 1 500 px.
+     C'est la largeur « étendue » de Material, pas la largeur « moyenne ». */
+  #vue-jour {
+    display: grid;
+    grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
+    /* Quatre rangées pour le volet de gauche, plus une cinquième, souple,
+       qui absorbe ce que la liste a de plus haut. Sans elle, grid répartit
+       ce surplus sur les quatre rangées et écarte les boutons les uns des
+       autres jusqu'en bas de l'écran. */
+    grid-template-rows: auto auto auto auto 1fr;
+    align-items: start;
+    column-gap: 24px;
+  }
+  #vue-jour > .carte-gain { grid-area: 1 / 1; }
+  #vue-jour > .gros-boutons { grid-area: 2 / 1; }
+  #vue-jour > .petits-boutons { grid-area: 3 / 1; }
+  #vue-jour > .bilan { grid-area: 4 / 1; margin-top: 0; }
+  /* Le volet des mouvements tient toute la colonne de droite : sinon le
+     titre « Aujourd'hui » restait seul en haut et la liste ne commençait
+     qu'au bas de la carte du jour, avec 300 px de vide entre les deux. */
+  #vue-jour > .volet-mouvements { grid-area: 1 / 2 / -1 / 3; }
+
+
   /* Les Réglages passent à deux colonnes. Pas avant : ce sont des formulaires
      denses (le logo, les quatre soldes, les comptes mobiles) et deux colonnes
      de 350 px les écrasaient — « Pas de logo » tenait sur quatre lignes. */
@@ -3932,4 +3947,77 @@ body::after {
 
   /* Le chiffre du jour retrouve sa taille pleine : la place ne manque plus. */
   .gros-chiffre { font-size: clamp(48px, 4.4vw, 62px); }
+}
+
+/* ==========================================================================
+   LES LIGNES, LES TABLEAUX ET LA RÉPARTITION DES CARTES
+   (retour du propriétaire du 27/10/2026 : « des tableaux de données mettent
+   le texte sur deux lignes alors que la colonne des chiffres est très large ;
+   les cartes sont très mal réparties en mode paysage, avec de longues cartes
+   pour un petit texte ou un petit chiffre »)
+   ========================================================================== */
+
+/* ---------- 1. La ligne d'un mouvement ----------
+   « overflow-wrap: anywhere » autorise la coupure au MILIEU d'un mot. Effet
+   de bord invisible dans le code mais très visible à l'écran : la largeur
+   minimale de la colonne de texte tombe à une seule lettre, donc la colonne
+   du montant se sert la première et « Remboursement » s'écrit
+   « Remboursem / ent ». On coupe donc entre les mots seulement, et le
+   montant ne prend plus que la place dont il a besoin. */
+.ligne-texte b { overflow-wrap: break-word; hyphens: none; }
+.ligne-texte { flex: 1 1 110px; }
+.ligne-montant { flex: 0 0 auto; }
+
+/* ---------- 2. Les tableaux de chiffres ----------
+   Un tableau en « table-layout: auto » partage la place au prorata du
+   contenu : la colonne des chiffres s'élargissait pendant que les intitulés
+   passaient sur deux lignes. La colonne de gauche réclame donc tout le
+   reste (99 %) et les colonnes de chiffres se réduisent à leur contenu. */
+.comptes-table tbody th,
+.comptes-table thead th:first-child { width: 99%; }
+.comptes-table thead th + th,
+.comptes-table td { width: 1%; }
+.comptes-table th, .comptes-table td { padding: 7px 3px; }
+.comptes-table td { padding-left: 10px; }
+
+/* Les états OHADA ont une colonne de CODE (« Réf ») avant l'intitulé : c'est
+   donc la deuxième colonne qui doit prendre la place, pas la première. */
+.ohada-table thead th:first-child { width: 1%; }
+.ohada-table thead th:nth-child(2) { width: 99%; }
+.ohada-table td.ohada-ref { width: 1%; padding-left: 3px; }
+
+/* ---------- 3. La répartition des cartes sur un écran large ----------
+   Un écran couché est large et BAS : empiler des cartes pleine largeur y
+   donne de longs rubans qui portent un seul petit chiffre, et oblige à
+   défiler alors que la place est à côté. Chaque famille de cartes prend
+   donc autant de colonnes que l'écran en porte, à la taille où son contenu
+   reste lisible — et pas une de plus. */
+@media (orientation: landscape) and (min-width: 600px) {
+
+  /* Les quatre grandes tuiles du tableau de bord et les quatre petites. */
+  .mosaique { grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); gap: 10px; }
+  .mosaique-petite { grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 8px; }
+
+  /* Les cartes d'indicateurs et de ratios : une mosaïque, plus une colonne
+     de bandes où le nom et le chiffre étaient séparés par un grand vide. */
+  .indicateurs {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 12px;
+    align-items: start;
+  }
+  .liste-invest {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 10px;
+  }
+
+  /* Un graphique étiré sur 1 900 px ne se lit pas mieux : il s'aplatit. */
+  .carte-graphe { max-width: 780px; }
+
+  /* Dans « L'essentiel », les courbes sont ramassées à 66 px pour tenir sur
+     un téléphone debout. Étalées sur 700 px de large, elles deviennent des
+     traits plats : couché, on leur rend de la hauteur. */
+  .cadre .graphe { height: 104px; }
+  .cadre .graphe-comparatif { height: 116px; }
 }

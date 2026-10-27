@@ -4362,18 +4362,48 @@ body::after {
    section à moitié large ne porterait que deux cartes par rangée : elle
    serait deux fois plus haute, et on ne gagnerait rien. */
 @media (min-width: 1200px) {
-  #vue-tableau { column-count: 2; column-gap: 26px; }
-  /* Les trois étages de boutons et la ligne de dates restent AU-DESSUS des
-     deux colonnes : sans ça, « Profitabilité » démarrait en haut de la
-     seconde colonne, juste à côté des filtres. */
-  #vue-tableau > .quatre-periodes,
-  #vue-tableau > .periode-aide,
-  #vue-tableau > .vues-tableau { column-span: all; }
-  #vue-tableau > .famille {
-    break-inside: avoid;
-    -webkit-column-break-inside: avoid;
-    margin: 0 0 18px;
+  /* Une GRILLE de quatre colonnes, pas une mosaïque de deux : c'est elle qui
+     permet à « Activité » d'aligner ses quatre cartes sur une seule rangée,
+     pleine largeur, comme sur la maquette. Avec des colonnes qui se
+     remplissent, chaque section était coupée à la moitié de l'écran et ne
+     portait plus que deux cartes par rangée. */
+  #vue-tableau {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: start;
+    gap: 0 26px;
   }
+  /* Par défaut tout prend la largeur entière : les étages de boutons, la
+     ligne de dates, et toute la vue « L'essentiel » (mosaïque et cadres),
+     qui a sa propre mise en page et ne doit pas se retrouver dans une
+     colonne sur quatre. Seules les sections qui le demandent se partagent
+     la rangée, juste en dessous. */
+  #vue-tableau > * { grid-column: 1 / -1; }
+  #vue-tableau > .famille { margin: 0 0 18px; }
+  /* Chaque section dit la place qu'elle prend (classe posée par famille()
+     dans tableau.js) : pleine largeur pour Activité, Profitabilité et les
+     conseils ; une moitié pour Répartition, Efficacité, Investissement et
+     Ton matériel — qui se retrouvent donc deux par deux sur une rangée. */
+  #vue-tableau > .famille-large { grid-column: span 4; }
+  #vue-tableau > .famille-demi { grid-column: span 2; }
+
+  /* Et à l'intérieur : QUATRE colonnes de cartes dans une section pleine
+     largeur, deux dans une demie. Les familles de deux cartes gardent leur
+     grille (deux cartes étirées à la même hauteur), d'où le :not(). */
+  .famille-large .indicateurs:not(.indicateurs-2) { column-count: 4; column-width: auto; }
+  .famille-demi .indicateurs:not(.indicateurs-2) { column-count: 2; column-width: auto; }
+
+  /* Le texte écrit se resserre et le dessin respire : c'est la demande
+     « mieux synthétiser l'information écrite en maximisant sur les
+     graphiques ». Aucun contenu n'est retiré — seuls l'interligne et les
+     marges du conseil se réduisent, et le graphique gagne 24 px.
+     Le corps du texte de l'appli, lui, ne bouge pas : ces règles ne valent
+     qu'à partir de 1 200 px, donc jamais sur un téléphone. */
+  .ind-lecture { font-size: 14px; line-height: 1.35; margin-top: 7px; }
+  .ind-conseil { font-size: 13px; line-height: 1.35; padding: 7px 9px; margin-top: 7px; }
+  .ind-graphe .graphe,
+  .ind-graphe .graphe-colonnes,
+  .ind-graphe .graphe-comparatif { height: 124px; }
 }
 
 /* ----- Les cartes qui portent un graphique ont toutes la même taille -----

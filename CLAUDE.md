@@ -661,6 +661,18 @@ Mesuré sur le tableau de bord, boutique de démonstration : tablette debout **8
 
 **Piège rencontré, à retenir** : `break-inside: avoid` est indispensable sur les cartes, sinon une carte se coupe en deux entre deux colonnes. Et une famille de deux cartes doit recevoir `column-count: 2` explicitement — `column-width` seul fabrique quatre colonnes et n'en remplit que deux.
 
+### Quatre colonnes, et les sections deux par deux (demande du propriétaire, 27/10/2026)
+
+« Passer en 4 colonnes et mieux synthétiser l'information écrite en maximisant sur les graphiques, comme sur cette image. » Il avait raison : ma mosaïque précédente mettait **tout `#vue-tableau` en deux colonnes qui se remplissent** (`column-count: 2`), donc chaque section était coupée à la moitié de l'écran et ne portait plus que **deux cartes par rangée**. Jamais quatre.
+
+- **`#vue-tableau` est maintenant une vraie GRILLE de quatre colonnes** à partir de 1 200 px, pas une mosaïque. Une mosaïque range des blocs les uns sous les autres ; une grille donne à chaque section la largeur qu'elle demande.
+- **Chaque section dit la place qu'elle prend**, et c'est la disposition de sa maquette : `famille()` reçoit un quatrième paramètre (`"large"` ou `"demi"`) qui devient la classe `famille-large` / `famille-demi`. **Activité**, **Profitabilité** et **les conseils** prennent toute la largeur ; **Répartition + Efficacité** se partagent une rangée, puis **Investissement + Ton matériel**. Mesuré à 1 280 px : Activité tient ses **4 cartes sur une seule rangée**, les sections appariées font 563 px chacune.
+- **Et à l'intérieur** : quatre colonnes de cartes dans une section pleine largeur, deux dans une demie. Les familles de **deux** cartes gardent leur grille (deux cartes étirées à la même hauteur), d'où le `:not(.indicateurs-2)`.
+- **Le texte se resserre, le dessin respire** : interligne 1,35 au lieu de 1,45, conseil à 13 px, et le graphique passe de 100 à **124 px**. **Aucun contenu n'est retiré** — chaque carte garde sa lecture et son conseil, comme la règle du tableau de bord l'exige. Ces réglages vivent dans la requête `min-width: 1200px` : **sur un téléphone, le corps du texte ne bouge pas d'un pixel**.
+- **Piège évité** : une grille s'applique à **tous** les enfants directs, donc la vue « L'essentiel » (mosaïque et cadres, qui ont leur propre mise en page) se serait retrouvée dans une colonne sur quatre. `#vue-tableau > * { grid-column: 1 / -1 }` donne la largeur entière par défaut ; seules les sections `famille-demi` se partagent la rangée. Vérifié : la vue « L'essentiel » garde ses 1 232 px à 1 280 et 1 872 px à 1 920.
+- **Mesuré** sur neuf formats : aucun débordement, aucune cible sous 48 px, aucune erreur de script. Hauteur à 1 280 px : 2 632 px (contre 2 535 px avant) — les quatre vraies colonnes et le graphique plus haut coûtent **+97 px, soit 3,8 %**, et c'est le prix de ce qu'il a demandé. Tablette debout 800 × 1 280 : **4 378 → 3 996 px**. Téléphone debout : inchangé.
+- **Règle pour la suite** : une nouvelle section du tableau de bord déclare sa largeur (`"large"` ou `"demi"`) à `famille()` ; elle ne dessine pas sa propre grille.
+
 **Règle pour la suite** : un nouvel écran ne reçoit pas son propre seuil. Il se range dans les classes existantes — largeur compacte / moyenne / étendue, hauteur compacte — et hérite des marges, de la mesure de 65 signes et du plancher tactile de 48 px. Et **une vue en deux volets commence à 840 px**, jamais à 600 : en dessous, les deux volets sont trop étroits tous les deux.
 
 ## L'application Android : APK et AAB (fait)

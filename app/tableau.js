@@ -562,9 +562,9 @@ function carteIndicateur(o) {
     '</li>';
 }
 
-function famille(titre, sousTitre, cartes) {
+function famille(titre, sousTitre, cartes, largeur) {
   if (!cartes.length) return "";
-  return '<section class="famille">' +
+  return '<section class="famille famille-' + (largeur || "large") + '">' +
     '<h2 class="titre-liste">' + titre + '</h2>' +
     '<p class="aide famille-aide">' + sousTitre + '</p>' +
     '<ul class="indicateurs indicateurs-' + cartes.length + '">' +
@@ -704,7 +704,7 @@ function afficherTableau() {
     lecture: "Environ " + virgule(r.ventesParJour) + " ventes par jour" + (r.joursSansVente ? ", et " + pluriel(r.joursSansVente, "jour") + " sans aucune vente" : "") + ".",
     conseil: "Pour gagner plus sans plus de clients : propose toujours un petit produit en plus au moment de payer."
   }));
-  cartes.push(famille("Activité", "Est-ce que ça bouge ?", act));
+  cartes.push(famille("Activité", "Est-ce que ça bouge ?", act, "large"));
 
   /* ---------------- D'où vient l'argent, et où il part ---------------- */
   const rep = [];
@@ -740,7 +740,7 @@ function afficherTableau() {
             : "Regarde ligne par ligne ce qui compose ce poste : c'est là qu'on trouve la dépense de trop."
     }));
   }
-  cartes.push(famille("Répartition", "D'où vient l'argent, et où il part ?", rep));
+  cartes.push(famille("Répartition", "D'où vient l'argent, et où il part ?", rep, "demi"));
 
   /* ---------------- Efficacité ---------------- */
   const eff = [];
@@ -797,7 +797,7 @@ function afficherTableau() {
           : "Ton stock tourne vite : ton argent travaille au lieu de dormir."
     }));
   }
-  cartes.push(famille("Efficacité", "Est-ce que ça tourne bien ?", eff));
+  cartes.push(famille("Efficacité", "Est-ce que ça tourne bien ?", eff, "demi"));
 
   /* ---------------- Profitabilité ---------------- */
   const pro = [];
@@ -860,7 +860,7 @@ function afficherTableau() {
         : "Mets tes meilleurs produits devant, et n'en manque jamais."
     }));
   }
-  cartes.push(famille("Profitabilité", "Est-ce que ça gagne ?", pro));
+  cartes.push(famille("Profitabilité", "Est-ce que ça gagne ?", pro, "large"));
 
   /* ---------------- Investissement ---------------- */
   const inv = [];
@@ -884,10 +884,10 @@ function afficherTableau() {
       ? "Avant d'acheter : combien ça me rapporte par jour ? En combien de jours c'est remboursé ?"
       : "Fais-toi d'abord payer tes crédits et règle tes fournisseurs : c'est le premier investissement."
   }));
-  cartes.push(famille("Investissement", "Qu'est-ce que tu peux construire ?", inv));
+  cartes.push(famille("Investissement", "Qu'est-ce que tu peux construire ?", inv, "demi"));
 
   /* ---------------- Les investissements notés ---------------- */
-  let mat = '<section class="famille"><h2 class="titre-liste">Ton matériel</h2>';
+  let mat = '<section class="famille famille-demi"><h2 class="titre-liste">Ton matériel</h2>';
   if (!r.investissements.length) {
     mat += '<p class="aide famille-aide">Un congélateur, une moto, une machine, une deuxième boutique : note-le ici. ' +
       'Canari étale son coût sur sa durée d\'usage, et te dit en combien de temps il est remboursé.</p>';
@@ -939,7 +939,7 @@ function strategieHtml(r) {
   if (!actions.length) ajouter(1, "Continue à tout noter : dans quelques jours, Canari pourra te conseiller.");
 
   const trois = actions.sort(function (a, b) { return b.g - a.g; }).slice(0, 3);
-  return '<section class="famille strategie">' +
+  return '<section class="famille famille-large strategie">' +
     '<h2 class="titre-liste">Ce que je ferais à ta place</h2>' +
     '<ol class="actions-strategie">' + trois.map(function (a) {
       return '<li class="action-str g' + a.g + '">' + a.t + '</li>';

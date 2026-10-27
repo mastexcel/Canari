@@ -126,7 +126,15 @@ jobs:
           # Stdin fermé : si une commande se met malgré tout à poser une
           # question, elle échoue TOUT DE SUITE et le journal montre laquelle,
           # au lieu d'attendre le délai maximum.
-          if ! timeout 10m bubblewrap update < /dev/null > /tmp/update.log 2>&1; then
+          # « update » pose UNE question : le numéro de la nouvelle version.
+          # On la lui répond par le tube. Les lignes vides qui suivent
+          # acceptent les valeurs par défaut s'il en posait d'autres ; s'il en
+          # posait une qui n'a pas de défaut, stdin se termine et la commande
+          # échoue tout de suite, en montrant laquelle dans le journal.
+          VERSION="${{ github.event.inputs.version }}"
+          [ -n "$VERSION" ] || VERSION=$(node -p "require('./twa-manifest.json').appVersionName")
+          if ! printf '%s\n\n\n\n\n' "$VERSION" \
+              | timeout 10m bubblewrap update > /tmp/update.log 2>&1; then
             raconter "update" /tmp/update.log
             exit 1
           fi

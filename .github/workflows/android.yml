@@ -101,11 +101,9 @@ jobs:
       - name: Fabriquer le projet Android
         run: |
           set -e
-          # Les journaux d'une tâche ne sont pas lisibles depuis l'extérieur
-          # (GitHub les sert depuis un autre serveur). Quand une commande
-          # échoue, on recrache donc sa fin dans les ANNOTATIONS de la tâche,
-          # qui, elles, se lisent par l'API : c'est la seule façon de savoir
-          # ce qui s'est passé sans ouvrir la page à la main.
+          # Les journaux d'une tâche sont servis depuis un autre serveur et ne
+          # sont pas lisibles par l'API : quand une commande échoue, on recrache
+          # donc sa fin dans les ANNOTATIONS, qui, elles, se lisent.
           raconter() {
             echo "::group::$1"; cat "$2" || true; echo "::endgroup::"
             tail -n 20 "$2" 2>/dev/null | sed 's/^/::error::'"$1"' | /' || true
@@ -113,22 +111,26 @@ jobs:
           if [ -n "${{ github.event.inputs.version }}" ]; then
             node -e "const f='twa-manifest.json';const m=JSON.parse(require('fs').readFileSync(f));m.appVersionName='${{ github.event.inputs.version }}';m.appVersionCode=Math.floor(Date.now()/60000);require('fs').writeFileSync(f,JSON.stringify(m,null,2));"
           fi
-          # Chaque commande a son délai maximum : un blocage fait échouer la
-          # tâche en quelques minutes, pas en une heure.
-          timeout 10m sh -c 'yes | bubblewrap init --manifest="https://mastexcel.github.io/Canari/manifest.webmanifest" --directory=android' > /tmp/init.log 2>&1 || raconter "init" /tmp/init.log
-          if [ ! -d android ]; then
-            echo "::error::Bubblewrap n'a pas créé le dossier android."
-            raconter "init" /tmp/init.log
-            exit 1
-          fi
-          # Notre twa-manifest.json fait loi : nom du paquet, couleurs, et
-          # surtout l'ORIENTATION (« any » : portrait ET paysage). « update »
-          # régénère le projet à partir de lui, sinon le projet garderait les
-          # réponses que « yes » a données à la place de l'utilisateur.
+
+          # PAS DE « bubblewrap init » ICI, ET C'EST VOULU.
+          # « init » est un questionnaire : il veut un vrai terminal. Le nourrir
+          # avec « yes » ne répond à rien — ça remplit juste le tube de « y »
+          # jusqu'au délai maximum (vu : 10 minutes de « yyyy » dans le journal).
+          # « update », lui, ne pose aucune question : il REGÉNÈRE le projet
+          # Android à partir de twa-manifest.json, qui contient déjà tout —
+          # le nom du paquet, les couleurs, les icônes et l'ORIENTATION.
+          mkdir -p android
           cp twa-manifest.json android/twa-manifest.json
           cp android.keystore android/android.keystore
           cd android
-          timeout 10m sh -c 'yes | bubblewrap update' > /tmp/update.log 2>&1 || raconter "update" /tmp/update.log
+          # Stdin fermé : si une commande se met malgré tout à poser une
+          # question, elle échoue TOUT DE SUITE et le journal montre laquelle,
+          # au lieu d'attendre le délai maximum.
+          if ! timeout 10m bubblewrap update < /dev/null > /tmp/update.log 2>&1; then
+            raconter "update" /tmp/update.log
+            exit 1
+          fi
+          tail -n 5 /tmp/update.log
           # Les deux mots de passe arrivent par un tube, pas par un clavier.
           # Ils sont masqués par ::add-mask:: : ils ne peuvent pas fuir ici.
           if ! printf '%s\n%s\n' "$MOT_DE_PASSE" "$MOT_DE_PASSE" \
@@ -140,7 +142,7 @@ jobs:
           fi
           tail -n 5 /tmp/build.log
           echo "Fichiers produits :"
-          find . -name "*.apk" -o -name "*.aab" | head
+          find . \( -name "*.apk" -o -name "*.aab" \) -print | head
 
       - name: Vérifier que l'orientation n'est pas verrouillée
         run: |

@@ -181,7 +181,11 @@ body {
 .chiffre span { font-size: 14px; }
 .chiffre strong {
   font-family: "Fredoka", system-ui, sans-serif;
-  font-size: 20px;
+  /* Un montant ne se coupe jamais : à 360 px, « 41 000 F » demandait 78 px
+     dans une case qui n'en fait que 76. C'est donc sa taille qui suit la
+     largeur de la case, jamais le texte qui déborde. */
+  font-size: clamp(15px, 4.6vw, 20px);
+  white-space: nowrap;
 }
 .chiffre.entre { border-color: var(--entre); }
 .chiffre.entre strong { color: var(--entre); }
@@ -2548,7 +2552,7 @@ body { overflow-wrap: break-word; }
 /* Les produits qui rapportent. */
 .barres-produits { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
 .barres-produits li { display: grid; grid-template-columns: 5.5em 1fr auto; align-items: center; gap: 8px; }
-.bp-nom { font-size: 14px; color: var(--texte-doux); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bp-nom { font-size: 14px; color: var(--texte-doux); line-height: 1.25; }
 .bp-piste { background: var(--ivoire-2); border-radius: 7px; height: 12px; }
 .bp-barre { display: block; height: 12px; border-radius: 7px; background: linear-gradient(90deg, var(--entre-clair), var(--entre)); }
 .bp-barre.perte { background: linear-gradient(90deg, var(--sort-clair), var(--sort)); }
@@ -2640,7 +2644,7 @@ body { overflow-wrap: break-word; }
 .camembert-legende { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 .camembert-legende li { display: grid; grid-template-columns: 10px 1fr auto auto; gap: 8px; align-items: baseline; }
 .cl-puce { width: 10px; height: 10px; border-radius: 3px; align-self: center; }
-.cl-nom { font-size: 14px; color: var(--brun); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cl-nom { font-size: 14px; color: var(--brun); line-height: 1.25; }
 .cl-valeur, .cl-part {
   font-family: var(--chiffres);
   font-variant-numeric: tabular-nums lining-nums;
@@ -2792,9 +2796,7 @@ body { overflow-wrap: break-word; }
   color: var(--texte-doux);
   font-weight: 600;
   letter-spacing: .2px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.25;
 }
 .tuile-valeur {
   font-family: var(--chiffres);
@@ -4186,7 +4188,11 @@ body::after {
 }
 .case-sombre > div { min-width: 0; }
 .case-sombre span { display: block; font-size: 12.5px; color: var(--texte-doux); line-height: 1.2; }
-.deux-cases .case-sombre { gap: 8px; padding: 9px 10px; }
+/* Même correction que pour « .case-flux » : à 320 px, « 20 600 F »
+   demandait 83 px à côté de l'icône dans les 63 qui restaient. Le texte
+   passe sous l'icône plutôt que d'être rogné. */
+.deux-cases .case-sombre { gap: 8px; padding: 9px 10px; flex-wrap: wrap; }
+.deux-cases .case-sombre > div { flex: 1 1 86px; min-width: 0; }
 .deux-cases .ico-case { padding: 6px; width: 18px; height: 18px; }
 .case-sombre strong {
   display: block;
@@ -4224,7 +4230,10 @@ body::after {
   font-size: 14px;
   color: var(--texte-doux);
 }
-.deux-cases { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+/* Même principe que « .flux-jour » : les deux cases de l'objectif passent
+   l'une sous l'autre quand la place manque, plutôt que de rogner le
+   montant. */
+.deux-cases { display: grid; grid-template-columns: repeat(auto-fit, minmax(122px, 1fr)); gap: 8px; }
 
 /* ---------- Colonne 2 : la rentabilité ----------
    `.chiffre` garde son fond, ses bordures et ses couleurs : on ne fait que
@@ -4235,7 +4244,11 @@ body::after {
 .trois-chiffres .chiffre strong { display: block; line-height: 1.2; }
 
 /* ---------- Colonne 3 : la trésorerie ---------- */
-.flux-jour { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; margin-top: 10px; }
+/* « auto-fit » avec un minimum : les deux cases se mettent l'une sous
+   l'autre dès que la zone est trop étroite pour les porter côte à côte.
+   C'est ce qui empêche « 41 000 F » de déborder de sa case, sans avoir à
+   deviner une largeur d'écran — la grille mesure la place qu'elle a. */
+.flux-jour { display: grid; grid-template-columns: repeat(auto-fit, minmax(122px, 1fr)); gap: 8px; margin-top: 10px; }
 .case-flux {
   display: flex;
   align-items: center;
@@ -4246,13 +4259,20 @@ body::after {
   border-radius: 14px;
   min-width: 0;
 }
-.case-flux > div { min-width: 0; }
+/* L'icône mangeait la largeur du texte : « 41 000 F » demandait 78 px dans
+   les 76 qui restaient à côté d'elle. Le bloc texte réclame donc 92 px et
+   passe SOUS l'icône quand la case ne les offre pas — le montant retrouve
+   alors toute la largeur de la case. Un chiffre ne se coupe jamais. */
+.case-flux { flex-wrap: wrap; }
+.case-flux > div { min-width: 0; flex: 1 1 92px; }
 .case-flux span { display: block; font-size: 12.5px; color: var(--texte-doux); line-height: 1.2; }
 .case-flux strong {
   display: block;
   font-family: var(--chiffres);
   font-variant-numeric: tabular-nums lining-nums;
-  font-size: 18px;
+  /* Un montant ne se coupe jamais : à 360 px, « 41 000 F » demandait 78 px
+     dans une case de 76. C'est sa taille qui suit la case. */
+  font-size: clamp(14px, 4.4vw, 18px);
   line-height: 1.2;
 }
 /* Les couleurs de sens, inchangées. */
@@ -4352,7 +4372,7 @@ body::after {
    « Tomate concentrée » devenait « Tomate conc… » même dans une carte large.
    C'est le nom qui prend la place qui reste, et la barre qui se contente
    d'une largeur fixe — on lit d'abord un nom, pas une barre. */
-.barres-produits li { grid-template-columns: minmax(0, 1fr) 54px auto; }
+.barres-produits li { grid-template-columns: 1fr 54px auto; }
 
 /* ----- Les sections du tableau de bord, deux par deux -----
    (demande du propriétaire, 27/10/2026 : sa maquette met « Répartition » et
@@ -4427,7 +4447,8 @@ body::after {
   .tuile-nom { font-size: 13px; }
   .tuile-valeur { font-size: 22px; }
   .bp-nom, .bp-valeur { font-size: 13.5px; }
-  .cam-nom, .cam-montant, .cam-part { font-size: 13px; }
+  .cl-nom, .cl-valeur, .cl-part { font-size: 12.5px; }
+  .cl-part { min-width: 2.8em; }
 }
 
 /* Entre 900 et 1 100 px, les quatre colonnes sont plus étroites : les phrases
@@ -4549,6 +4570,34 @@ body::after {
      largeur restante et ne se coupe plus. La taille maximale ne bouge pas. */
   .bilan-contenu .gros-chiffre {
     white-space: nowrap;
-    font-size: clamp(38px, 4.2vw, 54px);
+    font-size: clamp(32px, 3.6vw, 54px);
   }
+}
+
+
+/* ----- Les légendes de camembert dans une carte étroite -----
+   (demande du propriétaire, 27/10/2026 : « je veux voir toutes les
+   écritures, texte et chiffres, quel que soit le mode portrait ou
+   paysage ».)
+   « Achats de marchandise » + « 912 300 F » + « 79 % » ne tiennent pas sur
+   une ligne de 207 px. Le nom prend donc sa propre ligne, et le montant et
+   le pourcentage se rangent en dessous. Rien n'est coupé, rien n'est
+   abrégé : on lit le nom entier. Au-delà de 1 500 px la carte est assez
+   large et la ligne reprend sa forme d'origine. */
+@media (min-width: 900px) and (max-width: 1499px) {
+  .camembert-legende li { grid-template-columns: 10px 1fr auto; row-gap: 1px; }
+  .cl-nom { grid-column: 2 / -1; }
+  .cl-valeur { grid-column: 2; }
+  .cl-part { grid-column: 3; }
+}
+
+/* Sur les écrans les plus étroits, le chiffre d'une tuile de « L'essentiel »
+   débordait de sa case : un montant ne se coupe jamais, c'est donc sa taille
+   qui s'adapte. */
+/* Les quatre petites tuiles de « L'essentiel » tenaient sur une seule
+   rangée : sur un écran de 360 px, chacune n'avait que 56 px de texte et
+   « 174 700 F » débordait de sa case. Un montant ne se coupe jamais, donc
+   c'est la rangée qui se dédouble. */
+@media (max-width: 440px) {
+  .mosaique-petite { grid-template-columns: 1fr 1fr; }
 }

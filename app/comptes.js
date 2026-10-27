@@ -601,7 +601,7 @@ function cascadeSvg(ex) {
     { nom: "Bénéfice net", v: ex.resultatNet, classe: ex.resultatNet < 0 ? "etage-perte" : "etage-net" }
   ];
   const max = Math.max(1, Math.max.apply(null, etages.map(function (e) { return Math.abs(e.v); })));
-  return '<ul class="cascade">' + etages.map(function (e) {
+  return '<ul class="cascade-barres">' + etages.map(function (e) {
     const part = Math.min(100, Math.abs(e.v) / max * 100);
     return '<li><span class="cascade-nom">' + e.nom + '</span>' +
       '<span class="cascade-piste"><span class="cascade-barre ' + e.classe + '" style="width:' + part.toFixed(1) + '%"></span></span>' +

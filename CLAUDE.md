@@ -571,6 +571,16 @@ Il a regardé le résultat et a eu raison sur les trois points. Ce qui a été c
 6. **Le volet des mouvements est un vrai bloc** (`<div class="volet-mouvements">` autour du titre, de la liste et de l'écran vide), posé en `grid-area: 1 / 2 / -1 / 3`. Sans lui, le titre « Aujourd'hui » restait seul en haut de la colonne de droite et la liste ne commençait qu'au bas de la carte du jour, avec 300 px de vide. La grille déclare **cinq rangées** — quatre pour le volet de gauche, une cinquième souple : sans elle, grid répartit le surplus de hauteur de la liste sur les quatre rangées et écarte les boutons jusqu'en bas de l'écran.
 7. **Quatre cibles tactiles sous 48 px** arrivées avec les écrans récents (bandeau d'entreprise, bandeau de démo et son bouton, numéro de téléphone d'une fiche client) remontées au plancher Material.
 
+### Le vrai coupable : DEUX ÉCRANS PARTAGEAIENT UN NOM DE CLASSE
+
+Après ces corrections, le propriétaire a renvoyé une capture du **« calcul, pas à pas »** (Bilan → Mois) avec le même défaut : « Ventes (dont / 58 450 F à / crédit) » sur **trois lignes**, et le montant flottant au milieu d'une colonne vide. En **portrait comme en paysage**. Ce n'était donc pas une affaire de taille d'écran du tout.
+
+`charges.js` écrit depuis toujours `<ul class="cascade">` avec des `<li class="cascade-ligne">` : une carte à lignes séparées, libellé à gauche, montant à droite (`flex`, `space-between`). Quand `comptes.js` est arrivé, il a écrit **lui aussi** `<ul class="cascade">`, mais pour une **pile de barres** : `display: flex` sur le `<ul>` et une grille `6.5em 1fr auto` sur chaque `li`. Ses règles étant **plus bas dans la feuille**, elles gagnaient — et s'appliquaient aux `li` de `charges.js`, qui n'avaient rien demandé. Le libellé se retrouvait coincé dans **104 px** et le montant dans la colonne de la barre, qui n'existe pas chez `charges.js`. La pile de barres, elle, s'affichait correctement : le défaut ne se voyait que sur l'écran qui n'était pas prévu pour.
+
+Les barres de `comptes.js` s'appellent donc **`.cascade-barres`**. C'est exactement le même piège que `const DUREES` dans `tableau.js` et `abonnement.js` (voir « Plusieurs entreprises ») : **la feuille de style est un espace de noms partagé par tous les écrans**, au même titre que le JavaScript.
+
+**Règle pour la suite** : avant de donner un nom de classe à un nouvel écran, vérifier qu'il est libre — `grep -n '^\.nom[ {.:]' app/style.css`. Un nom déjà pris se réutilise **seulement** si on habille le même élément ; sinon on en choisit un autre. Et quand un écran s'affiche mal alors qu'un autre, voisin, va bien, regarder d'abord si les deux partagent une classe.
+
 **Règle pour la suite** : un nouvel écran ne reçoit pas son propre seuil. Il se range dans les classes existantes — largeur compacte / moyenne / étendue, hauteur compacte — et hérite des marges, de la mesure de 65 signes et du plancher tactile de 48 px. Et **une vue en deux volets commence à 840 px**, jamais à 600 : en dessous, les deux volets sont trop étroits tous les deux.
 
 ## L'application Android : APK et AAB (fait)

@@ -549,7 +549,11 @@ function comparatifSvg(points) {
 // Un indicateur : un nom, un chiffre, un verdict, une lecture, un conseil.
 function carteIndicateur(o) {
   const v = o.verdict || "neutre";
-  return '<li class="ind ind-' + v + '">' +
+  /* Une carte qui porte un graphique le dit : elles doivent toutes avoir la
+     même taille, sinon trois courbes côte à côte s'arrêtent à trois hauteurs
+     différentes (demande du propriétaire, 27/10/2026). */
+  const graphe = /^<svg/.test(o.dessin || "") ? " ind-graphe" : "";
+  return '<li class="ind ind-' + v + graphe + '">' +
     '<div class="ind-haut"><span class="ind-nom">' + o.nom + '</span>' +
     '<b class="ind-valeur">' + o.valeur + '</b></div>' +
     (o.dessin || "") +

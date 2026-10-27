@@ -1,15 +1,30 @@
-# Fabrique l'application Android (.aab) à envoyer au Play Store.
+# Fabrique l'application Android de Canari.
 #
-# À lancer à la main : onglet « Actions » du dépôt → « Fabriquer l'application
-# Android » → « Run workflow ». Le fichier apparaît ensuite en bas de la page,
-# dans « Artifacts ».
+# Elle sort DEUX fichiers, et ils ne servent pas à la même chose :
+#   · canari.apk — à installer directement sur un téléphone Android (on
+#     l'envoie par WhatsApp ou on le met sur une clé, et on l'ouvre). C'est
+#     celui qu'il faut pour faire essayer l'appli à quelqu'un tout de suite ;
+#   · canari.aab — à envoyer au Play Store, et à rien d'autre : Android ne
+#     sait pas installer un .aab.
 #
-# Il faut d'abord avoir créé les deux secrets du dépôt (Settings → Secrets and
-# variables → Actions) :
-#   ANDROID_KEYSTORE      — le fichier de signature, encodé en base64
-#   ANDROID_KEYSTORE_PASS — son mot de passe
-# La toute première fois, lance la tâche SANS ces secrets : elle fabrique une
-# clé neuve et te la donne à télécharger. Voir docs/play-store.md.
+# À lancer à la main : onglet « Actions » du dépôt → « Fabriquer
+# l'application Android » → « Run workflow ». Les fichiers apparaissent
+# ensuite en bas de la page, dans « Artifacts ».
+#
+# LA CLÉ DE SIGNATURE, ET POURQUOI ELLE N'EST PLUS TÉLÉCHARGEABLE ICI.
+# Ce dépôt est PUBLIC. Or les fichiers déposés par une tâche (« artifacts »)
+# sont téléchargeables par toute personne qui peut lire le dépôt — c'est-à-dire
+# tout le monde. L'ancienne version de cette tâche fabriquait une clé de
+# signature et la déposait avec son mot de passe : n'importe qui aurait pu la
+# prendre et signer une fausse mise à jour de Canari au nom du propriétaire.
+# Elle ne sort donc plus jamais d'ici.
+#   · SANS le secret ANDROID_KEYSTORE, la tâche signe avec une clé jetable,
+#     fabriquée et détruite dans la foulée. L'APK obtenu s'installe et marche
+#     très bien POUR FAIRE ESSAYER, mais il ne peut pas servir au Play Store
+#     ni recevoir de mise à jour : il faudra désinstaller puis réinstaller.
+#   · AVEC le secret, la vraie clé est utilisée et les deux fichiers sont
+#     bons pour le Play Store.
+# Comment fabriquer la vraie clé sans qu'elle passe par ici : docs/play-store.md.
 
 name: Fabriquer l'application Android
 
@@ -17,7 +32,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Numéro de version affiché (ex. 1.0.1)"
+        description: "Numéro de version affiché (ex. 1.1.0)"
         required: false
         default: ""
 
@@ -48,20 +63,20 @@ jobs:
           set -e
           if [ -n "$KEYSTORE" ]; then
             echo "$KEYSTORE" | base64 -d > android.keystore
+            echo "::add-mask::$KEYSTORE_PASS"
             echo "MOT_DE_PASSE=$KEYSTORE_PASS" >> "$GITHUB_ENV"
-            echo "neuve=non" >> "$GITHUB_OUTPUT"
-            echo "Clé de signature récupérée depuis les secrets."
+            echo "jetable=non" >> "$GITHUB_OUTPUT"
+            echo "Clé de signature du propriétaire : utilisée."
           else
             MDP=$(head -c 24 /dev/urandom | base64 | tr -dc 'A-Za-z0-9' | head -c 24)
+            echo "::add-mask::$MDP"
             keytool -genkeypair -v -keystore android.keystore -alias canari \
               -keyalg RSA -keysize 2048 -validity 10000 \
               -storepass "$MDP" -keypass "$MDP" \
               -dname "CN=Canari, O=Canari, L=Abidjan, C=CI"
             echo "MOT_DE_PASSE=$MDP" >> "$GITHUB_ENV"
-            echo "neuve=oui" >> "$GITHUB_OUTPUT"
-            echo "$MDP" > mot-de-passe-de-la-cle.txt
-            base64 -w0 android.keystore > android.keystore.base64
-            echo "::warning::Une clé de signature NEUVE a été fabriquée. Télécharge-la plus bas, garde-la précieusement, puis mets-la dans les secrets du dépôt."
+            echo "jetable=oui" >> "$GITHUB_OUTPUT"
+            echo "::warning::Pas de secret ANDROID_KEYSTORE : l'APK est signé avec une clé JETABLE. Il s'installe et marche, mais il ne peut pas aller au Play Store ni recevoir de mise à jour. Voir docs/play-store.md."
           fi
 
       - name: Fabriquer le projet Android
@@ -71,6 +86,8 @@ jobs:
             node -e "const f='twa-manifest.json';const m=JSON.parse(require('fs').readFileSync(f));m.appVersionName='${{ github.event.inputs.version }}';m.appVersionCode=Math.floor(Date.now()/60000);require('fs').writeFileSync(f,JSON.stringify(m,null,2));"
           fi
           yes | bubblewrap init --manifest="https://mastexcel.github.io/Canari/manifest.webmanifest" --directory=android || true
+          # Notre twa-manifest.json fait loi : c'est lui qui porte le nom du
+          # paquet, les couleurs et l'ORIENTATION (« any » : portrait ET paysage).
           cp twa-manifest.json android/twa-manifest.json
           cp android.keystore android/android.keystore
           cd android
@@ -79,18 +96,51 @@ jobs:
             --signingKeyAlias=canari <<< "$MOT_DE_PASSE
           $MOT_DE_PASSE"
 
-      - name: Récupérer l'empreinte de la clé
+      - name: Vérifier que l'orientation n'est pas verrouillée
         run: |
-          keytool -list -v -keystore android.keystore -alias canari -storepass "$MOT_DE_PASSE" \
-            | grep -A1 "SHA256:" | head -2 | tee empreinte-sha256.txt
+          set -e
+          # Un verrou « portrait » dans le manifeste Android annulerait tout le
+          # travail fait côté CSS : l'appli resterait debout quoi qu'il arrive.
+          if grep -rq 'screenOrientation="portrait"' android/app/src/main/AndroidManifest.xml; then
+            echo "::error::L'application est verrouillée en portrait. Vérifie \"orientation\" dans twa-manifest.json."
+            exit 1
+          fi
+          echo "Orientation libre : portrait et paysage."
 
       - name: Ranger les fichiers
         run: |
+          set -e
           mkdir -p resultat
-          cp android/app-release-bundle.aab resultat/canari.aab 2>/dev/null || cp android/*.aab resultat/ 2>/dev/null || true
-          cp empreinte-sha256.txt resultat/ 2>/dev/null || true
-          if [ "${{ steps.cle.outputs.neuve }}" = "oui" ]; then
-            cp android.keystore android.keystore.base64 mot-de-passe-de-la-cle.txt resultat/
+          # L'APK d'abord : c'est lui qu'on installe sur un téléphone.
+          find android -name "*.apk" -exec cp {} resultat/canari.apk \; 2>/dev/null || true
+          find android -name "*.aab" -exec cp {} resultat/canari.aab \; 2>/dev/null || true
+          # L'empreinte de la clé : elle n'est pas un secret (elle est publique
+          # par nature), et le Play Console la demande pour assetlinks.json.
+          keytool -list -v -keystore android.keystore -alias canari -storepass "$MOT_DE_PASSE" \
+            | grep -A1 "SHA256:" | head -2 > resultat/empreinte-sha256.txt || true
+          if [ "${{ steps.cle.outputs.jetable }}" = "oui" ]; then
+            # Écrit avec printf et non un sous-document : dans un bloc YAML,
+            # les lignes d'un « heredoc » doivent rester indentées, sinon le
+            # fichier entier devient illisible pour GitHub.
+            printf '%s\n' \
+              "CANARI - application Android" \
+              "" \
+              "canari.apk - a installer sur un telephone Android." \
+              "  Envoie-le-toi sur WhatsApp, ouvre-le, accepte \"installer quand meme\"" \
+              "  (Android previent pour toute appli qui ne vient pas du Play Store)." \
+              "  Premiere ouverture : il faut internet. Ensuite l'appli marche hors ligne." \
+              "" \
+              "canari.aab - pour le Play Store uniquement. Android ne sait pas l'installer." \
+              "" \
+              "ATTENTION : cet APK est signe avec une cle JETABLE, parce que le depot est" \
+              "public et qu'une vraie cle n'a rien a faire dans un fichier telechargeable" \
+              "par n'importe qui. Consequences :" \
+              "  - il s'installe et il marche : parfait pour faire essayer l'appli ;" \
+              "  - il ne peut PAS etre envoye au Play Store ;" \
+              "  - la prochaine version ne s'installera pas par-dessus : il faudra" \
+              "    desinstaller celle-ci d'abord." \
+              "Pour une vraie cle, voir docs/play-store.md." \
+              > resultat/LISEZ-MOI.txt
           fi
           ls -la resultat
 

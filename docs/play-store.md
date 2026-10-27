@@ -106,13 +106,29 @@ Le Play Store veut un fichier `.aab`. Deux façons :
 
 Onglet **Actions** du dépôt → **« Fabriquer l'application Android »** → **Run workflow**. Le fichier apparaît en bas de la page dans **Artifacts**.
 
-La toute première fois, la tâche fabrique une **clé de signature neuve** et te la donne à télécharger (`android.keystore`, `android.keystore.base64`, `mot-de-passe-de-la-cle.txt`). Tu la ranges en lieu sûr, puis tu crées deux secrets dans **Settings → Secrets and variables → Actions** :
-- `ANDROID_KEYSTORE` = le contenu de `android.keystore.base64`
-- `ANDROID_KEYSTORE_PASS` = le mot de passe
+Elle sort **deux fichiers** :
 
-Ensuite, toutes les fabrications utiliseront cette même clé.
+| Fichier | À quoi il sert |
+|---|---|
+| **`canari.apk`** | S'installe directement sur un téléphone Android. C'est celui qu'on envoie à quelqu'un pour lui faire essayer l'appli. |
+| **`canari.aab`** | Pour le Play Store, et rien d'autre : **Android ne sait pas installer un `.aab`**. |
 
-> ⚠️ **Cette tâche n'a encore jamais tourné pour de vrai** : mon ordinateur de travail n'a pas accès aux outils Android de Google. Sa première exécution se fera chez GitHub. Si elle échoue, envoie-moi le message d'erreur, je corrige. **En attendant, utilise la façon A.**
+#### 🔒 La clé de signature ne sort JAMAIS d'ici, et voici pourquoi
+
+Ce dépôt est **public**. Or les fichiers déposés par une tâche (les « Artifacts ») sont téléchargeables par **toute personne qui peut lire le dépôt** — c'est-à-dire tout le monde. L'ancienne version de cette tâche fabriquait une clé de signature et la déposait là, avec son mot de passe : n'importe qui aurait pu la prendre et **signer une fausse mise à jour de Canari en ton nom**. C'est corrigé : la clé ne sort plus jamais de la tâche.
+
+Du coup, deux situations :
+
+- **Tant que tu n'as pas créé le secret** : la tâche signe avec une **clé jetable**. L'APK obtenu **s'installe et marche très bien pour faire essayer l'appli**. Mais il ne peut pas aller au Play Store, et la version suivante ne s'installera pas par-dessus (il faudra désinstaller d'abord). Pour montrer Canari à quelqu'un, c'est parfait.
+- **Une fois le secret créé** : la vraie clé est utilisée, et les deux fichiers sont bons pour le Play Store.
+
+#### Créer la vraie clé, une seule fois
+
+La clé doit naître **sur ta machine**, jamais ici. Le plus simple est de laisser **Google la garder pour toi** : au moment du premier envoi, le Play Console propose **« Play App Signing »** — tu acceptes, et c'est Google qui détient la clé définitive. Tu n'as plus qu'une « clé d'envoi » à garder, et si tu la perds, Google peut la remplacer.
+
+Si tu préfères la fabriquer toi-même, demande-le-moi : je te donnerai la commande exacte à faire tourner, et où coller le résultat dans **Settings → Secrets and variables → Actions** :
+- `ANDROID_KEYSTORE` = le fichier de clé, encodé en base64
+- `ANDROID_KEYSTORE_PASS` = son mot de passe
 
 ---
 

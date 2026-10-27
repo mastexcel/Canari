@@ -480,7 +480,7 @@ Demande du 17/10/2026 : « créer une version de démo déjà renseignée avec d
 
 - **Pourquoi** : une appli de comptabilité vide ne montre rien — tableau de bord gris, courbes plates, comptes annuels à zéro. Devant un investisseur, une banque ou un commerçant, il faut une boutique qui a vécu, et personne ne va taper un an de ventes à la main avant chaque présentation.
 - **Où** : Réglages → **« Montrer Canari à quelqu'un »** → « Créer la démonstration ». Trois boutons ensuite : ouvrir, **remettre à neuf** (après l'avoir touchée pendant la présentation) et **retirer**.
-- **Ce qu'elle contient** : *Boutique Awa (démo)*, une alimentation générale de Cocody Angré, sur **420 jours** (donc **deux années civiles** : les comptes pluriannuels et la vue « Années » ont de quoi comparer). 11 produits dont un **fabriqué** (jus de bissap, avec sa fiche de coût, sa recette et ses 4 intrants), 12 clients, 4 fournisseurs, 7 charges et taxes, 3 investissements, ~6 300 mouvements. Chiffres obtenus : 15,1 M de ventes, 324 000 F en caisse, 92 000 F dus par les clients, 46 000 F dus aux fournisseurs, 247 000 F de stock.
+- **Ce qu'elle contient** : *Boutique Awa (démo)*, une alimentation générale de Cocody Angré, sur **420 jours** (donc **deux années civiles** : les comptes pluriannuels et la vue « Années » ont de quoi comparer). 10 produits dont un **fabriqué** (jus de bissap, avec sa fiche de coût, sa recette et ses 4 intrants), 12 clients, 4 fournisseurs, 7 charges et taxes, 3 investissements, ~6 300 mouvements. Chiffres obtenus : 15,1 M de ventes, 324 000 F en caisse, 92 000 F dus par les clients, 46 000 F dus aux fournisseurs, 247 000 F de stock.
 - **Trois garanties, qui comptent plus que les chiffres** :
   1. c'est une **entreprise à part** (voir `entreprises.js`) : les vraies données ne sont jamais touchées ;
   2. elle ne mange **pas une place de l'abonnement** (`entreprisesComptees()` l'exclut) — sinon la démo serait impossible pendant l'essai gratuit, exactement le moment où l'on cherche à convaincre ;
@@ -494,6 +494,39 @@ Demande du 17/10/2026 : « créer une version de démo déjà renseignée avec d
 - **Vitesse** : 280 ms de génération et **773 ms du doigt à l'écran** sur un processeur 6× plus lent (téléphone d'entrée de gamme). Pas d'écran d'attente, donc.
 - **Les données de la démo restent en français** même en anglais (noms de produits, de clients, libellés des dépenses) : c'est le cas normal — les données d'une vraie boutique sont dans la langue du commerçant, et l'appli ne les traduit jamais. Seuls les écrans de la démo sont traduits.
 - **Règle pour la suite** : un nouveau type de mouvement doit être représenté dans la démo, sinon l'écran qui le montre reste vide pendant une présentation. Et tout chiffre ajouté doit rester **cohérent avec les autres** : la démo est lue par le tableau de bord, les comptes annuels ET les états OHADA, qui ne calculent pas de la même façon — un chiffre qui ne tient que dans un seul des trois se voit tout de suite.
+
+## L'onglet Profil (fait, demande du propriétaire)
+
+Demande du 27/10/2026 : « ajoute un onglet profil à Canari ». Code : `app/profil.js`, dictionnaire `app/langues/en-profil.js`.
+
+- **Ce qu'il répare** : l'identité de la boutique — nom, logo, numéro, RCCM, compte contribuable, monnaie — était enfouie dans les Réglages, derrière la roue dentée, au milieu de quinze cartes. Le commerçant qui voulait vérifier **ce qui s'imprime sur ses factures** devait chercher. Son abonnement était ailleurs, son entreprise ailleurs encore.
+- **La frontière avec les Réglages, et elle est nette** : le **Profil MONTRE** (qui tu es, depuis quand, ce que tu as, où tu en es de ton abonnement) — on le lit ; les **Réglages CHANGENT** (formulaires, interrupteurs, sauvegarde, remise à zéro) — on y tape. Chaque carte du Profil porte un bouton qui ouvre le bon formulaire des Réglages, et **aucun formulaire n'est redessiné** : un champ copié deux fois finit par diverger.
+- **Ce qu'on y voit** : une carte d'identité sombre (graphite et braise, un « grand moment » au sens de la charte) avec le logo ou la mascotte, le nom, le métier, « Dans Canari depuis le… » et quatre compteurs (ventes notées, clients, produits, fournisseurs) ; puis **Mon abonnement** (le même texte que dans les Réglages, par `texteEtat()`, pour que les deux écrans ne puissent jamais se contredire), **Mon entreprise** (seulement s'il y en a plusieurs), **Ma boutique** (ce qui s'imprime sur les factures) et **Aller plus loin** (guide, export, sauvegarde, réglages).
+- **`reglagesSur(id)`** ouvre les Réglages **et amène l'œil sur la bonne carte** : sans le défilement, on retombe en haut d'un écran long et il faut chercher à nouveau — exactement ce que le Profil est censé épargner. La carte Sauvegarde a reçu l'identifiant `carte-sauvegarde` qui lui manquait.
+- **Six onglets tiennent sur 320 px** (vérifié : aucun mot coupé, aucun débordement). Le mot « Profil » est court, c'est ce qui le permet.
+- **Règle pour la suite** : le Profil ne reçoit jamais un champ de saisie. S'il faut pouvoir changer quelque chose, on ajoute un bouton vers la carte des Réglages qui le fait déjà.
+
+## Portrait ET paysage (fait, demande du propriétaire)
+
+Demande du 27/10/2026 : « avec affichage en mode portrait et paysage ». L'appli était verrouillée en portrait à **deux endroits**, et il fallait lever les deux :
+1. `app/manifest.webmanifest` → `"orientation": "any"` (l'appli installée depuis le navigateur) ;
+2. `twa-manifest.json` → `"orientation": "any"` (l'application Android du Play Store). **Oublier celui-ci annulait tout le travail CSS** : l'appli serait restée debout quoi qu'il arrive. Le workflow Android vérifie maintenant ce point et **échoue** s'il trouve `screenOrientation="portrait"`.
+
+Le CSS vit dans la section « LE MODE PAYSAGE » de `app/style.css`, enfermé dans `@media (orientation: landscape) and (max-height: 560px)` : **le portrait ne bouge pas**, et une tablette ou un PC, où la hauteur ne manque pas, n'est pas touché.
+
+Deux choses cassaient vraiment, vues à l'écran avant d'être corrigées :
+- **L'accueil demandait 624 px pour 360 px** : « Commencer » tombait sous la ligne de flottaison, et le tout premier écran de l'appli n'offrait aucune action visible. Couché, il passe donc **sur deux colonnes** — la marque à gauche, les boutons à droite. Il tient maintenant en 360 px exactement.
+- **Dans la fenêtre de saisie, « Enregistrer » tombait à 668 px**, invisible, et rien ne disait qu'il fallait faire défiler *à l'intérieur* de la fenêtre. Les deux boutons sont maintenant **collés en bas** (`position: sticky`) : « Enregistrer » est toujours sous le pouce. Le bas de la fenêtre perd sa marge, sinon le formulaire défile dans cette marge et on voit un bout de bouton dépasser **sous** la barre.
+- Au passage : la barre d'onglets passe en ligne (icône à côté du mot, 44 px au lieu de 58), et **les pastilles rouges se rangent au-dessus de l'icône** — en ligne, elles tombaient sur la première lettre (« .elances », « .tock »).
+
+Vérifié sans erreur ni débordement, les six onglets et la fenêtre de saisie, sur **320, 360, 740 × 360, 844 × 390 et 1280 px**.
+
+## L'application Android : APK et AAB (fait)
+
+- **Deux fichiers, et ils ne servent pas à la même chose** : `canari.apk` s'installe **directement sur un téléphone** (on l'envoie par WhatsApp, on l'ouvre) ; `canari.aab` ne sert qu'au **Play Store** — Android ne sait pas installer un `.aab`. L'ancien workflow ne sortait que le `.aab`, donc rien d'installable.
+- **Sur un PC, un APK ne s'installe pas.** Pour Windows, Mac ou Linux, c'est la **PWA** : ouvrir `https://mastexcel.github.io/Canari/` dans Chrome ou Edge → l'icône « Installer » dans la barre d'adresse. L'appli obtenue a sa propre fenêtre et marche hors ligne.
+- **LA CLÉ DE SIGNATURE NE SORT PLUS DU WORKFLOW, et c'est un vrai trou qui a été bouché.** Le dépôt `mastexcel/Canari` est **public** ; or les artefacts d'une tâche sont téléchargeables par toute personne qui peut lire le dépôt, c'est-à-dire **tout le monde**. L'ancienne tâche fabriquait une clé de signature et la déposait là **avec son mot de passe** : n'importe qui aurait pu la récupérer et signer une fausse mise à jour de Canari au nom du propriétaire. Désormais : sans le secret `ANDROID_KEYSTORE`, la tâche signe avec une **clé jetable** (l'APK s'installe et marche, mais il ne peut pas aller au Play Store et la version suivante ne s'installera pas par-dessus) ; avec le secret, la vraie clé est utilisée. La clé doit naître **sur la machine du propriétaire**, ou être confiée à **Play App Signing** (Google la garde). Détaillé dans `docs/play-store.md`.
+- **Règle pour la suite** : ne jamais faire sortir un secret par un artefact de ce dépôt tant qu'il est public — ni clé, ni mot de passe, ni jeton. L'empreinte SHA-256 de la clé, elle, est publique par nature : elle peut rester dans l'artefact, et le Play Console la demande pour `assetlinks.json`.
 
 ## Hors version 1 (plus tard)
 
@@ -515,6 +548,7 @@ Compte en ligne et synchronisation, plusieurs vendeurs par boutique, paiement mo
 7 septies. **Plusieurs entreprises par téléphone** et **nouvelle grille de prix** (Solo / Multi / Pro, 3 000 à 8 000 F par mois), alignée sur le marché (fait).
 7 sexies. **Comptes annuels** : bilan, compte de résultat, ratios, analyse et conseils, sur une ou plusieurs années (fait). Et les mêmes états **au format OHADA** (SYSCOHADA révisé), à consulter à la demande (fait).
 7 quinquies. **Tunnel de vente autonome (préparé)** : inscription, messages de suivi, paiement et activation sans intervention (`tunnel/`). Reste au propriétaire : le numéro WhatsApp Business, CinetPay et n8n.
+7 nonies. **Onglet Profil**, **mode paysage** et **APK Android installable** (fait).
 7 octies. **Boutique de démonstration** : une boutique d'exemple déjà remplie, pour montrer l'appli à un auditoire (fait).
 8. **Play Store (préparé)** : politique de confidentialité, visuels de la fiche, réglages TWA, guide pas à pas (`docs/play-store.md`). Reste au propriétaire : le compte développeur, les 12 testeurs et le choix du domaine.
 

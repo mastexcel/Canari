@@ -3571,3 +3571,199 @@ body::after {
 
 /* Les trois boutons de la carte des Réglages se suivent : un peu d'air. */
 #carte-demo .bouton + .bouton { margin-top: 8px; }
+
+/* ===========================================================================
+   L'ONGLET PROFIL  (demande du propriétaire, voir profil.js)
+
+   La carte d'identité est un « grand moment » au sens de la charte : fond
+   graphite, braise qui chauffe un coin, grille fine de BIP. On la regarde,
+   on n'y travaille pas. Les cartes du dessous restent ivoire, comme tous les
+   écrans où l'on lit longtemps.
+   =========================================================================== */
+
+.profil-tete {
+  position: relative;
+  overflow: hidden;
+  margin: 0 0 14px;
+  padding: 18px 16px 14px;
+  border-radius: 22px;
+  background: var(--fond-braise);
+  color: #F3EFEA;
+  box-shadow: var(--ombre-sombre);
+}
+.profil-haut { display: flex; align-items: center; gap: 14px; }
+
+/* La vignette : le logo de la boutique s'il existe, sinon la mascotte. Le
+   fond clair derrière un logo est obligatoire — beaucoup de logos sont des
+   traits noirs sur fond transparent, invisibles sur le graphite. */
+.profil-vignette {
+  flex: 0 0 auto;
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  background: var(--ivoire);
+  border: 2px solid rgba(255, 255, 255, .22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.profil-vignette img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+.profil-nom { min-width: 0; }
+.profil-nom h2 {
+  margin: 0;
+  font-family: var(--titre);
+  font-size: clamp(20px, 6vw, 25px);
+  line-height: 1.15;
+  color: #FFFFFF;
+  overflow-wrap: anywhere;
+}
+.profil-metier { margin: 3px 0 0; font-size: 14px; color: var(--braise-vive); font-weight: 600; }
+.profil-depuis { margin: 12px 0 0; font-size: 14px; color: #BDB6B0; }
+
+/* Les quatre compteurs : une grille de 2 × 2 qui ne déborde jamais, même
+   quand le nombre passe à cinq chiffres sur un écran de 320 px. */
+.profil-compteurs {
+  margin: 14px 0 0;
+  padding: 12px 0 0;
+  border-top: 1px solid rgba(255, 255, 255, .14);
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 8px;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.profil-compteurs li { display: flex; flex-direction: column; min-width: 0; }
+.profil-compteurs b {
+  font-family: var(--chiffres);
+  font-size: clamp(19px, 5.6vw, 23px);
+  font-weight: 700;
+  letter-spacing: -.4px;
+  color: #FFFFFF;
+}
+.profil-compteurs small { font-size: 12.5px; color: #BDB6B0; line-height: 1.25; }
+
+.profil-carte { margin-bottom: 12px; }
+.profil-carte .bouton + .bouton { margin-top: 8px; }
+
+/* Ce qui s'imprime sur les factures : une étiquette, une valeur, et la
+   valeur ne se coupe pas en deux (un numéro RCCM coupé ne se vérifie pas). */
+.profil-infos { margin: 0 0 12px; }
+.profil-infos > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 2px 12px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--bord);
+}
+.profil-infos > div:last-child { border-bottom: 0; }
+.profil-infos dt { font-size: 14px; color: var(--texte-doux); }
+.profil-infos dd {
+  margin: 0;
+  font-weight: 600;
+  color: var(--gris-800);
+  text-align: right;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.profil-liens { display: flex; flex-direction: column; gap: 8px; }
+.profil-liens .bouton { width: 100%; text-decoration: none; }
+
+/* ===========================================================================
+   LE MODE PAYSAGE  (demande du propriétaire, 27/10/2026)
+
+   Jusqu'ici l'appli était verrouillée en portrait par le manifeste. Déverrouillée,
+   deux choses cassaient sur un téléphone couché (740 × 360), et les deux ont
+   été vues à l'écran avant d'être corrigées :
+     1. l'ACCUEIL demandait 624 px de haut pour 360 px disponibles ;
+     2. dans la fenêtre de saisie, « Enregistrer » tombait à 668 px — invisible,
+        et rien ne disait qu'il fallait faire défiler À L'INTÉRIEUR de la
+        fenêtre. Un commerçant qui ne trouve pas le bouton pense que l'appli
+        est cassée.
+
+   La règle de ce bloc : on ne change RIEN au portrait. Tout est enfermé dans
+   « écran bas ET couché », ce qui vise le téléphone en paysage sans toucher
+   une tablette ni un PC, où la hauteur ne manque pas.
+   =========================================================================== */
+
+@media (orientation: landscape) and (max-height: 560px) {
+
+  /* On rend de la hauteur partout : c'est elle qui manque, jamais la largeur. */
+  .ecran { padding-top: 10px; padding-bottom: calc(14px + env(safe-area-inset-bottom)); }
+  .entete { margin-bottom: 8px; }
+
+  /* La barre d'onglets : l'icône au-dessus du mot coûte 58 px. Couchée, elle
+     passe à côté — 44 px, et six onglets restent lisibles. */
+  .onglet { flex-direction: row; gap: 6px; min-height: 44px; }
+  .onglet svg { width: 20px; height: 20px; }
+  .onglets { padding-top: 3px; padding-bottom: calc(3px + env(safe-area-inset-bottom)); }
+  /* La pastille débordait de 14 px À DROITE de l'icône : en ligne, elle
+     tombait sur la première lettre du mot (« .elances », « .tock »). Elle
+     se range donc AU-DESSUS de l'icône, à l'intérieur du bouton. */
+  .onglet-icone { display: inline-flex; }
+  .onglet-icone .pastille-nombre {
+    right: auto;
+    left: 8px;
+    top: -9px;
+    min-width: 18px;
+    height: 18px;
+    font-size: 11px;
+    padding: 0 4px;
+  }
+
+  /* Le chiffre du jour : 54 px couché mangeait la moitié de l'écran. */
+  .gros-chiffre { font-size: clamp(32px, 9vh, 42px); margin-bottom: 8px; }
+
+  /* L'ACCUEIL PASSE SUR DEUX COLONNES. Couché, tout empilé, il demandait
+     510 px pour 360 px : « Commencer » tombait sous la ligne de flottaison et
+     le tout premier écran de l'appli n'offrait aucune action visible. La
+     largeur, elle, abonde — la marque à gauche, les boutons à droite. */
+  .accueil {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-content: center;
+    align-items: center;
+    column-gap: 24px;
+    max-width: 820px;
+    overflow-y: auto;
+  }
+  .accueil-centre { grid-column: 1; grid-row: 1 / span 4; margin: 0; }
+  .accueil > :not(.accueil-centre) { grid-column: 2; width: 100%; max-width: none; margin-left: 0; margin-right: 0; }
+  .accueil-mascotte { width: 96px; margin-bottom: 4px; }
+  .accueil .logo { font-size: 36px; }
+  .accueil .slogan { font-size: 17px; }
+  .accueil-texte { font-size: 14px; }
+  .bouton-ecouter-accueil { margin-bottom: 8px; }
+  .accueil .choix-langue { margin-bottom: 8px; }
+
+  /* LA FENÊTRE DE SAISIE, et c'est la correction qui compte : les deux
+     boutons restent COLLÉS EN BAS de la fenêtre pendant qu'on fait défiler
+     le reste. « Enregistrer » est donc toujours sous le pouce, quelle que
+     soit la longueur du formulaire. */
+  /* Le bas de la fenêtre n'a plus de marge : c'est la barre collée qui la
+     porte. Sinon le formulaire défile dans cette marge et on voit un bout de
+     bouton dépasser SOUS la barre — on ne sait plus lequel on touche. */
+  .saisie { padding-top: 12px; padding-bottom: 0; gap: 6px; max-height: 100dvh; }
+  .saisie-boutons {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    margin-top: 4px;
+    padding: 8px 0 calc(4px + env(safe-area-inset-bottom));
+    /* Le fond est obligatoire : sans lui, le formulaire défile VISIBLEMENT
+       sous les boutons et on ne sait plus ce qu'on touche. */
+    background: linear-gradient(180deg, rgba(245, 241, 236, 0) 0, var(--ivoire-2) 14px, var(--ivoire-2) 100%);
+  }
+  .saisie-titre { font-size: 20px; }
+
+  /* Les cartes respirent moins, mais elles respirent. */
+  .carte-reglage { padding-top: 12px; padding-bottom: 12px; }
+  .profil-tete { padding: 12px 14px 10px; }
+  .profil-vignette { width: 56px; height: 56px; }
+  .profil-compteurs { grid-template-columns: repeat(4, 1fr); margin-top: 10px; padding-top: 10px; }
+}

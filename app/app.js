@@ -469,6 +469,7 @@ function afficher() {
     else afficherMois();
   }
   else if (onglet === "stock") afficherStock();
+  else if (onglet === "profil") afficherProfil();
   document.querySelectorAll(".vue").forEach(function (v) { v.hidden = v.id !== "vue-" + onglet; });
   document.querySelectorAll("[data-onglet]").forEach(function (b) {
     if (b.dataset.onglet === onglet) b.setAttribute("aria-current", "page");
@@ -1890,6 +1891,7 @@ chargerEntreprises().then(chargerDonnees).then(function (d) {
   initAbonnement();
   initEntreprises();
   initDemo();
+  initProfil();
   initTunnel();
   initVoix();
   montrer(lire(CLE_DEJA_VU) ? "principal" : "accueil");

@@ -191,6 +191,9 @@
     <div id="stock-produits"></div>
     <div id="stock-intrants" hidden></div>
   </div>
+
+  <!-- Qui suis-je dans Canari : identité, abonnement, entreprise (profil.js) -->
+  <div id="vue-profil" class="vue" hidden></div>
 </section>
 
 <!-- Écran Réglages -->
@@ -357,7 +360,7 @@
     </button>
   </section>
 
-  <section class="carte-reglage">
+  <section class="carte-reglage" id="carte-sauvegarde">
     <div class="reglage-haut">
       <img src="icones/canari-tranquille.webp" width="64" height="68" alt="">
       <div>
@@ -567,6 +570,9 @@
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8l9-5 9 5v8l-9 5-9-5zM3 8l9 5 9-5M12 13v8"/></svg>
       <span class="pastille-nombre" id="nb-stock" hidden></span>
     </span>Stock
+  </button>
+  <button type="button" class="onglet" data-onglet="profil">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/></svg>Profil
   </button>
 </nav>
 
@@ -1109,6 +1115,7 @@
 <script src="langues/en-ohada.js"></script>
 <script src="langues/en-entreprises.js"></script>
 <script src="langues/en-conseil.js"></script>
+<script src="langues/en-profil.js"></script>
 <script src="voix.js"></script>
 <script src="paiements.js"></script>
 <script src="charges.js"></script>
@@ -1128,6 +1135,7 @@
 <script src="abonnement.js"></script>
 <script src="entreprises.js"></script>
 <script src="demo.js"></script>
+<script src="profil.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

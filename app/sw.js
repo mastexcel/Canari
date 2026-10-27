@@ -2,7 +2,7 @@
 // L'appli s'ouvre toujours depuis la copie du téléphone (rapide, même sans internet),
 // puis la copie est mise à jour en arrière-plan quand internet est là.
 // Change VERSION quand la liste des fichiers change.
-const VERSION = "canari-v72";
+const VERSION = "canari-v73";
 const FICHIERS = [
   "./",
   "index.html",
@@ -20,6 +20,7 @@ const FICHIERS = [
   "langues/en-ohada.js",
   "langues/en-entreprises.js",
   "langues/en-conseil.js",
+  "langues/en-profil.js",
   "voix.js",
   "paiements.js",
   "charges.js",
@@ -39,6 +40,7 @@ const FICHIERS = [
   "abonnement.js",
   "entreprises.js",
   "demo.js",
+  "profil.js",
   "manifest.webmanifest",
   "polices/fredoka.woff2",
   "polices/rubik.woff2",

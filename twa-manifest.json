@@ -17,7 +17,7 @@
   "maskableIconUrl": "https://mastexcel.github.io/Canari/icones/icone-maskable-512.png",
   "splashScreenFadeOutDuration": 300,
   "signingKey": { "path": "./android.keystore", "alias": "canari" },
-  "appVersionName": "1.0.0",
+  "appVersionName": "1.1.0",
   "appVersionCode": 1,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
@@ -30,5 +30,5 @@
   "isMetaQuest": false,
   "fullScopeUrl": "https://mastexcel.github.io/Canari/",
   "minSdkVersion": 21,
-  "orientation": "portrait"
+  "orientation": "any"
 }

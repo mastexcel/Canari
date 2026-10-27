@@ -79,22 +79,48 @@ jobs:
             echo "::warning::Pas de secret ANDROID_KEYSTORE : l'APK est signé avec une clé JETABLE. Il s'installe et marche, mais il ne peut pas aller au Play Store ni recevoir de mise à jour. Voir docs/play-store.md."
           fi
 
+      - name: Préparer les outils Android, sans aucune question posée
+        run: |
+          set -e
+          # POURQUOI CETTE ÉTAPE EXISTE. Sur un runner nu, Bubblewrap télécharge
+          # lui-même le JDK et le SDK Android, PUIS DEMANDE D'ACCEPTER LES
+          # LICENCES — et il attend la réponse. Une tâche automatique n'a
+          # personne pour répondre : la première exécution est restée bloquée
+          # 64 minutes sur cette question avant d'être arrêtée à la main.
+          # On lui donne donc les deux outils déjà installés sur le runner, et
+          # les licences sont acceptées d'avance. Plus rien à demander.
+          SDK="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
+          echo "JDK : $JAVA_HOME"
+          echo "SDK : $SDK"
+          test -d "$SDK" || { echo "::error::SDK Android introuvable sur le runner."; exit 1; }
+          yes | "$SDK/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null 2>&1 || true
+          mkdir -p "$HOME/.bubblewrap"
+          printf '{"jdkPath":"%s","androidSdkPath":"%s"}\n' "$JAVA_HOME" "$SDK" > "$HOME/.bubblewrap/config.json"
+          cat "$HOME/.bubblewrap/config.json"
+
       - name: Fabriquer le projet Android
         run: |
           set -e
           if [ -n "${{ github.event.inputs.version }}" ]; then
             node -e "const f='twa-manifest.json';const m=JSON.parse(require('fs').readFileSync(f));m.appVersionName='${{ github.event.inputs.version }}';m.appVersionCode=Math.floor(Date.now()/60000);require('fs').writeFileSync(f,JSON.stringify(m,null,2));"
           fi
-          yes | bubblewrap init --manifest="https://mastexcel.github.io/Canari/manifest.webmanifest" --directory=android || true
+          # Chaque commande a son DÉLAI MAXIMUM : si quelque chose se remet à
+          # poser une question, la tâche échoue en quelques minutes au lieu de
+          # tourner une heure pour rien.
+          timeout 10m sh -c 'yes | bubblewrap init --manifest="https://mastexcel.github.io/Canari/manifest.webmanifest" --directory=android' || true
           # Notre twa-manifest.json fait loi : c'est lui qui porte le nom du
           # paquet, les couleurs et l'ORIENTATION (« any » : portrait ET paysage).
+          # « update » régénère le projet Android à partir de lui, sans rien
+          # demander — sinon le projet garderait les réponses que « yes » a
+          # données à la place de l'utilisateur.
           cp twa-manifest.json android/twa-manifest.json
           cp android.keystore android/android.keystore
           cd android
-          bubblewrap build --skipPwaValidation \
-            --signingKeyPath=./android.keystore \
-            --signingKeyAlias=canari <<< "$MOT_DE_PASSE
-          $MOT_DE_PASSE"
+          timeout 10m sh -c 'yes | bubblewrap update' || true
+          # Les deux mots de passe arrivent par un tube, pas par un clavier.
+          printf '%s\n%s\n' "$MOT_DE_PASSE" "$MOT_DE_PASSE" \
+            | timeout 25m bubblewrap build --skipPwaValidation \
+                --signingKeyPath=./android.keystore --signingKeyAlias=canari
 
       - name: Vérifier que l'orientation n'est pas verrouillée
         run: |

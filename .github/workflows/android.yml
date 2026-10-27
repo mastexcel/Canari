@@ -93,7 +93,18 @@ jobs:
           echo "JDK : $JAVA_HOME"
           echo "SDK : $SDK"
           test -d "$SDK" || { echo "::error::SDK Android introuvable sur le runner."; exit 1; }
+          echo "::notice::Le SDK contient : $(ls "$SDK" | tr '\n' ' ')"
           yes | "$SDK/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null 2>&1 || true
+          # BUBBLEWRAP EXIGE UN DOSSIER « tools » OU « bin » À LA RACINE DU SDK.
+          # Il ne regarde que ça pour décider si le SDK est valable — et le
+          # runner, lui, range ses outils dans « cmdline-tools/latest/bin ».
+          # Sans ce lien : « The provided androidSdk isn't correct ».
+          if [ ! -d "$SDK/bin" ] && [ ! -d "$SDK/tools" ]; then
+            ln -s "$SDK/cmdline-tools/latest/bin" "$SDK/bin" 2>/dev/null \
+              || sudo ln -s "$SDK/cmdline-tools/latest/bin" "$SDK/bin"
+            echo "Lien créé : $SDK/bin -> cmdline-tools/latest/bin"
+          fi
+          test -d "$SDK/bin" || test -d "$SDK/tools" || { echo "::error::Le SDK n'a ni bin ni tools."; exit 1; }
           mkdir -p "$HOME/.bubblewrap"
           printf '{"jdkPath":"%s","androidSdkPath":"%s"}\n' "$JAVA_HOME" "$SDK" > "$HOME/.bubblewrap/config.json"
           cat "$HOME/.bubblewrap/config.json"

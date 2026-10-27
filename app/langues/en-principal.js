@@ -338,6 +338,10 @@ Object.assign(EN, {
   "Rien de noté ces 7 derniers jours.": "Nothing recorded in the last 7 days.",
   "Ton bilan de la semaine apparaîtra ici.": "Your summary for the week will show here.",
   "Ventes des 7 derniers jours": "Sales in the last 7 days",
+  // La synthèse des 7 jours, maquette du 27/10/2026.
+  "Synthèse des 7 derniers jours": "Last 7 days at a glance",
+  "Ventes à crédit": "Sales on credit",
+  "Entré moins sorti sur 7 jours": "In minus out over 7 days",
   "Bénéfice net de chaque jour": "Net profit for each day",
   "jour gagnant": "profit day",
   "jour perdant": "loss day",

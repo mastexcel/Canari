@@ -702,6 +702,19 @@ Mesuré sur le tableau de bord, boutique de démonstration : tablette debout **8
 
 - **Règle pour la suite** : un nouveau groupe de navigation du Bilan s'écrit dans la colonne, avec son `<h3 class="rail-titre">` et sa traduction anglaise ; on ne remet pas une barre horizontale au-dessus des cartes.
 
+### La synthèse des 7 jours, refaite d'après la maquette (demande du propriétaire, 27/10/2026)
+
+« Les cinq indicateurs dans une grille compacte et équilibrée, des sous-cartes de dimensions harmonisées, moins de zones vides ; le bénéfice de chaque jour en colonnes avec une ligne de zéro ; la colonne de droite plus compacte. Réorganisation, **pas** de refonte graphique. » Fait. Fichiers : `app/app.js`, `app/style.css`, `app/langues/en-principal.js`.
+
+- **Cinq sous-cartes du même dessin** (`caseSynthese`) : **Ventes des 7 derniers jours**, **Marge brute**, **Bénéfice net** sur la première rangée, **Ventes à crédit** et **Entré moins sorti** sur la seconde. Chacune porte un médaillon d'icône, son nom, son montant, et les trois principales une **mini-courbe en colonnes** (`etincelleSvg`) tirée des valeurs déjà calculées. En dessous de 900 px elles s'empilent ; au-delà, la grille se fige à **3 + 2** (six colonnes, `span 2` et `span 3`), comme sur la maquette.
+- **Aucune couleur de la charte n'a bougé** : le blanc translucide des cartes sombres, et les couleurs de sens portées par le **filet de gauche et l'icône**, jamais par le fond — la braise ne devient pas un bouton d'argent.
+- **Hauteur de la carte : 720 → 287 px** à 1 280 px (**−60 %**), et la vue entière passe de 878 à 602 px.
+- **PIÈGE, le même que `.cascade`** : la carte des 7 jours porte la classe `carte-gain`, donc elle héritait de la **grille à trois zones de l'écran du jour** et ses sous-cartes tombaient à **69 px** de large. `.carte-semaine { display: block }` la libère. **Avant de réutiliser une classe de mise en page, vérifier ce qu'elle impose déjà dans les requêtes média.**
+- **Le bénéfice de chaque jour passe en COLONNES** (`colonnesJoursSvg`) : sept colonnes, une **ligne de zéro en pointillé**, le vert pour un jour gagnant et le rouge pour un jour perdant, le montant et le jour écrits dessous, et un `<title>` par colonne (infobulle au survol, lu par les lecteurs d'écran). **Le zéro se place selon ce qu'il y a au-dessus et au-dessous** : une semaine sans perte remplit tout le cadre vers le haut au lieu de laisser la moitié basse vide. Les sept barres horizontales prenaient 7 lignes ; les colonnes tiennent dans 222 px.
+- **La colonne de droite est resserrée à 112 px**, écarts de 14 → 11 px entre groupes et de 5 → 4 px entre boutons. Plancher tactile de 48 px conservé, aucun libellé rogné.
+- **Vérifié** de 320 à 1 920 px : **zéro texte rogné** dans toute l'appli, aucun débordement, aucune cible sous 48 px, aucune erreur de script, et les cinq libellés traduits en anglais.
+- **Règle pour la suite** : une nouvelle sous-carte de synthèse passe par `caseSynthese()` et reçoit une `teinte` de la charte ; on ne dessine pas une sixième forme à la main.
+
 **Règle pour la suite** : un nouvel écran ne reçoit pas son propre seuil. Il se range dans les classes existantes — largeur compacte / moyenne / étendue, hauteur compacte — et hérite des marges, de la mesure de 65 signes et du plancher tactile de 48 px. Et **une vue en deux volets commence à 840 px**, jamais à 600 : en dessous, les deux volets sont trop étroits tous les deux.
 
 ## L'application Android : APK et AAB (fait)

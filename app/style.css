@@ -4504,7 +4504,7 @@ body::after {
   /* Deux colonnes : les chiffres à gauche, la navigation à droite. */
   #vue-semaine {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 120px;
+    grid-template-columns: minmax(0, 1fr) 112px;
     align-items: start;
     gap: 0 18px;
   }
@@ -4519,7 +4519,7 @@ body::after {
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 11px;
   }
   /* « display: contents » fait des deux groupes du tableau de bord des
      enfants directs de la colonne : ils s'alignent avec le groupe Vues au
@@ -4543,9 +4543,10 @@ body::after {
   .rail-bilan .deux-choix {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 4px;
     max-width: none;
     margin: 0;
+    padding: 4px;
   }
   /* La colonne est volontairement étroite (demande du propriétaire) : tout
      ce qu'elle rend prend va aux cartes. Les libellés les plus longs
@@ -4600,4 +4601,196 @@ body::after {
    c'est la rangée qui se dédouble. */
 @media (max-width: 440px) {
   .mosaique-petite { grid-template-columns: 1fr 1fr; }
+}
+
+/* =========================================================================
+   LA SYNTHÈSE DES 7 JOURS (maquette du propriétaire, 27/10/2026)
+   « Les cinq indicateurs dans une grille compacte et équilibrée : trois en
+   première ligne, deux en seconde ; des sous-cartes de dimensions
+   harmonisées ; réduire les zones vides. »
+   Rien de la charte ne change : mêmes couleurs de sens, même blanc
+   translucide des cartes sombres, mêmes arrondis, mêmes polices.
+   ========================================================================= */
+.sfin-haut {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-bottom: 12px;
+}
+.sfin-titre {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-family: var(--titre);
+  font-size: 17px;
+  line-height: 1.2;
+  color: #fff;
+}
+.sfin-periode {
+  font-family: var(--chiffres);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-size: 12.5px;
+  color: var(--texte-doux);
+  background: rgba(255, 255, 255, .10);
+  border: 1px solid rgba(255, 255, 255, .18);
+  border-radius: 999px;
+  padding: 5px 11px;
+  color: #fff;
+}
+
+/* La grille : trois sous-cartes principales, puis deux secondaires.
+   Sur un petit écran, chacune prend sa ligne — on ne rétrécit jamais un
+   montant pour forcer trois colonnes sur 320 px. */
+/* La carte des 7 jours porte la classe « carte-gain » : sans cette ligne,
+   elle héritait de la grille à TROIS ZONES de l'écran du jour, et ses
+   sous-cartes tombaient à 69 px de large. C'est le même piège que les
+   classes partagées entre écrans. */
+.carte-semaine { display: block; }
+
+.synthese-fin {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+/* Une sous-carte : le MÊME dessin pour les cinq (demande du propriétaire). */
+.sfin {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 13px;
+  background: rgba(255, 255, 255, .05);
+  border: 1px solid rgba(255, 255, 255, .11);
+  border-left: 3px solid rgba(255, 255, 255, .22);
+  border-radius: 14px;
+  min-width: 0;
+  /* Un montant ne se coupe jamais : quand le nom, le chiffre et la
+     mini-courbe ne tiennent pas sur une ligne, c'est la mini-courbe qui
+     passe en dessous — elle est décorative, le chiffre ne l'est pas. */
+  flex-wrap: wrap;
+  row-gap: 4px;
+}
+.sfin-ico {
+  flex: 0 0 auto;
+  display: inline-flex;
+  padding: 7px;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, .08);
+}
+.sfin-ico svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.sfin-corps { flex: 1 1 150px; min-width: 0; }
+.sfin-nom {
+  display: block;
+  font-size: 12.5px;
+  line-height: 1.25;
+  color: var(--texte-doux);
+}
+.sfin-valeur {
+  display: block;
+  font-family: var(--chiffres);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-size: clamp(19px, 5vw, 26px);
+  font-weight: 700;
+  letter-spacing: -.4px;
+  line-height: 1.15;
+  white-space: nowrap;
+  color: #fff;
+}
+/* Les deux indicateurs secondaires sont plus discrets, jamais illisibles. */
+.sfin-second .sfin-valeur { font-size: clamp(17px, 4.4vw, 21px); }
+
+/* Les couleurs de sens, inchangées : c'est le filet et l'icône qui les
+   portent, jamais le fond — la braise ne devient pas un bouton d'argent. */
+.sfin-braise { border-left-color: var(--braise-vive); }
+.sfin-braise .sfin-ico { color: var(--braise-vive); }
+.sfin-or { border-left-color: var(--or); }
+.sfin-or .sfin-ico { color: var(--or); }
+.sfin-entre { border-left-color: var(--entre-clair); }
+.sfin-entre .sfin-ico { color: var(--entre-clair); }
+.sfin-sort { border-left-color: var(--sort-clair); }
+.sfin-sort .sfin-ico { color: var(--sort-clair); }
+.sfin-credit { border-left-color: var(--credit-clair, var(--or)); }
+.sfin-credit .sfin-ico { color: var(--credit-clair, var(--or)); }
+.carte-gain .sfin-valeur.m-negatif { color: var(--sort-clair); }
+
+/* La mini-courbe : elle montre la forme de la semaine, pas des chiffres. */
+.sfin-etincelle { flex: 1 1 44px; max-width: 56px; height: 26px; }
+.sfin-etincelle rect { opacity: .85; }
+.et-braise { fill: var(--braise-vive); }
+.et-or { fill: var(--or); }
+.et-entre { fill: var(--entre-clair); }
+.et-sort { fill: var(--sort-clair); }
+.sfin-part {
+  flex: 0 0 auto;
+  font-family: var(--chiffres);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--texte-doux);
+}
+
+/* ----- Le bénéfice de chaque jour, en COLONNES -----
+   (demande du propriétaire : « les jours sur l'axe horizontal, les montants
+   sur l'axe vertical, une ligne de référence à zéro, des infobulles ».)
+   Les barres horizontales prenaient 7 lignes de 44 px ; les colonnes tiennent
+   dans 150 px. Le vert et le rouge gardent leur sens. */
+.colonnes-jours {
+  background: #fff;
+  border: 1px solid var(--bord);
+  border-radius: 16px;
+  box-shadow: var(--ombre);
+  padding: 12px 10px 10px;
+  margin-top: 10px;
+}
+.colonnes-dessin { display: block; width: 100%; height: 132px; }
+.col-zero { stroke: var(--gris-400); stroke-width: 1; stroke-dasharray: 3 3; vector-effect: non-scaling-stroke; }
+.col-entre { fill: var(--entre); }
+.col-sort { fill: var(--sort); }
+.colonnes-valeurs {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 2px;
+}
+.colonnes-valeurs li { text-align: center; min-width: 0; }
+.colonnes-valeurs b {
+  display: block;
+  font-family: var(--chiffres);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--entre-fonce);
+  line-height: 1.2;
+}
+.colonnes-valeurs b.m-negatif { color: var(--sort-fonce); }
+.colonnes-valeurs span {
+  display: block;
+  font-size: 11.5px;
+  color: var(--texte-doux);
+  line-height: 1.2;
+}
+.colonnes-valeurs small { display: block; font-size: 10.5px; opacity: .8; }
+
+/* Écran large : la grille se fige à 3 + 2, comme sur la maquette, et le
+   graphique s'étire sans grandir en hauteur. */
+@media (min-width: 900px) {
+  .synthese-fin { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 11px; }
+  .synthese-fin > .sfin { grid-column: span 2; }
+  .synthese-fin > .sfin-second { grid-column: span 3; }
+  .colonnes-dessin { height: 150px; }
+  .colonnes-valeurs b { font-size: 13px; }
 }

@@ -829,47 +829,124 @@ function derniersJours(n) {
   return jours;
 }
 
+/* ---------- La synthèse des 7 jours (maquette du propriétaire, 27/10/2026) ----------
+   Cinq indicateurs dans des sous-cartes de même dessin : trois en premier
+   (ce qu'on regarde d'abord), deux en second. Aucune couleur, aucune police,
+   aucun arrondi n'a changé — c'est la même carte sombre, mieux rangée. */
+
+// Une sous-carte de la synthèse : médaillon, nom, montant, et sa tendance.
+function caseSynthese(o) {
+  return '<div class="sfin' + (o.second ? ' sfin-second' : '') + (o.teinte ? ' sfin-' + o.teinte : '') + '">' +
+    '<span class="sfin-ico">' + o.icone + '</span>' +
+    '<span class="sfin-corps">' +
+      '<span class="sfin-nom">' + o.nom + '</span>' +
+      '<b class="sfin-valeur' + (o.rouge ? ' m-negatif' : '') + '">' + o.valeur + '</b>' +
+    '</span>' +
+    (o.extra || "") + '</div>';
+}
+
+// Une mini-courbe en colonnes, dessinée depuis les valeurs déjà calculées.
+function etincelleSvg(valeurs, teinte) {
+  const grand = Math.max.apply(null, valeurs.map(Math.abs).concat([1]));
+  const l = 100 / (valeurs.length * 1.6);
+  return '<svg class="sfin-etincelle" viewBox="0 0 100 32" preserveAspectRatio="none" aria-hidden="true">' +
+    valeurs.map(function (v, i) {
+      const h = Math.max(2, Math.round(Math.abs(v) / grand * 30));
+      const x = (i * 1.6 + 0.3) * l * 1.6 / 1.6;
+      return '<rect x="' + (i * (100 / valeurs.length) + l * 0.3).toFixed(1) + '" y="' + (32 - h) +
+        '" width="' + l.toFixed(1) + '" height="' + h + '" rx="1" class="et-' + teinte + '"/>';
+    }).join("") + '</svg>';
+}
+
+// Le bénéfice de chaque jour en COLONNES (demande du propriétaire) : une ligne
+// de zéro, les jours en bas, les montants en haut, le vert et le rouge de sens.
+function colonnesJoursSvg(jours) {
+  const v = jours.map(function (j) { return j.totaux.benefice; });
+  // Le zéro se place selon ce qu'il y a au-dessus et au-dessous : une semaine
+  // sans perte remplit tout le cadre vers le haut, au lieu de laisser la
+  // moitié basse vide.
+  const haut = Math.max.apply(null, v.concat([0]));
+  const bas = Math.max.apply(null, v.map(function (x) { return -x; }).concat([0]));
+  const total = haut + bas || 1;
+  const zero = Math.min(88, Math.max(12, Math.round(haut / total * 100)));
+  const corps = jours.map(function (j, i) {
+    const g = v[i];
+    const place = g >= 0 ? zero : 100 - zero;
+    const ref = g >= 0 ? haut : bas;
+    const h = ref ? Math.max(1.5, Math.abs(g) / ref * place * 0.92) : 1.5;
+    const pas = 100 / jours.length;
+    const x = i * pas + pas * 0.2;
+    const w = pas * 0.6;
+    const y = g >= 0 ? zero - h : zero;
+    return '<rect x="' + x.toFixed(2) + '" y="' + y.toFixed(2) + '" width="' + w.toFixed(2) +
+      '" height="' + h.toFixed(2) + '" class="col-' + (g < 0 ? 'sort' : 'entre') + '">' +
+      '<title>' + j.date.toLocaleDateString(LOCALE, { weekday: "long", day: "numeric", month: "short" }) +
+      ' : ' + (g < 0 ? "\u2212\u00a0" : "") + franc(Math.abs(g)) + '</title></rect>';
+  }).join("");
+  return '<div class="colonnes-jours">' +
+    '<svg viewBox="0 0 100 100" preserveAspectRatio="none" class="colonnes-dessin" aria-hidden="true">' +
+      '<line x1="0" y1="' + zero + '" x2="100" y2="' + zero + '" class="col-zero"/>' + corps +
+    '</svg>' +
+    '<ul class="colonnes-valeurs">' + jours.map(function (j, i) {
+      const g = v[i];
+      const nom = j.aujourdhui ? "Auj." : j.date.toLocaleDateString(LOCALE, { weekday: "short" }).replace(".", "");
+      return '<li><b class="' + (g < 0 ? "m-negatif" : "") + '">' + (g < 0 ? "\u2212\u00a0" : "") + franc(Math.abs(g)) + '</b>' +
+        '<span translate="no">' + nom.charAt(0).toUpperCase() + nom.slice(1) + '<small>' + j.date.getDate() + '</small></span></li>';
+    }).join("") + '</ul></div>';
+}
+
 function afficherSemaine() {
   const jours = derniersJours(7);
-  const gains = jours.map(function (j) { return j.totaux.benefice; });
-  const plusGrand = Math.max.apply(null, gains.map(Math.abs).concat([1]));
   const somme = function (cle) { return jours.reduce(function (s, j) { return s + j.totaux[cle]; }, 0); };
   const gain = somme("benefice"), maison = somme("maison"), vendu = somme("vendu"), aCredit = somme("aCredit");
   const caisse = somme("caisse");
   const reste = gain - maison;
-  const signe = function (n) { return (n < 0 ? "−\u00a0" : "") + franc(Math.abs(n)); };
+  const signe = function (n) { return (n < 0 ? "\u2212\u00a0" : "") + franc(Math.abs(n)); };
   const rien = jours.every(function (j) { return !j.totaux.encaisse && !j.totaux.sorti && !j.totaux.maison && !j.totaux.vendu; });
 
   if (rien) {
     $("vue-7jours").innerHTML = videHtml("canari-tranquille",
-      "Rien de noté ces 7 derniers jours.<br>Ton bilan de la semaine apparaîtra ici.");
+      "Rien de not\u00e9 ces 7 derniers jours.<br>Ton bilan de la semaine appara\u00eetra ici.");
     return;
   }
 
   const marge = somme("margeBrute");
+  const d1 = jours[0].date, d2 = jours[jours.length - 1].date;
+  const periode = d1.toLocaleDateString(LOCALE, { day: "numeric", month: "long" }) + " \u2013 " +
+    d2.toLocaleDateString(LOCALE, { day: "numeric", month: "long", year: "numeric" });
+  const partCredit = vendu ? Math.round(aCredit / vendu * 100) : 0;
+
+  const I = {
+    ventes: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h2l2 10h10l2-7H7"/><circle cx="10" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/></svg>',
+    marge: '<svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="7" rx="7" ry="3"/><path d="M5 7v5c0 1.7 3.1 3 7 3s7-1.3 7-3V7"/><path d="M5 12v5c0 1.7 3.1 3 7 3s7-1.3 7-3v-5"/></svg>',
+    benefice: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17l5-5 3 3 7-7"/><path d="M15 8h4v4"/></svg>',
+    credit: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="3"/><path d="M3 10h18"/></svg>',
+    flux: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h13l-3-3M20 15H7l3 3"/></svg>'
+  };
+
   $("vue-7jours").innerHTML =
     '<div class="carte-gain carte-semaine">' +
-      '<p class="etiquette">Ventes des 7 derniers jours</p>' +
-      '<p class="gros-chiffre">' + franc(vendu) + '</p>' +
-      '<div class="trois-chiffres deux">' +
-        '<div class="chiffre revient"><span>Marge brute</span><strong>' + signe(marge) + '</strong></div>' +
-        '<div class="chiffre ' + (gain < 0 ? 'sort' : 'entre') + '"><span>Bénéfice net</span><strong' + (gain < 0 ? ' class="m-sort"' : '') + '>' + signe(gain) + '</strong></div>' +
+      '<div class="sfin-haut">' +
+        '<h2 class="sfin-titre"><span class="sfin-ico">' + I.benefice + '</span>Synth\u00e8se des 7 derniers jours</h2>' +
+        '<span class="sfin-periode" translate="no">' + periode + '</span>' +
       '</div>' +
-      (aCredit ? '<p class="vendu">Dont ' + franc(aCredit) + ' vendus à crédit</p>' : '') +
-      (maison ? '<p class="vendu' + (reste < 0 ? ' negatif' : '') + '">Pris pour la maison ' + franc(maison) + ' · reste ' + signe(reste) + '</p>' : '') +
-      '<p class="vendu' + (caisse < 0 ? ' negatif' : '') + '">Entré moins sorti sur 7 jours : ' + signe(caisse) + '</p>' +
+      '<div class="synthese-fin">' +
+        caseSynthese({ icone: I.ventes, nom: "Ventes des 7 derniers jours", valeur: franc(vendu), teinte: "braise",
+          extra: etincelleSvg(jours.map(function (j) { return j.totaux.vendu; }), "braise") }) +
+        caseSynthese({ icone: I.marge, nom: "Marge brute", valeur: signe(marge), teinte: "or",
+          extra: etincelleSvg(jours.map(function (j) { return j.totaux.margeBrute; }), "or") }) +
+        caseSynthese({ icone: I.benefice, nom: "B\u00e9n\u00e9fice net", valeur: signe(gain),
+          teinte: gain < 0 ? "sort" : "entre", rouge: gain < 0,
+          extra: etincelleSvg(jours.map(function (j) { return j.totaux.benefice; }), gain < 0 ? "sort" : "entre") }) +
+        caseSynthese({ icone: I.credit, nom: "Ventes \u00e0 cr\u00e9dit", valeur: franc(aCredit), teinte: "credit", second: true,
+          extra: '<span class="sfin-part" translate="no">' + partCredit + ' %</span>' }) +
+        caseSynthese({ icone: I.flux, nom: "Entr\u00e9 moins sorti sur 7 jours", valeur: signe(caisse),
+          teinte: caisse < 0 ? "sort" : "entre", rouge: caisse < 0, second: true }) +
+      '</div>' +
+      (maison ? '<p class="vendu' + (reste < 0 ? ' negatif' : '') + '">Pris pour la maison ' + franc(maison) + ' \u00b7 reste ' + signe(reste) + '</p>' : '') +
     '</div>' +
-    '<h2 class="titre-liste">Bénéfice net de chaque jour</h2>' +
-    '<ul class="barres" aria-label="Bénéfice net de chaque jour">' + jours.map(function (j) {
-      const g = j.totaux.benefice;
-      const largeur = g === 0 ? 0 : Math.max(3, Math.round(Math.abs(g) / plusGrand * 100));
-      const nom = j.aujourdhui ? "Auj." : j.date.toLocaleDateString(LOCALE, { weekday: "short" }).replace(".", "");
-      return '<li class="barre' + (g < 0 ? ' negative' : '') + (j.aujourdhui ? ' aujourdhui' : '') + '">' +
-        '<span class="barre-jour"><b>' + nom.charAt(0).toUpperCase() + nom.slice(1) + '</b><small>' + j.date.getDate() + '</small></span>' +
-        '<span class="barre-piste"><span class="barre-remplie" style="width:' + largeur + '%"></span></span>' +
-        '<span class="barre-valeur">' + signe(g) + '</span>' +
-        '</li>';
-    }).join("") + '</ul>' +
+    '<h2 class="titre-liste">B\u00e9n\u00e9fice net de chaque jour</h2>' +
+    colonnesJoursSvg(jours) +
     '<p class="aide legende-semaine"><span class="puce entre"></span>jour gagnant <span class="puce sort"></span>jour perdant</p>';
 }
 

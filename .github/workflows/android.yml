@@ -39,6 +39,8 @@ on:
 jobs:
   construire:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write      # pour publier l'APK en téléchargement direct
     steps:
       - uses: actions/checkout@v4
 
@@ -231,6 +233,25 @@ jobs:
             exit 1
           fi
           echo "::notice::Taille de l'APK : $(du -h resultat/canari.apk | cut -f1)" 
+
+      - name: Publier l'APK en téléchargement direct
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          # L'onglet « Actions » de GitHub demande un compte et de la
+          # navigation : ce n'est pas un endroit où envoyer un commerçant.
+          # Une « release » donne une ADRESSE DE TÉLÉCHARGEMENT FIXE et
+          # publique, qu'on peut coller dans WhatsApp. Le nom du marqueur et
+          # celui du fichier ne changent jamais, donc l'adresse non plus :
+          # https://github.com/mastexcel/Canari/releases/download/essai/canari.apk
+          gh release delete essai --yes --cleanup-tag 2>/dev/null || true
+          gh release create essai resultat/canari.apk \
+            --title "Canari — l'application Android" \
+            --notes "À installer sur un téléphone **Android 7 ou plus récent**. Envoie-toi le fichier sur WhatsApp, ouvre-le, et accepte « installer quand même » (Android prévient pour toute application qui ne vient pas du Play Store). La première ouverture a besoin d'internet ; ensuite l'appli marche hors ligne.
+
+Sur un téléphone plus ancien, ou sur un ordinateur, passe plutôt par https://mastexcel.github.io/Canari/ puis « Installer l'application »."
+          echo "::notice::APK en téléchargement direct : https://github.com/mastexcel/Canari/releases/download/essai/canari.apk"
 
       - name: Déposer le résultat
         uses: actions/upload-artifact@v4

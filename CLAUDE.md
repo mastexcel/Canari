@@ -646,6 +646,19 @@ Les cases des comptes portent donc le **nom et le montant**, comme partout aille
 - **Une famille de DEUX cartes est une vraie grille, pas des colonnes** : une grille étire ses deux cartes à la même hauteur. En colonnes, les deux camemberts s'arrêtaient à 566 et 512 px, côte à côte. Même chose pour les deux cartes d'investissement.
 - Ce que ça coûte : **+44 px** à 1 280 px (2 491 → 2 535), soit 1,7 %. Deux demandes qui se contredisent un peu — « moins de vide » et « des tailles identiques » — et c'est le bon compromis : les cartes de graphiques s'alignent, le reste garde sa mosaïque.
 
+### Pourquoi le propriétaire ne voyait RIEN (27/10/2026, et c'était ma faute)
+
+Il a écrit « les améliorations ne sont pas visibles dans l'application ». Le code était bien en ligne (vérifié : dépôt et déploiement à jour, `canari-v84`). Deux causes, toutes les deux de mon côté :
+
+1. **Tout ce travail était enfermé dans `orientation: landscape`.** Une tablette tenue **debout** n'en recevait pas une seule règle. Or rien là-dedans ne concerne la forme de l'écran du jour : c'est de la largeur de page, des listes de cartes, la mesure du texte et la mosaïque du tableau de bord. La vue en **deux volets** de l'écran du jour, elle, reste réservée au paysage — c'est la seule qui a besoin de l'être.
+2. **Et même ouvert au portrait, rien ne bougeait**, parce que `.ecran` garde `max-width: 520px` — la colonne du téléphone. Sur une tablette de 800 px debout, ça laissait 140 px de marge blanche de chaque côté et **jamais la place de ranger deux cartes côte à côte**. C'était la vraie raison.
+
+Les deux blocs de règles « écran large » passent donc à `@media (min-width: 600px)`, sans condition d'orientation. **Un téléphone debout fait 360 px : il reste sous le seuil et ne change toujours pas**, comme le propriétaire l'avait demandé.
+
+Mesuré sur le tableau de bord, boutique de démonstration : tablette debout **800 × 1 280 : 6 119 → 4 378 px (−28 %)** ; petite tablette **600 × 960 : 6 119 → 4 707 px (−23 %)** ; téléphone debout 360 px : **inchangé**. Vérifié sur neuf formats : aucun débordement, aucune cible sous 48 px, les six boutons de saisie s'ouvrent, aucune erreur de script.
+
+**Règle pour la suite** : `orientation: landscape` ne sert qu'aux règles qui parlent vraiment de la **forme** de l'écran (la vue en deux volets, la barre du bas d'un téléphone couché). Tout ce qui ne dépend que de la **largeur disponible** s'écrit en `min-width` seul — sinon une tablette debout est traitée comme un téléphone. Et avant de croire qu'une mise en page large ne « prend pas », vérifier d'abord que `.ecran` n'est pas encore bloqué à 520 px.
+
 **Piège rencontré, à retenir** : `break-inside: avoid` est indispensable sur les cartes, sinon une carte se coupe en deux entre deux colonnes. Et une famille de deux cartes doit recevoir `column-count: 2` explicitement — `column-width` seul fabrique quatre colonnes et n'en remplit que deux.
 
 **Règle pour la suite** : un nouvel écran ne reçoit pas son propre seuil. Il se range dans les classes existantes — largeur compacte / moyenne / étendue, hauteur compacte — et hérite des marges, de la mesure de 65 signes et du plancher tactile de 48 px. Et **une vue en deux volets commence à 840 px**, jamais à 600 : en dessous, les deux volets sont trop étroits tous les deux.

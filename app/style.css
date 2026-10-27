@@ -3797,7 +3797,12 @@ body::after {
    rangent en colonnes, et le texte garde sa mesure.
    =========================================================================== */
 
-@media (orientation: landscape) and (min-width: 600px) {
+/* Ces règles ne touchent PAS la forme de l'écran du jour (la vue en deux
+   volets vit plus bas et reste réservée au paysage) : elles donnent sa
+   largeur à la page, rangent les listes de cartes et plafonnent la mesure
+   du texte. Une tablette tenue DEBOUT y a droit comme une tablette
+   couchée ; un téléphone debout fait 360 px et reste sous le seuil. */
+@media (min-width: 600px) {
 
   /* Plus de colonne de 520 px au milieu d'un écran vide. */
   .ecran {
@@ -4048,7 +4053,12 @@ body::after {
    défiler alors que la place est à côté. Chaque famille de cartes prend
    donc autant de colonnes que l'écran en porte, à la taille où son contenu
    reste lisible — et pas une de plus. */
-@media (orientation: landscape) and (min-width: 600px) {
+/* Ce bloc règle le TABLEAU DE BORD et les COMPTES ANNUELS, pas la forme
+   de l'écran du jour : il s'applique donc aussi à une tablette tenue
+   DEBOUT, qui a 600 à 800 px de large. Un téléphone debout fait 360 px,
+   il reste sous le seuil et ne change pas. */
+@media (min-width: 600px) {
+
 
   /* Les quatre grandes tuiles du tableau de bord et les quatre petites. */
   .mosaique { grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); gap: 10px; }
@@ -4351,7 +4361,7 @@ body::after {
    rangent elles aussi en deux colonnes qui se remplissent. En dessous, une
    section à moitié large ne porterait que deux cartes par rangée : elle
    serait deux fois plus haute, et on ne gagnerait rien. */
-@media (orientation: landscape) and (min-width: 1200px) {
+@media (min-width: 1200px) {
   #vue-tableau { column-count: 2; column-gap: 26px; }
   /* Les trois étages de boutons et la ligne de dates restent AU-DESSUS des
      deux colonnes : sans ça, « Profitabilité » démarrait en haut de la

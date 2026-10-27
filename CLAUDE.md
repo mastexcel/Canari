@@ -610,6 +610,23 @@ Il a fourni une maquette et une consigne nette : « réorganisation UX/UI, **pas
 
 **Ce qui a été refusé dans la maquette, et pourquoi** : elle portait les **logos de Wave, Orange Money et MTN**. La règle de marque du projet l'interdit (« aucun logo d'opérateur, seulement les noms » ; « ne jamais utiliser de logos d'autres marques »). Les cases portent donc le nom seul. **Pas faits non plus, faute de pouvoir le faire sans risque** : « Entrées du jour » / « Sorties du jour » en deux cases séparées (il faudrait couper une phrase traduite d'un seul tenant), et les quatre étiquettes de couleur de la carte mascotte (il faudrait réécrire les phrases et ajouter des couleurs).
 
+### La maquette du 27/10/2026, reproduite (« IMAGE 1 »)
+
+Le propriétaire a fourni une maquette de l'écran du jour et demandé de la **reproduire fidèlement**, pas de proposer autre chose. Elle est en place. Fichiers : `app/index.html`, `app/app.js`, `app/style.css`, `app/langues/en-principal.js`.
+
+- **Colonne 1, l'activité** : titre et icône, le grand chiffre, « Ventes réalisées aujourd'hui », puis l'**objectif de vente** — la case du seuil, une **barre de progression** avec son pourcentage, et les deux petites cases « À atteindre » et « Reste à vendre ». L'objectif **reste affiché même atteint** (la barre à 100 % est justement le moment où l'on veut la voir) ; avant, la carte du seuil disparaissait.
+- **Colonne 2, la rentabilité** : les trois cases existantes (`.chiffre`, mêmes couleurs, mêmes bordures) reçoivent un **médaillon d'icône** à gauche, le nom au-dessus du montant, toutes de la même largeur.
+- **Colonne 3, la trésorerie** : « Argent en caisse » avec son médaillon, puis **« Entrées du jour » et « Sorties du jour » dans deux cases séparées** (c'étaient deux chiffres d'une même phrase), puis les comptes en **grille de deux colonnes** avec un emplacement de logo.
+- **La carte de synthèse** : à droite du Petit Canari, quatre blocs séparés par un filet — **Créances clients, Relances, Stock, Dettes fournisseurs** — chacun avec son icône, son chiffre et sa mention (« à recevoir », « à contacter », « à racheter », « à régler »). La **phrase du bilan reste écrite dans la page** : elle sert au portrait et à la lecture à voix haute. On bascule de l'une à l'autre par la classe `a-synthese`, **pas** par `:has()` en CSS — `:has()` n'existe pas sur les navigateurs des téléphones d'entrée de gamme un peu anciens, et la phrase se serait affichée deux fois.
+- **Toutes les couleurs viennent de la charte** : le blanc translucide des cartes sombres existantes, et les couleurs de sens pour ce qui a un sens (olive = ce qui entre, rouge = ce qui sort, ocre = le crédit et l'objectif pas encore atteint, qui passe à l'olive une fois atteint).
+- **Debout, la carte porte les mêmes blocs**, empilés. Les cases sont des lignes « icône · nom · montant » : elles reprennent l'alignement à gauche, sinon le montant flottait au milieu de la carte centrée et « 20 600 F » se coupait en « 20 600 / F ».
+
+### Les logos des opérateurs : un emplacement, pas un dessin
+
+Le propriétaire demande les **vrais logos** de Wave, Orange Money et MTN MoMo. Canari les affiche dès que les fichiers sont là : `app/icones/operateurs/{wave,orange,mtn,moov,djamo}.svg`, 26 × 26 px dans un médaillon, en `object-fit: contain` — **jamais étirés, jamais recolorés**. Tant qu'un fichier manque, la case garde le nom et le montant et le médaillon disparaît : **on ne met jamais un dessin maison à la place du logo d'une marque, ce serait le contrefaire**. Les **espèces** gardent un dessin de billet écrit dans `app.js` (constante `BILLET`) : ce n'est la marque de personne.
+
+Ces fichiers ne peuvent pas être fabriqués ni téléchargés à la place du propriétaire : un logo est une marque déposée, et chaque opérateur a sa propre charte d'usage. Marche à suivre et conditions dans **`docs/logos-operateurs.md`**. Ce qui reste vrai quoi qu'il arrive : le logo ne sert **qu'à désigner le moyen de paiement**, jamais à laisser croire à un partenariat ; et **aucun autre écran de l'appli ne porte le logo d'une autre marque**.
+
 **Règle pour la suite** : un nouvel écran ne reçoit pas son propre seuil. Il se range dans les classes existantes — largeur compacte / moyenne / étendue, hauteur compacte — et hérite des marges, de la mesure de 65 signes et du plancher tactile de 48 px. Et **une vue en deux volets commence à 840 px**, jamais à 600 : en dessous, les deux volets sont trop étroits tous les deux.
 
 ## L'application Android : APK et AAB (fait)

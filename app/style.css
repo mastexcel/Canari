@@ -3943,12 +3943,11 @@ body::after {
 
   /* ----- L'intérieur de la carte du jour, en TROIS ZONES -----
      Activité commerciale | Rentabilité | Trésorerie, séparées par un filet
-     de la même famille que les bordures de la carte. Au lieu d'une pile —
-     étiquette, chiffre, les trois cases, le seuil, la caisse — tout se lit
-     sur une seule bande. Hauteur mesurée : 790 px avant, ~250 px après. */
+     de la même famille que les bordures de la carte. Hauteur mesurée :
+     790 px avant la reprise, ~330 px avec l'objectif et les comptes. */
   .carte-gain {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.3fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.25fr);
     align-items: start;
     gap: 0;
     text-align: left;
@@ -3956,47 +3955,20 @@ body::after {
   }
   .carte-gain > .zone { padding: 0 20px; }
   .carte-gain > .zone + .zone { border-left: 1px solid rgba(255, 255, 255, .10); }
-  .carte-gain > .zone > .zone-titre { display: block; margin-bottom: 10px; }
-  .carte-gain > .zone > .gros-chiffre { margin: 2px 0 0; }
-  .carte-gain .ligne-carte { margin-top: 12px; }
+  .carte-gain > .zone > .zone-titre { display: flex; margin-bottom: 12px; }
+  .carte-gain > .zone > .gros-chiffre { margin: 4px 0 0; }
+  .carte-gain .ligne-carte { margin-top: 0; }
 
   /* Les trois cases de rentabilité l'une sous l'autre, toutes de la même
      taille : côte à côte dans un tiers de carte, « Charges et taxes »
      tenait sur trois lignes et les montants ne s'alignaient plus. */
-  .carte-gain > .zone-rentabilite .trois-chiffres { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .carte-gain > .zone-rentabilite .trois-chiffres { grid-template-columns: minmax(0, 1fr); gap: 10px; }
   .carte-gain > .zone-rentabilite .chiffre {
-    display: flex;
-    /* `.chiffre` est déjà en colonne plus haut : sans ce `row`, le nom
-       restait au-dessus du montant et la carte gardait sa hauteur. */
+    /* `.chiffre` est déjà en flex-direction: column plus haut dans la
+       feuille : sans ce `row`, le nom restait au-dessus du montant. */
     flex-direction: row;
-    flex-wrap: wrap;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 10px;
-    text-align: left;
+    padding: 10px 12px;
   }
-
-  /* Les moyens de paiement en mosaïque, autant de colonnes que la zone en
-     porte. Chaque case garde son texte « Espèces 53 300 F » d'un seul
-     tenant : c'est lui que le dictionnaire anglais reconnaît. */
-  .carte-gain > .zone-tresorerie .par-moyen {
-    display: grid;
-    /* DEUX colonnes, fixes. En « auto-fit », quatre comptes se rangeaient
-       en trois colonnes plus un tout seul à la ligne ; en une seule colonne
-       sur un téléphone couché, la carte remontait à 333 px sur un écran
-       qui n'en fait que 390. Deux colonnes donnent un carré régulier. */
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    font-size: 12.5px;
-    gap: 6px;
-    margin-top: 8px;
-  }
-  .carte-gain > .zone-tresorerie .moyen-case {
-    background: rgba(255, 255, 255, .06);
-    border: 1px solid rgba(255, 255, 255, .10);
-    border-radius: 10px;
-    padding: 6px 10px;
-  }
-  .carte-gain > .zone-tresorerie .moyen-case + .moyen-case::before { content: none; }
 
   /* ----- Les boutons -----
      Mêmes couleurs, mêmes icônes, mêmes formes : on ne touche qu'à la
@@ -4005,9 +3977,10 @@ body::after {
   .petits-boutons .bouton { min-height: 56px; }
 
   /* ----- Le bilan du jour -----
-     Les phrases se rangent en colonnes : les créances, les relances, le
-     stock à racheter et les dettes se distinguent d'un coup d'œil au lieu
-     de couler dans un seul pavé. */
+     La synthèse en quatre blocs remplace la phrase, qui reste écrite dans
+     la page pour la lecture à voix haute et pour le portrait. */
+  .bilan.a-synthese #bilan-texte { display: none; }
+  .synthese:not([hidden]) { display: block; flex: 1 1 auto; min-width: 0; }
   #bilan-texte {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
@@ -4105,27 +4078,228 @@ body::after {
   .cadre .graphe-comparatif { height: 116px; }
 }
 
+
 /* ==========================================================================
-   LES TROIS ZONES DE LA CARTE DU JOUR
-   (demande du propriétaire, 27/10/2026 : « répartir harmonieusement les
-   informations dans la carte noire en trois zones horizontales : activité
-   commerciale, rentabilité, trésorerie ; réduire les espaces vides ;
-   ajuster la hauteur au contenu réel » — sans toucher à la charte.)
-   Ici, rien que des règles de DISPOSITION : aucune couleur, aucune police,
-   aucun arrondi, aucune ombre n'est modifié.
+   LA CARTE DU JOUR : ACTIVITÉ · RENTABILITÉ · TRÉSORERIE
+   Maquette validée par le propriétaire (27/10/2026). Les couleurs viennent
+   toutes de la charte : le blanc translucide des cartes sombres existantes,
+   et les couleurs de SENS pour ce qui a un sens (olive = argent qui entre,
+   rouge = argent qui sort, ocre = crédit, ardoise = maison).
    ========================================================================== */
 
-/* Debout, la carte reste exactement celle d'avant : les trois zones ne sont
-   que des blocs empilés et leurs titres restent cachés — « Rentabilité » et
-   « Trésorerie » n'auraient rien à annoncer dans une simple pile. */
-.carte-gain > .zone { min-width: 0; }
-.zone-titre { display: none; }
+/* ---------- Les icônes ---------- */
+.ico-zone, .ico-case {
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.ico-zone { width: 20px; height: 20px; }
+.carte-gain .etiquette { display: flex; align-items: center; gap: 8px; }
+/* L'icône d'une case est posée dans un médaillon de la couleur de la case. */
+.ico-case {
+  width: 20px;
+  height: 20px;
+  padding: 7px;
+  box-sizing: content-box;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, .08);
+}
 
-/* Un moyen de paiement par case. Debout, elles se relisent comme la phrase
-   d'avant, séparées par des points médians posés en CSS (donc jamais
-   traduits) ; couchée, elles deviennent une mosaïque. */
-.moyen-case + .moyen-case::before { content: " · "; }
+/* ---------- Colonne 1 : l'activité ---------- */
+.sous-chiffre { margin: 2px 0 0; font-size: 13.5px; color: var(--texte-doux); }
+.objectif { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+.case-sombre {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  background: rgba(255, 255, 255, .05);
+  border: 1px solid rgba(255, 255, 255, .11);
+  border-radius: 14px;
+  min-width: 0;
+}
+.case-sombre > div { min-width: 0; }
+.case-sombre span { display: block; font-size: 12.5px; color: var(--texte-doux); line-height: 1.2; }
+.deux-cases .case-sombre { gap: 8px; padding: 9px 10px; }
+.deux-cases .ico-case { padding: 6px; width: 18px; height: 18px; }
+.case-sombre strong {
+  display: block;
+  font-family: var(--chiffres);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-size: 19px;
+  line-height: 1.2;
+}
+/* L'objectif porte l'ocre du crédit — la couleur de ce qui n'est pas encore
+   acquis — et passe à l'olive le jour où il est atteint. */
+.case-objectif { border-color: color-mix(in srgb, var(--credit) 55%, transparent); }
+.case-objectif strong { color: var(--credit-clair); }
+.objectif.atteint .case-objectif { border-color: color-mix(in srgb, var(--entre) 60%, transparent); }
+.objectif.atteint .case-objectif strong { color: var(--entre-clair); }
+.barre-objectif { display: flex; align-items: center; gap: 10px; margin: 0; }
+.piste-objectif {
+  flex: 1 1 auto;
+  height: 10px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, .12);
+  overflow: hidden;
+}
+.part-objectif {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: 5px;
+  background: linear-gradient(90deg, var(--credit-clair), var(--credit));
+}
+.objectif.atteint .part-objectif { background: linear-gradient(90deg, var(--entre-clair), var(--entre)); }
+.barre-objectif b {
+  flex: 0 0 auto;
+  font-family: var(--chiffres);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-size: 14px;
+  color: var(--texte-doux);
+}
+.deux-cases { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
 
-/* Chaque phrase du bilan du jour dans son propre bloc. Debout, elles
-   coulent les unes après les autres comme avant. */
+/* ---------- Colonne 2 : la rentabilité ----------
+   `.chiffre` garde son fond, ses bordures et ses couleurs : on ne fait que
+   poser l'icône à gauche du nom et du montant. */
+.trois-chiffres .chiffre { align-items: center; gap: 10px; }
+.trois-chiffres .chiffre > div { min-width: 0; flex: 1 1 auto; }
+.trois-chiffres .chiffre span { display: block; line-height: 1.2; }
+.trois-chiffres .chiffre strong { display: block; line-height: 1.2; }
+
+/* ---------- Colonne 3 : la trésorerie ---------- */
+.flux-jour { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; margin-top: 10px; }
+.case-flux {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 11px;
+  background: rgba(255, 255, 255, .05);
+  border: 1px solid rgba(255, 255, 255, .11);
+  border-radius: 14px;
+  min-width: 0;
+}
+.case-flux > div { min-width: 0; }
+.case-flux span { display: block; font-size: 12.5px; color: var(--texte-doux); line-height: 1.2; }
+.case-flux strong {
+  display: block;
+  font-family: var(--chiffres);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-size: 18px;
+  line-height: 1.2;
+}
+/* Les couleurs de sens, inchangées. */
+.case-flux.entre { border-color: color-mix(in srgb, var(--entre) 60%, transparent); }
+.case-flux.entre .ico-case { color: var(--entre-clair);
+  background: color-mix(in srgb, var(--entre) 32%, transparent); }
+.case-flux.sort { border-color: color-mix(in srgb, var(--sort) 60%, transparent); }
+.case-flux.sort .ico-case { color: var(--sort-clair);
+  background: color-mix(in srgb, var(--sort) 32%, transparent); }
+
+.titre-moyens { margin: 12px 0 7px; font-size: 13px; color: var(--texte-doux); }
+.moyens-grille { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+.moyen-case {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 2px 10px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, .05);
+  border: 1px solid rgba(255, 255, 255, .11);
+  border-radius: 14px;
+  min-width: 0;
+}
+.logo-moyen {
+  grid-row: 1 / span 2;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, .08);
+  overflow: hidden;
+}
+/* Le logo garde ses proportions : jamais étiré, jamais recoloré. */
+.logo-moyen img { width: 26px; height: 26px; object-fit: contain; }
+.logo-moyen.logo-dessin svg {
+  width: 20px; height: 20px; fill: none; stroke: currentColor;
+  stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+}
+/* Fichier de logo absent : la case garde le nom et le montant, et la
+   pastille disparaît. On ne met jamais un dessin maison à la place du logo
+   d'une marque. */
+.logo-moyen.sans-logo { display: none; }
+.logo-moyen.sans-logo + .moyen-nom, .logo-moyen.sans-logo ~ .moyen-solde { grid-column: 1 / -1; }
+.moyen-nom { font-size: 12.5px; color: var(--texte-doux); line-height: 1.2; min-width: 0; }
+.moyen-solde {
+  font-family: var(--chiffres);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-size: 16px;
+  line-height: 1.2;
+  min-width: 0;
+}
+
+/* ---------- La synthèse, à côté du Petit Canari ----------
+   Elle ne remplace pas la phrase du bilan : celle-ci reste pour le portrait
+   et pour la lecture à voix haute. */
+.synthese { display: none; }
+.syn-bonjour { margin: 0 0 10px; font-family: var(--titre); font-size: 16px; color: var(--gris-800); }
+.syn-blocs { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px 0; }
+.syn-bloc { display: flex; align-items: flex-start; gap: 10px; padding: 0 16px; min-width: 0; }
+.syn-bloc + .syn-bloc { border-left: 1px solid var(--bord); }
+.syn-bloc:first-child { padding-left: 0; }
+.syn-ico {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 11px;
+  background: var(--ivoire-2);
+}
+.syn-ico svg {
+  width: 19px; height: 19px; fill: none; stroke: currentColor;
+  stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+}
+.syn-corps { min-width: 0; }
+.syn-titre {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+.syn-valeur {
+  display: block;
+  font-family: var(--chiffres);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-size: 19px;
+  line-height: 1.25;
+  color: var(--gris-900);
+}
+.syn-dessous { display: block; font-size: 12.5px; color: var(--texte-doux); line-height: 1.2; }
+/* Chaque bloc porte la couleur de son sens, celles de la charte. */
+.syn-credit { color: var(--credit-fonce); }
+.syn-relance { color: var(--sort-fonce); }
+.syn-stock { color: var(--credit-fonce); }
+.syn-dette { color: var(--sort-fonce); }
+.syn-stock .syn-valeur { font-family: var(--texte); font-size: 15px; font-weight: 600; }
 .bil-phrase { display: inline; }
+
+/* La carte « Argent en caisse » porte son médaillon à gauche du nom. */
+#caisse { align-items: center; gap: 10px; }
+#caisse > span { flex: 1 1 auto; }
+
+/* Debout, la carte du jour est centrée (`text-align: center`) : les nouvelles
+   cases, qui sont des lignes « icône · nom · montant », doivent reprendre
+   l'alignement à gauche, sinon le montant flotte au milieu et « 20 600 F »
+   se coupe en « 20 600 / F ». */
+.case-sombre, .case-flux, .moyen-case, #caisse { text-align: left; }
+.case-sombre strong, .case-flux strong, .moyen-solde, #caisse b { white-space: nowrap; }

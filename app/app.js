@@ -498,10 +498,20 @@ function afficherJour() {
   $("net").textContent = signe(t.benefice);
   $("net").className = t.benefice < 0 ? "m-negatif" : "";
   $("case-net").className = "chiffre " + (t.benefice < 0 ? "sort" : "entre");
+  /* L'objectif de vente : le seuil à partir duquel la journée couvre les
+     charges et les taxes. Il reste affiché même une fois atteint — la barre
+     à 100 % est justement le moment où l'on veut le voir. */
   const seuil = seuilDuJour();
-  $("seuil").hidden = !seuil || t.vendu >= seuil;
-  $("seuil").innerHTML = '<span>Pour couvrir tes charges, vends au moins</span><b>' + franc(seuil) + '</b>' +
-    '<small>Encore ' + franc(Math.max(0, seuil - t.vendu)) + ' à vendre aujourd\'hui.</small>';
+  $("objectif").hidden = !seuil;
+  if (seuil) {
+    const part = Math.min(100, Math.round(t.vendu / seuil * 100));
+    $("objectif-montant").textContent = franc(seuil);
+    $("objectif-cible").textContent = franc(seuil);
+    $("objectif-reste").textContent = franc(Math.max(0, seuil - t.vendu));
+    $("objectif-part").style.width = part + "%";
+    $("objectif-pct").textContent = part + " %";
+    $("objectif").classList.toggle("atteint", t.vendu >= seuil);
+  }
   $("rappel-parametrage").hidden = !!donnees.boutique.parametre || !$("rappel-sauvegarde").hidden;
   /* L'argent en caisse est ce qu'il reste MAINTENANT (l'argent du départ, plus tout
      ce qui est entré, moins tout ce qui est sorti depuis le premier jour) : c'est le
@@ -511,18 +521,23 @@ function afficherJour() {
   const bouge = t.encaisse || t.sorti || t.maison;
   $("caisse").hidden = !bouge && !enCaisse;
   $("caisse").className = "ligne-carte" + (enCaisse < 0 ? " negatif" : "");
+  $("caisse").innerHTML = '<svg class="ico-case" viewBox="0 0 24 24" aria-hidden="true">' +
+    '<path d="M3 8h15a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>' +
+    '<path d="M3 8V7a2 2 0 0 1 2-2h11"/><circle cx="16.5" cy="13.5" r="1.2"/></svg>' +
+    '<span>Argent en caisse</span><b>' + signe(enCaisse) + '</b>';
+  /* Ce qui est entré et ce qui est sorti aujourd'hui, chacun dans sa case,
+     à la couleur de son sens : olive pour ce qui entre, rouge pour ce qui
+     sort. Ce sont les deux mêmes chiffres qu'avant, séparés. */
+  $("flux-jour").hidden = !bouge;
+  $("flux-entre").textContent = franc(t.encaisse);
+  $("flux-sort").textContent = franc(t.sorti + t.maison);
   const parMoyen = soldesAffichables();
-  const detail = parMoyen.length > 1
-    ? '<small class="par-moyen">' + parMoyen.map(function (k) {
-        /* Une case par moyen : sur un grand écran elles se rangent en
-           mosaïque, sur un téléphone elles restent une phrase séparée par
-           des points médians (posés en CSS). Le texte de chaque case reste
-           « Espèces 53 300 F », qui correspond au motif anglais existant :
-           le couper autrement casserait la traduction. */
-        return '<span class="moyen-case">' + MOYENS[k] + " " + signe(soldeMoyen(k)) + '</span>';
-      }).join("") + '</small>' : '';
-  $("caisse").innerHTML = '<span>Argent en caisse</span><b>' + signe(enCaisse) + '</b>' +
-    '<small>aujourd\'hui : entré ' + franc(t.encaisse) + ' · sorti ' + franc(t.sorti + t.maison) + '</small>' + detail;
+  $("titre-moyens").hidden = parMoyen.length < 2;
+  $("moyens-grille").innerHTML = parMoyen.length < 2 ? "" : parMoyen.map(function (k) {
+    return '<div class="moyen-case">' + logoMoyen(k) +
+      '<span class="moyen-nom">' + MOYENS[k] + '</span>' +
+      '<strong class="moyen-solde">' + signe(soldeMoyen(k)) + '</strong></div>';
+  }).join("");
   const reste = t.benefice - t.maison;
   $("reste-boutique").hidden = t.maison === 0;
   $("reste-boutique").className = "ligne-carte maison-carte" + (reste < 0 ? " negatif" : "");
@@ -650,6 +665,64 @@ function afficherRelances() {
     bloc("Crédits récents", groupes.recent, "Pas encore besoin de relancer.");
 }
 
+/* ---------- Le logo d'un moyen de paiement ----------
+   Les espèces reçoivent un dessin de billet, écrit ici : ce n'est la marque
+   de personne. Les opérateurs reçoivent LEUR logo officiel, déposé par le
+   propriétaire dans `app/icones/operateurs/` (voir `docs/logos-operateurs.md`).
+   Tant que le fichier n'est pas là, l'image se retire d'elle-même et la case
+   garde le nom seul : on ne met jamais un dessin maison à la place du logo
+   d'une marque, ce serait le contrefaire. */
+const BILLET = '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+  '<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/>' +
+  '<path d="M5 9.5v5M19 9.5v5"/></svg>';
+
+function logoMoyen(k) {
+  if (k === "especes") return '<span class="logo-moyen logo-dessin">' + BILLET + '</span>';
+  return '<span class="logo-moyen"><img src="icones/operateurs/' + k + '.svg" alt="" ' +
+    'onerror="this.parentNode.classList.add(\'sans-logo\')"></span>';
+}
+
+/* ---------- La synthèse : quatre blocs à côté du Petit Canari ----------
+   Les mêmes chiffres que la phrase du bilan, rangés. La phrase reste : elle
+   sert au portrait et à la lecture à voix haute. */
+function remplirSynthese(clients, fournisseurs, aRelancer) {
+  const bloc = function (icone, titre, valeur, dessous) {
+    return '<div class="syn-bloc syn-' + icone + '">' +
+      '<span class="syn-ico">' + SYN_ICONES[icone] + '</span>' +
+      '<span class="syn-corps"><span class="syn-titre">' + titre + '</span>' +
+      '<strong class="syn-valeur">' + valeur + '</strong>' +
+      '<small class="syn-dessous">' + dessous + '</small></span></div>';
+  };
+  const blocs = [];
+  const du = clients.reduce(function (s, c) { return s + c.du; }, 0);
+  if (du) blocs.push(bloc("credit", "Créances clients", franc(du), "à recevoir"));
+  if (aRelancer) blocs.push(bloc("relance", "Relances",
+    aRelancer + " client" + (aRelancer > 1 ? "s" : ""), "à contacter"));
+  const racheter = produitsARacheter().concat(intrantsARacheter());
+  if (racheter.length) {
+    blocs.push(bloc("stock", "Stock", racheter.length <= 2
+      ? racheter.map(function (x) { return echapper(x.nom); }).join(" et ")
+      : racheter.length + " articles", "à racheter"));
+  }
+  const doisTotal = fournisseurs.reduce(function (s, f) { return s + f.du; }, 0);
+  if (doisTotal) blocs.push(bloc("dette", "Dettes fournisseurs", franc(doisTotal), "à régler"));
+  $("synthese").hidden = !blocs.length;
+  /* Une classe plutôt qu'un `:has()` en CSS : `:has()` n'existe pas sur les
+     navigateurs des téléphones d'entrée de gamme un peu anciens, et la
+     phrase du bilan serait alors affichée DEUX fois. */
+  $("bilan").classList.toggle("a-synthese", !!blocs.length);
+  $("synthese").innerHTML = blocs.length
+    ? '<p class="syn-bonjour">Voici un résumé de ta situation</p><div class="syn-blocs">' +
+      blocs.join("") + '</div>' : "";
+}
+
+const SYN_ICONES = {
+  credit: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v10H4z"/><path d="M4 11h16"/></svg>',
+  relance: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"/><path d="M9 10h6"/></svg>',
+  stock: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5l8 4.5 8-4.5M12 12v9"/></svg>',
+  dette: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.5"/><circle cx="17" cy="17.5" r="1.5"/></svg>'
+};
+
 /* ---------- Bilan du jour en une phrase ---------- */
 
 function afficherBilan(t) {
@@ -708,6 +781,7 @@ function afficherBilan(t) {
   $("bilan-texte").innerHTML = phrases.map(function (p) {
     return '<span class="bil-phrase">' + p + '</span>';
   }).join(" ");
+  remplirSynthese(clients, fournisseurs, aRelancer);
 
   // Humeur du Petit Canari : grand sourire les très bons jours.
   const passes = derniersJours(7).slice(0, 6).map(function (j) { return j.totaux.benefice; })

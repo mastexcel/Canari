@@ -4056,17 +4056,60 @@ body::after {
 
   /* Les cartes d'indicateurs et de ratios : une mosaïque, plus une colonne
      de bandes où le nom et le chiffre étaient séparés par un grand vide. */
+  /* ----- La mosaïque des indicateurs -----
+     (demande du propriétaire, 27/10/2026 : « des cartes en trois colonnes
+     avec des hauteurs très différentes, de grands espaces vides dessous,
+     une quatrième carte seule sous une rangée de trois ».)
+     Une grille range les cartes en RANGÉES : la rangée prend la hauteur de
+     sa carte la plus haute, et les trois autres laissent un trou sous
+     elles. On passe donc en COLONNES qui se remplissent : chaque carte se
+     pose sous la précédente dès qu'il y a la place, et il ne reste aucun
+     vide. C'est la seule façon d'avoir une vraie mosaïque sans
+     bibliothèque ni calcul en JavaScript. */
   .indicateurs {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 12px;
-    align-items: start;
+    display: block;
+    /* 320 px : en dessous, « Tes 5 plus gros chiffres d'affaires » et son
+       montant se chevauchaient dans l'en-tête de la carte. */
+    column-width: 262px;
+    column-gap: 14px;
   }
-  .liste-invest {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 10px;
+  .indicateurs > .ind {
+    /* Une carte ne se coupe jamais entre deux colonnes. */
+    break-inside: avoid;
+    -webkit-column-break-inside: avoid;
+    page-break-inside: avoid;
+    margin: 0 0 14px;
   }
+  /* Le matériel et les gestes conseillés suivent la même règle. */
+  .liste-invest, .actions-strategie {
+    display: block;
+    column-width: 280px;
+    column-gap: 14px;
+  }
+  /* Une famille de DEUX cartes (les deux camemberts) : deux colonnes
+     LARGES. Avec la largeur de colonne commune, elles se seraient tassées
+     dans deux colonnes sur quatre, en laissant la moitié de l'écran vide. */
+  .indicateurs-2 { column-width: auto; column-count: 2; }
+
+  /* ----- La navigation du haut, resserrée -----
+     Trois étages de boutons étalés sur toute la largeur. On garde les
+     libellés, les états actifs et le plancher tactile de 48 px ; on borne
+     simplement leur largeur et on resserre les marges verticales. */
+  .quatre-periodes, .deux-choix { max-width: 760px; margin-left: auto; margin-right: auto; }
+  .periode-aide { margin: 6px 0 2px; text-align: center; }
+
+  .liste-invest > li, .actions-strategie > li {
+    break-inside: avoid;
+    -webkit-column-break-inside: avoid;
+    margin: 0 0 10px;
+  }
+
+  /* ----- La navigation du haut -----
+     Trois étages de boutons mangeaient une bonne partie de la hauteur
+     utile. On ne retire ni un libellé ni un état actif : on resserre. */
+  .choix-bilan button, .deux-choix button, .trois-choix button { min-height: 48px; padding: 6px 10px; }
+  .famille { margin-top: 15px; }
+  .famille > .titre-liste { margin-bottom: 8px; }
 
   /* Un graphique étiré sur 1 900 px ne se lit pas mieux : il s'aplatit. */
   .carte-graphe { max-width: 780px; }
@@ -4279,3 +4322,14 @@ body::after {
    se coupe en « 20 600 / F ». */
 .case-sombre, .case-flux, .moyen-case, #caisse { text-align: left; }
 .case-sombre strong, .case-flux strong, .moyen-solde, #caisse b { white-space: nowrap; }
+
+/* L'en-tête d'un indicateur : le nom et le chiffre ne se chevauchent jamais,
+   même dans une colonne étroite — le chiffre passe à la ligne au besoin. */
+.ind-haut { gap: 8px; flex-wrap: wrap; }
+.ind-nom { min-width: 0; }
+
+/* Le nom d'un produit dans un classement avait une colonne FIXE de 5,5 em :
+   « Tomate concentrée » devenait « Tomate conc… » même dans une carte large.
+   C'est le nom qui prend la place qui reste, et la barre qui se contente
+   d'une largeur fixe — on lit d'abord un nom, pas une barre. */
+.barres-produits li { grid-template-columns: minmax(0, 1fr) 54px auto; }

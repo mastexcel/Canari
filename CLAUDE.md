@@ -627,6 +627,20 @@ La maquette portait les logos de Wave, Orange Money et MTN MoMo, et le propriét
 
 Les cases des comptes portent donc le **nom et le montant**, comme partout ailleurs dans l'appli. L'emplacement de logo, la fabrique `logoMoyen()` et le dessin de billet des espèces ont été retirés du code : rien ne traîne. La règle de marque du projet est donc tenue sans exception — **aucun écran de Canari ne porte le logo d'une autre marque**, seulement leurs noms.
 
+### Le tableau de bord « Tout le détail », resserré (demande du propriétaire, 27/10/2026)
+
+« Des cartes en trois colonnes avec des hauteurs très différentes, de grands espaces vides dessous, une quatrième carte seule sous une rangée de trois, un défilement excessif. » Mesuré avant correction sur la boutique de démonstration, à 1 280 px : **3 723 px de haut**, trois colonnes de 376 px.
+
+- **Une grille range les cartes en RANGÉES**, et une rangée prend la hauteur de sa carte la plus haute : les trois autres laissent un trou sous elles. Les familles d'indicateurs passent donc en **colonnes qui se remplissent** (`column-width` sur `.indicateurs`, `break-inside: avoid` sur `.ind`) : chaque carte se pose sous la précédente dès qu'il y a la place. C'est une vraie mosaïque, sans bibliothèque et sans un seul calcul en JavaScript.
+- **Quatre colonnes de 262 px** : « Activité » et « Efficacité » tiennent chacune leurs quatre cartes **sur une seule rangée**, au lieu de trois plus une toute seule.
+- **Une famille de DEUX cartes prend deux colonnes LARGES.** Les deux camemberts (« D'où vient ton chiffre d'affaires », « Où part ton argent ») et les deux cartes d'investissement se seraient tassés dans deux colonnes sur quatre, en laissant la moitié de l'écran vide. `famille()` écrit donc le nombre de cartes dans la classe (`indicateurs-2`, `indicateurs-5`…) : c'est une classe de **mise en page**, pas un calcul.
+- **La navigation du haut** garde tous ses libellés, ses états actifs et son plancher tactile de 48 px ; ses trois étages de boutons sont simplement bornés à 760 px et centrés au lieu de s'étaler sur toute la largeur.
+- **Le nom d'un produit dans un classement** avait une colonne **fixe** de 5,5 em : « Tomate concentrée » devenait « Tomate conc… » même dans une carte large. C'est désormais le nom qui prend la place qui reste et la barre qui se contente de 54 px — on lit d'abord un nom, pas une barre.
+- **Résultat mesuré** à 1 280 px : **3 723 → 3 191 px** (−14 %), et à 1 920 px : 2 997 px. Aucun débordement horizontal, aucune cible tactile sous 48 px, aucune erreur de script, sur les huit formats.
+- **Rien n'a bougé de la charte** : ni couleur, ni police, ni bordure, ni ombre, ni graphique, ni icône. Et **le portrait ne change pas** : toutes ces règles vivent dans la requête `orientation: landscape`.
+
+**Piège rencontré, à retenir** : `break-inside: avoid` est indispensable sur les cartes, sinon une carte se coupe en deux entre deux colonnes. Et une famille de deux cartes doit recevoir `column-count: 2` explicitement — `column-width` seul fabrique quatre colonnes et n'en remplit que deux.
+
 **Règle pour la suite** : un nouvel écran ne reçoit pas son propre seuil. Il se range dans les classes existantes — largeur compacte / moyenne / étendue, hauteur compacte — et hérite des marges, de la mesure de 65 signes et du plancher tactile de 48 px. Et **une vue en deux volets commence à 840 px**, jamais à 600 : en dessous, les deux volets sont trop étroits tous les deux.
 
 ## L'application Android : APK et AAB (fait)

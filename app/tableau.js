@@ -563,7 +563,8 @@ function famille(titre, sousTitre, cartes) {
   return '<section class="famille">' +
     '<h2 class="titre-liste">' + titre + '</h2>' +
     '<p class="aide famille-aide">' + sousTitre + '</p>' +
-    '<ul class="indicateurs">' + cartes.join("") + '</ul></section>';
+    '<ul class="indicateurs indicateurs-' + cartes.length + '">' +
+      cartes.join("") + '</ul></section>';
 }
 
 function pourcent(n) { return n === null || n === undefined ? "—" : (n < 0 ? "−\u00a0" : "") + Math.abs(n) + " %"; }

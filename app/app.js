@@ -534,8 +534,7 @@ function afficherJour() {
   const parMoyen = soldesAffichables();
   $("titre-moyens").hidden = parMoyen.length < 2;
   $("moyens-grille").innerHTML = parMoyen.length < 2 ? "" : parMoyen.map(function (k) {
-    return '<div class="moyen-case">' + logoMoyen(k) +
-      '<span class="moyen-nom">' + MOYENS[k] + '</span>' +
+    return '<div class="moyen-case"><span class="moyen-nom">' + MOYENS[k] + '</span>' +
       '<strong class="moyen-solde">' + signe(soldeMoyen(k)) + '</strong></div>';
   }).join("");
   const reste = t.benefice - t.maison;
@@ -663,23 +662,6 @@ function afficherRelances() {
     bloc("Promesses à venir", groupes.promesse, "") +
     bloc("Déjà relancés", groupes.attente, "Laisse-leur quelques jours avant de relancer encore.") +
     bloc("Crédits récents", groupes.recent, "Pas encore besoin de relancer.");
-}
-
-/* ---------- Le logo d'un moyen de paiement ----------
-   Les espèces reçoivent un dessin de billet, écrit ici : ce n'est la marque
-   de personne. Les opérateurs reçoivent LEUR logo officiel, déposé par le
-   propriétaire dans `app/icones/operateurs/` (voir `docs/logos-operateurs.md`).
-   Tant que le fichier n'est pas là, l'image se retire d'elle-même et la case
-   garde le nom seul : on ne met jamais un dessin maison à la place du logo
-   d'une marque, ce serait le contrefaire. */
-const BILLET = '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-  '<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/>' +
-  '<path d="M5 9.5v5M19 9.5v5"/></svg>';
-
-function logoMoyen(k) {
-  if (k === "especes") return '<span class="logo-moyen logo-dessin">' + BILLET + '</span>';
-  return '<span class="logo-moyen"><img src="icones/operateurs/' + k + '.svg" alt="" ' +
-    'onerror="this.parentNode.classList.add(\'sans-logo\')"></span>';
 }
 
 /* ---------- La synthèse : quatre blocs à côté du Petit Canari ----------

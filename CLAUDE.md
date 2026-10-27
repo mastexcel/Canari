@@ -581,6 +581,17 @@ Les barres de `comptes.js` s'appellent donc **`.cascade-barres`**. C'est exactem
 
 **Règle pour la suite** : avant de donner un nom de classe à un nouvel écran, vérifier qu'il est libre — `grep -n '^\.nom[ {.:]' app/style.css`. Un nom déjà pris se réutilise **seulement** si on habille le même élément ; sinon on en choisit un autre. Et quand un écran s'affiche mal alors qu'un autre, voisin, va bien, regarder d'abord si les deux partagent une classe.
 
+### L'écran du jour en mosaïque (demande du propriétaire, 27/10/2026)
+
+« La carte en noir doit s'élargir pour prendre toute la largeur de la tablette et les éléments à l'intérieur doivent être réorganisés pour prendre moins de place en longueur. Ensuite les autres éléments doivent être organisés en mosaïque en dessous. » Il avait raison : la vue en deux volets laissait la carte du jour dans une colonne de 380 px — donc empilée sur près de **800 px de haut** — pendant que la moitié droite de la tablette ne portait qu'un écran vide.
+
+- **La carte du jour prend toute la largeur** et son intérieur passe en **trois colonnes** : le chiffre du jour, les trois cases (marge, charges, bénéfice), puis le seuil et l'argent en caisse. Hauteur mesurée : **790 px avant, 184 px après** à 1 280 px.
+- **Chaque élément de la carte ne déclare que sa COLONNE**, jamais sa rangée : grid le pose alors dans la première rangée libre de cette colonne, donc une case cachée (le seuil déjà atteint, le reste pour la boutique) ne laisse aucun trou.
+- **En dessous, une mosaïque à deux colonnes** : les trois gros boutons à gauche, les trois boutons secondaires à droite ; puis le bilan du jour et la liste des mouvements, qui prennent toute la largeur — l'un est une phrase, l'autre un tableau : les couper en colonne laisserait un trou à côté.
+- **Deux colonnes, pas un nombre libre.** Avec `repeat(auto-fill, …)`, un écran de 1 920 px en fabriquait **cinq** : les deux groupes de boutons occupaient les deux premières et les trois autres restaient vides.
+- **Au-delà de 1 400 px on arrête d'étirer** (`max-width` sur `#vue-jour`) : trois boutons de 600 px de large ne sont pas plus faciles à toucher, seulement plus laids. Une tablette reste très en dessous de ce plafond, donc elle remplit bien tout l'écran.
+- **L'écran vide reste une carte de 560 px centrée**, jamais une plaque pâle étirée sur toute la tablette.
+
 **Règle pour la suite** : un nouvel écran ne reçoit pas son propre seuil. Il se range dans les classes existantes — largeur compacte / moyenne / étendue, hauteur compacte — et hérite des marges, de la mesure de 65 signes et du plancher tactile de 48 px. Et **une vue en deux volets commence à 840 px**, jamais à 600 : en dessous, les deux volets sont trop étroits tous les deux.
 
 ## L'application Android : APK et AAB (fait)

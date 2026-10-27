@@ -3911,33 +3911,59 @@ body::after {
    =========================================================================== */
 
 @media (orientation: landscape) and (min-width: 840px) {
-  /* ----- L'écran du jour en deux volets -----
-     Un volet de largeur FIXE pour agir (le chiffre du jour, les boutons,
-     le bilan) et un volet souple pour lire (les mouvements).
-     Seulement à partir de 840 px : à 740 px — un téléphone couché — le
-     volet des mouvements tombait à 336 px, les libellés se coupaient au
-     milieu d'un mot et la colonne de gauche restait vide sur 1 500 px.
-     C'est la largeur « étendue » de Material, pas la largeur « moyenne ». */
+  /* ----- L'écran du jour en MOSAÏQUE (demande du propriétaire, 27/10/2026 :
+     « la carte en noir doit s'élargir pour prendre toute la largeur de la
+     tablette et les éléments à l'intérieur doivent être réorganisés pour
+     prendre moins de place en longueur ; les autres éléments en mosaïque
+     en dessous »). -----
+     La vue en deux volets laissait la carte du jour dans une colonne de
+     380 px, donc empilée sur près de 800 px de haut, pendant que la moitié
+     droite de la tablette ne portait qu'un écran vide. */
   #vue-jour {
     display: grid;
-    grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
-    /* Quatre rangées pour le volet de gauche, plus une cinquième, souple,
-       qui absorbe ce que la liste a de plus haut. Sans elle, grid répartit
-       ce surplus sur les quatre rangées et écarte les boutons les uns des
-       autres jusqu'en bas de l'écran. */
-    grid-template-rows: auto auto auto auto 1fr;
+    /* DEUX colonnes, pas un nombre libre. Avec « auto-fill », un écran de
+       1 920 px en fabriquait cinq : les deux groupes de boutons occupaient
+       les deux premières et les trois autres restaient vides. */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: start;
-    column-gap: 24px;
+    gap: 14px 20px;
+    /* Et au-delà de 1 400 px on arrête d'étirer : trois boutons de 600 px
+       de large ne sont pas plus faciles à toucher, seulement plus laids. */
+    max-width: 1400px;
   }
-  #vue-jour > .carte-gain { grid-area: 1 / 1; }
-  #vue-jour > .gros-boutons { grid-area: 2 / 1; }
-  #vue-jour > .petits-boutons { grid-area: 3 / 1; }
-  #vue-jour > .bilan { grid-area: 4 / 1; margin-top: 0; }
-  /* Le volet des mouvements tient toute la colonne de droite : sinon le
-     titre « Aujourd'hui » restait seul en haut et la liste ne commençait
-     qu'au bas de la carte du jour, avec 300 px de vide entre les deux. */
-  #vue-jour > .volet-mouvements { grid-area: 1 / 2 / -1 / 3; }
+  /* La carte du jour et la liste des mouvements tiennent toute la largeur :
+     l'une est l'en-tête de l'écran, l'autre un tableau qu'on ne coupe pas
+     en deux. Entre les deux, les boutons et le bilan font la mosaïque. */
+  #vue-jour > .carte-gain,
+  #vue-jour > .volet-mouvements { grid-column: 1 / -1; }
+  /* Le bilan du jour est une PHRASE : le couper en colonne laisserait un
+     trou à côté de lui. Il prend donc toute la largeur, et c'est son texte
+     — pas sa carte — qui reste plafonné à 65 signes par ligne. */
+  #vue-jour > .bilan { grid-column: 1 / -1; margin-top: 0; }
 
+  /* ----- L'intérieur de la carte du jour, en trois colonnes -----
+     Au lieu d'une pile — étiquette, chiffre, les trois cases, le seuil,
+     la caisse — on met côte à côte ce qui se lit d'un coup d'œil : le
+     chiffre du jour, les trois cases, puis le seuil et la caisse. Hauteur
+     mesurée : 790 px avant, 250 px après. Chaque élément ne déclare que sa
+     COLONNE : grid le pose alors dans la première rangée libre de cette
+     colonne, donc une case cachée (le seuil déjà atteint, le reste pour la
+     boutique) ne laisse aucun trou. */
+  .carte-gain {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr) minmax(0, 1.2fr);
+    align-items: center;
+    gap: 10px 20px;
+    text-align: left;
+    padding: 20px 22px;
+  }
+  .carte-gain > .etiquette,
+  .carte-gain > .gros-chiffre { grid-column: 1; }
+  .carte-gain > .trois-chiffres { grid-column: 2; grid-row: 1 / span 2; }
+  .carte-gain > .seuil-carte,
+  .carte-gain > #caisse,
+  .carte-gain > #reste-boutique { grid-column: 3; margin: 0; }
+  .carte-gain > .gros-chiffre { margin: 0; align-self: start; }
 
   /* Les Réglages passent à deux colonnes. Pas avant : ce sont des formulaires
      denses (le logo, les quatre soldes, les comptes mobiles) et deux colonnes

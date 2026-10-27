@@ -4483,7 +4483,7 @@ body::after {
   /* Deux colonnes : les chiffres à gauche, la navigation à droite. */
   #vue-semaine {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 148px;
+    grid-template-columns: minmax(0, 1fr) 120px;
     align-items: start;
     gap: 0 18px;
   }
@@ -4507,9 +4507,9 @@ body::after {
   .rail-groupe + .rail-groupe { margin-top: 0; }
   .rail-titre {
     display: block;
-    margin: 0 0 6px;
+    margin: 0 0 5px;
     font-family: var(--titre);
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
     letter-spacing: .09em;
     text-transform: uppercase;
@@ -4526,15 +4526,20 @@ body::after {
     max-width: none;
     margin: 0;
   }
+  /* La colonne est volontairement étroite (demande du propriétaire) : tout
+     ce qu'elle rend prend va aux cartes. Les libellés les plus longs
+     — « Tableau de bord », « Comptes annuels » — s'y écrivent sur deux
+     lignes serrées, et le plancher tactile de 48 px est conservé. */
   .rail-bilan .choix {
     width: 100%;
     min-height: 48px;
-    font-size: 14px;
-    padding: 8px 6px;
+    font-size: 12.5px;
+    line-height: 1.2;
+    padding: 7px 4px;
   }
   .rail-bilan .periode-aide {
-    margin: 9px 2px 0;
-    font-size: 12px;
+    margin: 8px 1px 0;
+    font-size: 11px;
     line-height: 1.3;
     text-align: left;
   }

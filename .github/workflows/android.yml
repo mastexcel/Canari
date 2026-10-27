@@ -246,11 +246,22 @@ jobs:
           # celui du fichier ne changent jamais, donc l'adresse non plus :
           # https://github.com/mastexcel/Canari/releases/download/essai/canari.apk
           gh release delete essai --yes --cleanup-tag 2>/dev/null || true
+          # Le texte est écrit dans un FICHIER, jamais directement sur la
+          # ligne de commande : dans un bloc YAML, une chaîne qui contient un
+          # retour à la ligne casse tout le fichier (vu : la tâche entière est
+          # devenue illisible pour GitHub).
+          printf '%s\n' \
+            "A installer sur un telephone **Android 7 ou plus recent**." \
+            "" \
+            "Envoie-toi le fichier sur WhatsApp, ouvre-le, et accepte « installer quand meme » : Android previent pour toute application qui ne vient pas du Play Store." \
+            "" \
+            "La premiere ouverture a besoin d'internet. Ensuite, l'appli marche hors ligne." \
+            "" \
+            "Sur un telephone plus ancien, ou sur un ordinateur, passe plutot par https://mastexcel.github.io/Canari/ puis « Installer l'application »." \
+            > /tmp/notes.md
           gh release create essai resultat/canari.apk \
-            --title "Canari — l'application Android" \
-            --notes "À installer sur un téléphone **Android 7 ou plus récent**. Envoie-toi le fichier sur WhatsApp, ouvre-le, et accepte « installer quand même » (Android prévient pour toute application qui ne vient pas du Play Store). La première ouverture a besoin d'internet ; ensuite l'appli marche hors ligne.
-
-Sur un téléphone plus ancien, ou sur un ordinateur, passe plutôt par https://mastexcel.github.io/Canari/ puis « Installer l'application »."
+            --title "Canari - l'application Android" \
+            --notes-file /tmp/notes.md
           echo "::notice::APK en téléchargement direct : https://github.com/mastexcel/Canari/releases/download/essai/canari.apk"
 
       - name: Déposer le résultat

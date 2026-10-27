@@ -221,6 +221,16 @@ jobs:
               > resultat/LISEZ-MOI.txt
           fi
           ls -la resultat
+          # Écrit en annotation : c'est la seule partie du journal lisible de
+          # l'extérieur, et il faut pouvoir affirmer qu'il y a bien un APK
+          # installable dans le résultat — pas seulement un .aab, qu'Android
+          # ne sait pas ouvrir.
+          echo "::notice::Fichiers produits : $(ls resultat | tr '\n' ' ')"
+          if [ ! -f resultat/canari.apk ]; then
+            echo "::error::Aucun canari.apk dans le résultat : il n'y aurait rien à installer."
+            exit 1
+          fi
+          echo "::notice::Taille de l'APK : $(du -h resultat/canari.apk | cut -f1)" 
 
       - name: Déposer le résultat
         uses: actions/upload-artifact@v4

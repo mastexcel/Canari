@@ -4357,11 +4357,11 @@ body::after {
 /* ----- Les sections du tableau de bord, deux par deux -----
    (demande du propriétaire, 27/10/2026 : sa maquette met « Répartition » et
    « Efficacité » côte à côte, puis « Investissement » et « Ton matériel ».)
-   À partir de 1 200 px — la classe « grande » de Material — les sections se
-   rangent elles aussi en deux colonnes qui se remplissent. En dessous, une
-   section à moitié large ne porterait que deux cartes par rangée : elle
-   serait deux fois plus haute, et on ne gagnerait rien. */
-@media (min-width: 1200px) {
+   Le seuil est 900 px, PAS 1 200 : une tablette de 1 000 px — la vraie
+   tablette du propriétaire — restait juste en dessous et n'obtenait que
+   trois colonnes. En dessous de 900 px, quatre colonnes seraient trop
+   étroites pour porter un graphique lisible. */
+@media (min-width: 900px) {
   /* Une GRILLE de quatre colonnes, pas une mosaïque de deux : c'est elle qui
      permet à « Activité » d'aligner ses quatre cartes sur une seule rangée,
      pleine largeur, comme sur la maquette. Avec des colonnes qui se
@@ -4404,6 +4404,15 @@ body::after {
   .ind-graphe .graphe,
   .ind-graphe .graphe-colonnes,
   .ind-graphe .graphe-comparatif { height: 124px; }
+}
+
+/* Entre 900 et 1 100 px, les quatre colonnes sont plus étroites : les phrases
+   passent sur une ligne de plus et la carte la plus haute atteint 437 px.
+   Le plancher commun monte donc à 440 px sur cette tranche, pour que les
+   cartes à graphique gardent la MÊME taille (demande du propriétaire) sans
+   creuser 140 px de vide sur un grand écran, où la plus haute fait 362 px. */
+@media (min-width: 900px) and (max-width: 1099px) {
+  .ind-graphe { min-height: 440px; }
 }
 
 /* ----- Les cartes qui portent un graphique ont toutes la même taille -----

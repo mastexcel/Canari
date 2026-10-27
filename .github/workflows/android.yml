@@ -117,7 +117,12 @@ jobs:
           # donc sa fin dans les ANNOTATIONS, qui, elles, se lisent.
           raconter() {
             echo "::group::$1"; cat "$2" || true; echo "::endgroup::"
-            tail -n 20 "$2" 2>/dev/null | sed 's/^/::error::'"$1"' | /' || true
+            # La VRAIE cause d'un échec Gradle est dans le bloc « What went
+            # wrong », pas à la fin du journal : les vingt dernières lignes ne
+            # sont que le fond de la pile Java, qui ne dit rien.
+            cause=$(grep -A 14 -m 2 -E "What went wrong|FAILURE: Build failed|^e: |error:" "$2" 2>/dev/null | head -n 30)
+            [ -n "$cause" ] || cause=$(tail -n 20 "$2" 2>/dev/null)
+            printf '%s\n' "$cause" | cut -c1-240 | sed 's/^/::error::'"$1"' | /' || true
           }
           if [ -n "${{ github.event.inputs.version }}" ]; then
             node -e "const f='twa-manifest.json';const m=JSON.parse(require('fs').readFileSync(f));m.appVersionName='${{ github.event.inputs.version }}';m.appVersionCode=Math.floor(Date.now()/60000);require('fs').writeFileSync(f,JSON.stringify(m,null,2));"

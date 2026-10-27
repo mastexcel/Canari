@@ -4333,3 +4333,25 @@ body::after {
    C'est le nom qui prend la place qui reste, et la barre qui se contente
    d'une largeur fixe — on lit d'abord un nom, pas une barre. */
 .barres-produits li { grid-template-columns: minmax(0, 1fr) 54px auto; }
+
+/* ----- Les sections du tableau de bord, deux par deux -----
+   (demande du propriétaire, 27/10/2026 : sa maquette met « Répartition » et
+   « Efficacité » côte à côte, puis « Investissement » et « Ton matériel ».)
+   À partir de 1 200 px — la classe « grande » de Material — les sections se
+   rangent elles aussi en deux colonnes qui se remplissent. En dessous, une
+   section à moitié large ne porterait que deux cartes par rangée : elle
+   serait deux fois plus haute, et on ne gagnerait rien. */
+@media (orientation: landscape) and (min-width: 1200px) {
+  #vue-tableau { column-count: 2; column-gap: 26px; }
+  /* Les trois étages de boutons et la ligne de dates restent AU-DESSUS des
+     deux colonnes : sans ça, « Profitabilité » démarrait en haut de la
+     seconde colonne, juste à côté des filtres. */
+  #vue-tableau > .quatre-periodes,
+  #vue-tableau > .periode-aide,
+  #vue-tableau > .vues-tableau { column-span: all; }
+  #vue-tableau > .famille {
+    break-inside: avoid;
+    -webkit-column-break-inside: avoid;
+    margin: 0 0 18px;
+  }
+}

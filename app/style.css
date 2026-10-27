@@ -4106,7 +4106,7 @@ body::after {
      haute mesurée de 844 à 1 920 px : en dessous, elles se termineraient à
      quatre hauteurs différentes côte à côte. Les camemberts sont plus hauts
      que ça, donc ils ne sont pas touchés. */
-  .ind-graphe { min-height: 380px; }
+  .ind-graphe { min-height: 350px; }
 
   .indicateurs-2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
   .indicateurs-2 > .ind { margin: 0; }
@@ -4404,11 +4404,30 @@ body::after {
      marges du conseil se réduisent, et le graphique gagne 24 px.
      Le corps du texte de l'appli, lui, ne bouge pas : ces règles ne valent
      qu'à partir de 1 200 px, donc jamais sur un téléphone. */
-  .ind-lecture { font-size: 14px; line-height: 1.35; margin-top: 7px; }
-  .ind-conseil { font-size: 13px; line-height: 1.35; padding: 7px 9px; margin-top: 7px; }
+  .ind-lecture { font-size: 13.5px; line-height: 1.35; margin-top: 7px; }
+  .ind-conseil { font-size: 12.5px; line-height: 1.35; padding: 7px 9px; margin-top: 7px; }
+
+  /* Le nom de la carte passait sur deux lignes dans 16 cartes sur 17, et
+     repoussait le chiffre en dessous — c'est ce que le propriétaire voyait
+     comme « un chiffre sur deux lignes ». Nom et chiffre tiennent
+     maintenant sur la même ligne dans la plupart des cartes, et le chiffre
+     lui-même ne se coupe jamais (il est déjà en « nowrap »). */
+  .ind-nom { font-size: 13.5px; line-height: 1.25; }
+  .ind-valeur { font-size: 21px; letter-spacing: -.3px; }
+  .ind-haut { gap: 6px; }
+
+  /* « Privilégier la visibilité des courbes et graphiques » : la place
+     gagnée sur le texte va au dessin, qui passe de 124 à 150 px. */
   .ind-graphe .graphe,
   .ind-graphe .graphe-colonnes,
-  .ind-graphe .graphe-comparatif { height: 124px; }
+  .ind-graphe .graphe-comparatif { height: 150px; }
+
+  /* Les mêmes réglages pour les écrans ramassés de « L'essentiel » et pour
+     les classements, pour que tout l'écran parle la même langue. */
+  .tuile-nom { font-size: 13px; }
+  .tuile-valeur { font-size: 22px; }
+  .bp-nom, .bp-valeur { font-size: 13.5px; }
+  .cam-nom, .cam-montant, .cam-part { font-size: 13px; }
 }
 
 /* Entre 900 et 1 100 px, les quatre colonnes sont plus étroites : les phrases
@@ -4421,7 +4440,7 @@ body::after {
    haute atteint 437 px. Le plancher commun y monte donc, pour que les
    cartes à graphique gardent la même taille. Au-delà, 380 px suffisent. */
 @media (min-width: 900px) and (max-width: 999px) {
-  .ind-graphe { min-height: 440px; }
+  .ind-graphe { min-height: 400px; }
 }
 
 /* Les quatre colonnes demandées, dès que la place existe vraiment : à

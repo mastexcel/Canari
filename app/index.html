@@ -195,16 +195,31 @@
 
   <!-- Onglet Semaine -->
   <div id="vue-semaine" class="vue" hidden>
-    <div class="choix-bilan" role="group" aria-label="Période du bilan">
-      <button type="button" class="choix" data-bilan="semaine" aria-pressed="true">7 jours</button>
-      <button type="button" class="choix" data-bilan="mois" aria-pressed="false">Mois</button>
-      <button type="button" class="choix" data-bilan="tableau" aria-pressed="false">Tableau de bord</button>
-      <button type="button" class="choix" data-bilan="comptes" aria-pressed="false">Comptes annuels</button>
+    <!-- La navigation du Bilan. Sur un petit écran elle reste une suite de
+         barres en haut, comme avant ; sur un écran large elle devient une
+         colonne à droite (voir « LA COLONNE DE NAVIGATION DU BILAN » dans
+         style.css). Les boutons ne sont écrits qu'une fois : c'est la mise
+         en page qui change, jamais la logique. -->
+    <aside class="rail-bilan" id="rail-bilan" aria-label="Navigation du bilan">
+      <div class="rail-groupe">
+        <h3 class="rail-titre">Vues</h3>
+        <div class="choix-bilan" role="group" aria-label="Période du bilan">
+          <button type="button" class="choix" data-bilan="semaine" aria-pressed="true">7 jours</button>
+          <button type="button" class="choix" data-bilan="mois" aria-pressed="false">Mois</button>
+          <button type="button" class="choix" data-bilan="tableau" aria-pressed="false">Tableau de bord</button>
+          <button type="button" class="choix" data-bilan="comptes" aria-pressed="false">Comptes annuels</button>
+        </div>
+      </div>
+      <!-- Rempli par tableau.js quand le tableau de bord est ouvert, vidé
+           par charges.js quand on en sort. -->
+      <div id="rail-tableau"></div>
+    </aside>
+    <div class="bilan-contenu">
+      <div id="vue-7jours"></div>
+      <div id="vue-mois" hidden></div>
+      <div id="vue-tableau" hidden></div>
+      <div id="vue-comptes" hidden></div>
     </div>
-    <div id="vue-7jours"></div>
-    <div id="vue-mois" hidden></div>
-    <div id="vue-tableau" hidden></div>
-    <div id="vue-comptes" hidden></div>
   </div>
 
   <!-- Onglet Stock -->

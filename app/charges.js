@@ -577,6 +577,10 @@ function initCharges() {
       $("vue-mois").hidden = quoi !== "mois";
       $("vue-tableau").hidden = quoi !== "tableau";
       $("vue-comptes").hidden = quoi !== "comptes";
+      // La navigation du tableau de bord vit dans la colonne de droite :
+      // elle disparaît avec lui, sinon elle resterait affichée au-dessus
+      // des 7 jours ou du Mois, qui n'en ont que faire.
+      if (quoi !== "tableau") $("rail-tableau").innerHTML = "";
       if (quoi === "mois") afficherMois();
       else if (quoi === "tableau") afficherTableau();
       else if (quoi === "comptes") afficherComptes();

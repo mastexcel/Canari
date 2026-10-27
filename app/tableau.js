@@ -581,17 +581,27 @@ function pluriel(n, mot) { return n + " " + mot + (n > 1 ? "s" : ""); }
 
 // Les trois boutons Semaine · Mois · Année, en haut du tableau de bord.
 function choixPeriodeHtml() {
-  return '<div class="quatre-periodes" role="group" aria-label="Période regardée">' +
-    Object.keys(PERIODES).map(function (k) {
-      return '<button type="button" class="choix" data-periode="' + k + '" aria-pressed="' +
-        (k === periodeTableau) + '">' + PERIODES[k].nom + '</button>';
-    }).join("") + '</div>' +
-    '<p class="aide periode-aide">' + texteDeAA(indicateurs().jours) + '</p>' +
-    '<div class="deux-choix vues-tableau" role="group" aria-label="Façon de voir">' +
-      '<button type="button" class="choix" data-vue-tableau="resume" aria-pressed="' + (vueTableau === "resume") + '">L\'essentiel</button>' +
-      '<button type="button" class="choix" data-vue-tableau="detail" aria-pressed="' + (vueTableau === "detail") + '">Tout le détail</button>' +
+  return '<div class="rail-groupe">' +
+      '<h3 class="rail-titre">Période</h3>' +
+      '<div class="quatre-periodes" role="group" aria-label="Période regardée">' +
+        Object.keys(PERIODES).map(function (k) {
+          return '<button type="button" class="choix" data-periode="' + k + '" aria-pressed="' +
+            (k === periodeTableau) + '">' + PERIODES[k].nom + '</button>';
+        }).join("") + '</div>' +
+      '<p class="aide periode-aide">' + texteDeAA(indicateurs().jours) + '</p>' +
+    '</div>' +
+    '<div class="rail-groupe">' +
+      '<h3 class="rail-titre">Affichage</h3>' +
+      '<div class="deux-choix vues-tableau" role="group" aria-label="Façon de voir">' +
+        '<button type="button" class="choix" data-vue-tableau="resume" aria-pressed="' + (vueTableau === "resume") + '">L\'essentiel</button>' +
+        '<button type="button" class="choix" data-vue-tableau="detail" aria-pressed="' + (vueTableau === "detail") + '">Tout le détail</button>' +
+      '</div>' +
     '</div>';
 }
+
+// La navigation du tableau de bord vit dans la colonne du Bilan, pas dans
+// la vue : c'est ce qui lui permet de rester à droite sur un grand écran.
+function poserRailTableau(html) { $("rail-tableau").innerHTML = html; }
 
 /* ---------- La vue « L'essentiel » : une mosaïque, peu de défilement ---------- */
 
@@ -641,12 +651,14 @@ function mosaiqueHtml(r) {
 function afficherTableau() {
   const r = indicateurs();
   if (r.vide) {
+    poserRailTableau("");
     $("vue-tableau").innerHTML = videHtml("canari-tranquille",
       "Le tableau de bord se remplit tout seul.<br>Note tes ventes pendant quelques jours et reviens ici.");
     return;
   }
 
-  const cartes = [choixPeriodeHtml()];
+  poserRailTableau(choixPeriodeHtml());
+  const cartes = [];
 
   // Vue « L'essentiel » : la mosaïque, les trois gestes, et c'est tout.
   if (vueTableau === "resume") {
@@ -956,7 +968,7 @@ function initTableau() {
   if (PERIODES[gardee]) periodeTableau = gardee;
   const vue = lire(CLE_VUE);
   if (vue === "resume" || vue === "detail") vueTableau = vue;
-  $("vue-tableau").addEventListener("click", function (e) {
+  const clicTableau = function (e) {
     const p = e.target.closest("[data-periode]");
     if (p) {
       periodeTableau = p.dataset.periode;
@@ -989,7 +1001,9 @@ function initTableau() {
         afficher();
       }, false, "Annuler");
     }
-  });
+  };
+  $("vue-tableau").addEventListener("click", clicTableau);
+  $("rail-tableau").addEventListener("click", clicTableau);
   document.querySelectorAll("[data-duree]").forEach(function (b) {
     b.addEventListener("click", function () { choisirDuree(Number(b.dataset.duree)); });
   });

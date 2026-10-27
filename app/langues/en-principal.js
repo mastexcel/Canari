@@ -38,6 +38,10 @@ Object.assign(EN, {
   "S'abonner": "Subscribe",
   "Sauvegarder": "Back up",
   "Ventes du jour": "Today's sales",
+  // Les trois titres de la colonne de navigation du Bilan.
+  "Vues": "Views",
+  "Période": "Period",
+  "Affichage": "Display",
   "Rentabilité": "Profitability",
   "Ventes réalisées aujourd'hui": "Sales made today",
   "Objectif de vente": "Sales target",

@@ -4390,7 +4390,12 @@ body::after {
   /* Et à l'intérieur : QUATRE colonnes de cartes dans une section pleine
      largeur, deux dans une demie. Les familles de deux cartes gardent leur
      grille (deux cartes étirées à la même hauteur), d'où le :not(). */
-  .famille-large .indicateurs:not(.indicateurs-2) { column-count: 4; column-width: auto; }
+  /* Trois colonnes tant que la colonne de navigation prend sa place sur un
+     écran moyen : à 1 000 px, quatre cartes tombaient à 166 px de large et
+     « 28 sept. » se coupait en deux. Le cahier des charges du propriétaire
+     tranche lui-même : « sans rendre leur contenu trop petit ». Quatre
+     colonnes reviennent dès 1 200 px, plus bas. */
+  .famille-large .indicateurs:not(.indicateurs-2) { column-count: 3; column-width: auto; }
   .famille-demi .indicateurs:not(.indicateurs-2) { column-count: 2; column-width: auto; }
 
   /* Le texte écrit se resserre et le dessin respire : c'est la demande
@@ -4411,8 +4416,19 @@ body::after {
    Le plancher commun monte donc à 440 px sur cette tranche, pour que les
    cartes à graphique gardent la MÊME taille (demande du propriétaire) sans
    creuser 140 px de vide sur un grand écran, où la plus haute fait 362 px. */
-@media (min-width: 900px) and (max-width: 1099px) {
+/* Juste au-dessus de 900 px, les colonnes sont les plus étroites de toute
+   l'appli : les phrases passent sur une ligne de plus et la carte la plus
+   haute atteint 437 px. Le plancher commun y monte donc, pour que les
+   cartes à graphique gardent la même taille. Au-delà, 380 px suffisent. */
+@media (min-width: 900px) and (max-width: 999px) {
   .ind-graphe { min-height: 440px; }
+}
+
+/* Les quatre colonnes demandées, dès que la place existe vraiment : à
+   1 200 px le contenu fait encore 986 px une fois la colonne de navigation
+   retirée, soit des cartes de 236 px — lisibles. */
+@media (min-width: 1200px) {
+  .famille-large .indicateurs:not(.indicateurs-2) { column-count: 4; }
 }
 
 /* ----- Les cartes qui portent un graphique ont toutes la même taille -----
@@ -4424,3 +4440,91 @@ body::after {
 .ind .graphe,
 .ind .graphe-colonnes,
 .ind .graphe-comparatif { height: 100px; }
+
+/* =========================================================================
+   LA COLONNE DE NAVIGATION DU BILAN (demande du propriétaire, 27/10/2026)
+   « Déplacer les barres de navigation horizontales au-dessus des
+   indicateurs dans une colonne verticale compacte à droite de l'écran. »
+
+   Les trois groupes — Vues (7 jours · Mois · Tableau de bord · Comptes
+   annuels), Période (Semaine · Mois · Année · Années) et Affichage
+   (L'essentiel · Tout le détail) — ne sont écrits qu'UNE fois dans la page.
+   C'est la mise en page qui change, jamais la logique : les mêmes boutons,
+   les mêmes états, les mêmes écouteurs.
+
+   Sur un petit écran ils restent une suite de barres en haut, exactement
+   comme avant. Les titres de groupe n'y servent à rien — une pile de trois
+   barres se comprend sans qu'on la commente — donc ils restent cachés.
+   ========================================================================= */
+.rail-titre { display: none; }
+.rail-groupe + .rail-groupe { margin-top: 8px; }
+#rail-tableau:empty { display: none; }
+
+@media (min-width: 900px) {
+  /* Deux colonnes : les chiffres à gauche, la navigation à droite. */
+  #vue-semaine {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 148px;
+    align-items: start;
+    gap: 0 18px;
+  }
+  .bilan-contenu { grid-area: 1 / 1; min-width: 0; }
+  /* La colonne suit le défilement tant que l'écran est assez haut, et
+     défile toute seule si elle ne tient pas. */
+  .rail-bilan {
+    grid-area: 1 / 2;
+    position: sticky;
+    top: 10px;
+    max-height: calc(100vh - 20px);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  /* « display: contents » fait des deux groupes du tableau de bord des
+     enfants directs de la colonne : ils s'alignent avec le groupe Vues au
+     lieu de se retrouver serrés dans une boîte de plus. */
+  #rail-tableau { display: contents; }
+  .rail-groupe + .rail-groupe { margin-top: 0; }
+  .rail-titre {
+    display: block;
+    margin: 0 0 6px;
+    font-family: var(--titre);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--texte-doux);
+  }
+  /* Les trois groupes gardent leur boîte, leur bord et leur bouton actif
+     sombre : seule la direction change, de la ligne à la colonne. */
+  .rail-bilan .choix-bilan,
+  .rail-bilan .quatre-periodes,
+  .rail-bilan .deux-choix {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    max-width: none;
+    margin: 0;
+  }
+  .rail-bilan .choix {
+    width: 100%;
+    min-height: 48px;
+    font-size: 14px;
+    padding: 8px 6px;
+  }
+  .rail-bilan .periode-aide {
+    margin: 9px 2px 0;
+    font-size: 12px;
+    line-height: 1.3;
+    text-align: left;
+  }
+
+  /* La colonne prend 148 px au contenu : le grand chiffre des 7 jours y
+     coupait son « F » sur une deuxième ligne. Il se calcule donc sur la
+     largeur restante et ne se coupe plus. La taille maximale ne bouge pas. */
+  .bilan-contenu .gros-chiffre {
+    white-space: nowrap;
+    font-size: clamp(38px, 4.2vw, 54px);
+  }
+}

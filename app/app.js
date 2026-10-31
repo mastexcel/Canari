@@ -830,124 +830,279 @@ function derniersJours(n) {
 }
 
 /* ---------- La synthèse des 7 jours (maquette du propriétaire, 27/10/2026) ----------
-   Cinq indicateurs dans des sous-cartes de même dessin : trois en premier
-   (ce qu'on regarde d'abord), deux en second. Aucune couleur, aucune police,
-   aucun arrondi n'a changé — c'est la même carte sombre, mieux rangée. */
+   Cinq indicateurs dans des sous-cartes de même dessin, puis quatre cartes
+   de graphiques. Aucune couleur, aucune police, aucun arrondi de la charte
+   n'a changé : ce sont les couleurs de sens et les teintes de la signature.
+   Les calculs ne changent pas non plus — tout vient de `derniersJours`. */
 
-// Une sous-carte de la synthèse : médaillon, nom, montant, et sa tendance.
+// Une sous-carte de la synthèse : médaillon, nom, tendance, montant, courbe.
 function caseSynthese(o) {
-  return '<div class="sfin' + (o.second ? ' sfin-second' : '') + (o.teinte ? ' sfin-' + o.teinte : '') + '">' +
+  return '<div class="sfin sfin-' + o.teinte + (o.second ? ' sfin-second' : '') + '">' +
     '<span class="sfin-ico">' + o.icone + '</span>' +
-    '<span class="sfin-corps">' +
-      '<span class="sfin-nom">' + o.nom + '</span>' +
-      '<b class="sfin-valeur' + (o.rouge ? ' m-negatif' : '') + '">' + o.valeur + '</b>' +
-    '</span>' +
-    (o.extra || "") + '</div>';
+    '<div class="sfin-corps">' +
+      '<div class="sfin-ligne">' +
+        '<span class="sfin-nom">' + o.nom + '</span>' +
+        (o.tendance === null || o.tendance === undefined ? '' :
+          '<span class="sfin-tendance ' + (o.tendance < 0 ? 'baisse' : 'hausse') + '" translate="no">' +
+            (o.tendance < 0 ? '↓ − ' : '↑ + ') + Math.abs(o.tendance) + ' %</span>') +
+      '</div>' +
+      '<div class="sfin-bas">' +
+        '<b class="sfin-valeur' + (o.rouge ? ' m-negatif' : '') + '">' + o.valeur + '</b>' +
+        (o.dessin || '') +
+      '</div>' +
+    '</div></div>';
 }
 
-// Une mini-courbe en colonnes, dessinée depuis les valeurs déjà calculées.
+// La mini-courbe en colonnes d'une sous-carte.
 function etincelleSvg(valeurs, teinte) {
   const grand = Math.max.apply(null, valeurs.map(Math.abs).concat([1]));
-  const l = 100 / (valeurs.length * 1.6);
-  return '<svg class="sfin-etincelle" viewBox="0 0 100 32" preserveAspectRatio="none" aria-hidden="true">' +
+  const pas = 100 / valeurs.length;
+  return '<svg class="sfin-etincelle" viewBox="0 0 100 34" preserveAspectRatio="none" aria-hidden="true">' +
     valeurs.map(function (v, i) {
-      const h = Math.max(2, Math.round(Math.abs(v) / grand * 30));
-      const x = (i * 1.6 + 0.3) * l * 1.6 / 1.6;
-      return '<rect x="' + (i * (100 / valeurs.length) + l * 0.3).toFixed(1) + '" y="' + (32 - h) +
-        '" width="' + l.toFixed(1) + '" height="' + h + '" rx="1" class="et-' + teinte + '"/>';
-    }).join("") + '</svg>';
+      const h = Math.max(3, Math.abs(v) / grand * 32);
+      return '<rect x="' + (i * pas + pas * 0.18).toFixed(2) + '" y="' + (34 - h).toFixed(2) +
+        '" width="' + (pas * 0.64).toFixed(2) + '" height="' + h.toFixed(2) + '" class="et-' + teinte + '"/>';
+    }).join('') + '</svg>';
 }
 
-// Le bénéfice de chaque jour en COLONNES (demande du propriétaire) : une ligne
-// de zéro, les jours en bas, les montants en haut, le vert et le rouge de sens.
+// La jauge des deux indicateurs secondaires : une part sur un total.
+function jaugeSvg(part, teinte) {
+  return '<span class="sfin-jauge"><span class="sfin-jauge-part sfin-jauge-' + teinte +
+    '" style="width:' + Math.min(100, Math.max(2, Math.round(part))) + '%"></span></span>';
+}
+
+// L'échelle de gauche d'un graphique : trois ou cinq repères chiffrés.
+function echelleHtml(valeurs) {
+  return '<ul class="axe-y" translate="no">' + valeurs.map(function (v) {
+    return '<li>' + (v < 0 ? '− ' : '') + nombreCourt(Math.abs(v)) + '</li>';
+  }).join('') + '</ul>';
+}
+// « 6 000 », « 25 000 » : le même espace insécable que partout ailleurs.
+function nombreCourt(n) { return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
+// Le palier rond juste au-dessus d'un montant : 13 743 → 15 000, 71 750 → 80 000.
+// Sans lui, l'échelle affichait « 6 871 » et « 142 200 », qui ne se lisent pas.
+function palierRond(n) {
+  if (!n) return 0;
+  const p = Math.pow(10, Math.floor(Math.log10(n)));
+  const r = n / p;
+  return (r <= 1 ? 1 : r <= 1.5 ? 1.5 : r <= 2 ? 2 : r <= 3 ? 3 : r <= 5 ? 5 : r <= 8 ? 8 : 10) * p;
+}
+
+// Le bénéfice de chaque jour en COLONNES, avec sa ligne de zéro.
 function colonnesJoursSvg(jours) {
   const v = jours.map(function (j) { return j.totaux.benefice; });
-  // Le zéro se place selon ce qu'il y a au-dessus et au-dessous : une semaine
-  // sans perte remplit tout le cadre vers le haut, au lieu de laisser la
-  // moitié basse vide.
-  const haut = Math.max.apply(null, v.concat([0]));
-  const bas = Math.max.apply(null, v.map(function (x) { return -x; }).concat([0]));
+  const haut = palierRond(Math.max.apply(null, v.concat([0])));
+  const bas = palierRond(Math.max.apply(null, v.map(function (x) { return -x; }).concat([0])));
   const total = haut + bas || 1;
-  const zero = Math.min(88, Math.max(12, Math.round(haut / total * 100)));
+  const zero = Math.min(86, Math.max(14, Math.round(haut / total * 100)));
+  const pas = 100 / jours.length;
   const corps = jours.map(function (j, i) {
     const g = v[i];
     const place = g >= 0 ? zero : 100 - zero;
     const ref = g >= 0 ? haut : bas;
-    const h = ref ? Math.max(1.5, Math.abs(g) / ref * place * 0.92) : 1.5;
-    const pas = 100 / jours.length;
-    const x = i * pas + pas * 0.2;
-    const w = pas * 0.6;
-    const y = g >= 0 ? zero - h : zero;
-    return '<rect x="' + x.toFixed(2) + '" y="' + y.toFixed(2) + '" width="' + w.toFixed(2) +
-      '" height="' + h.toFixed(2) + '" class="col-' + (g < 0 ? 'sort' : 'entre') + '">' +
+    const h = ref ? Math.max(1.5, Math.abs(g) / ref * place * 0.9) : 1.5;
+    return '<rect x="' + (i * pas + pas * 0.2).toFixed(2) + '" y="' + (g >= 0 ? zero - h : zero).toFixed(2) +
+      '" width="' + (pas * 0.6).toFixed(2) + '" height="' + h.toFixed(2) +
+      '" class="col-' + (g < 0 ? 'sort' : 'entre') + '">' +
       '<title>' + j.date.toLocaleDateString(LOCALE, { weekday: "long", day: "numeric", month: "short" }) +
-      ' : ' + (g < 0 ? "\u2212\u00a0" : "") + franc(Math.abs(g)) + '</title></rect>';
-  }).join("");
-  return '<div class="colonnes-jours">' +
-    '<svg viewBox="0 0 100 100" preserveAspectRatio="none" class="colonnes-dessin" aria-hidden="true">' +
-      '<line x1="0" y1="' + zero + '" x2="100" y2="' + zero + '" class="col-zero"/>' + corps +
-    '</svg>' +
-    '<ul class="colonnes-valeurs">' + jours.map(function (j, i) {
-      const g = v[i];
-      const nom = j.aujourdhui ? "Auj." : j.date.toLocaleDateString(LOCALE, { weekday: "short" }).replace(".", "");
-      return '<li><b class="' + (g < 0 ? "m-negatif" : "") + '">' + (g < 0 ? "\u2212\u00a0" : "") + franc(Math.abs(g)) + '</b>' +
-        '<span translate="no">' + nom.charAt(0).toUpperCase() + nom.slice(1) + '<small>' + j.date.getDate() + '</small></span></li>';
-    }).join("") + '</ul></div>';
+      ' : ' + (g < 0 ? '− ' : '') + franc(Math.abs(g)) + '</title></rect>';
+  }).join('');
+  const marches = (bas ? [haut, haut / 2, 0, -bas / 2, -bas] : [haut, haut / 2, 0])
+    .filter(function (x, i, t) { return t.indexOf(x) === i; });
+  return '<div class="graphe-cadre">' +
+    echelleHtml(marches) +
+    '<div class="graphe-corps">' +
+      '<svg viewBox="0 0 100 100" preserveAspectRatio="none" class="graphe-dessin" aria-hidden="true">' +
+        '<line x1="0" y1="' + zero + '" x2="100" y2="' + zero + '" class="col-zero"/>' + corps +
+      '</svg>' +
+      '<ul class="graphe-jours">' + jours.map(function (j, i) {
+        const g = v[i];
+        const nom = j.aujourdhui ? "Auj." : j.date.toLocaleDateString(LOCALE, { weekday: "short" }).replace(".", "");
+        return '<li><b class="' + (g < 0 ? 'm-negatif' : '') + '">' + (g < 0 ? '− ' : '') + franc(Math.abs(g)) + '</b>' +
+          '<span translate="no">' + nom.charAt(0).toUpperCase() + nom.slice(1) + '<small>' +
+          j.date.toLocaleDateString(LOCALE, { day: "numeric", month: "short" }) + '</small></span></li>';
+      }).join('') + '</ul>' +
+    '</div></div>';
+}
+
+// Des colonnes simples (ventes de chaque jour) ou doubles (sorties/recettes).
+function colonnesSeriesSvg(jours, series) {
+  const grand = palierRond(Math.max.apply(null, series.reduce(function (t, s) {
+    return t.concat(jours.map(s.valeur));
+  }, []).concat([1])));
+  const pas = 100 / jours.length;
+  const l = pas * 0.66 / series.length;
+  const corps = jours.map(function (j, i) {
+    return series.map(function (s, k) {
+      const v = s.valeur(j);
+      const h = Math.max(0.8, v / grand * 92);
+      return '<rect x="' + (i * pas + pas * 0.17 + k * l).toFixed(2) + '" y="' + (100 - h).toFixed(2) +
+        '" width="' + (l * 0.86).toFixed(2) + '" height="' + h.toFixed(2) + '" class="col-' + s.teinte + '">' +
+        '<title>' + j.date.toLocaleDateString(LOCALE, { day: "numeric", month: "short" }) + ' · ' +
+        s.nom + ' : ' + franc(Math.round(v)) + '</title></rect>';
+    }).join('');
+  }).join('');
+  return '<div class="graphe-cadre">' +
+    echelleHtml([grand, grand / 2, 0]) +
+    '<div class="graphe-corps">' +
+      '<svg viewBox="0 0 100 100" preserveAspectRatio="none" class="graphe-dessin" aria-hidden="true">' + corps + '</svg>' +
+      '<ul class="graphe-jours graphe-jours-nus">' + jours.map(function (j) {
+        return '<li><span translate="no">' + j.date.toLocaleDateString(LOCALE, { day: "numeric", month: "short" }) + '</span></li>';
+      }).join('') + '</ul>' +
+    '</div></div>';
+}
+
+// Le camembert percé (« donut ») de la répartition, avec le total au centre.
+function donutSvg(parts, total) {
+  const C = 50, R = 36, E = 11;
+  let angle = -Math.PI / 2;
+  const somme = parts.reduce(function (s, p) { return s + p.valeur; }, 0) || 1;
+  const arcs = parts.length === 1
+    ? '<circle cx="' + C + '" cy="' + C + '" r="' + (R - E / 2) + '" fill="none" stroke="' + COULEURS_PART[0] + '" stroke-width="' + E + '"/>'
+    : parts.map(function (p, i) {
+        const a = p.valeur / somme * Math.PI * 2;
+        const x1 = C + (R - E / 2) * Math.cos(angle), y1 = C + (R - E / 2) * Math.sin(angle);
+        angle += a;
+        const x2 = C + (R - E / 2) * Math.cos(angle), y2 = C + (R - E / 2) * Math.sin(angle);
+        return '<path d="M' + x1.toFixed(2) + ' ' + y1.toFixed(2) + ' A' + (R - E / 2) + ' ' + (R - E / 2) +
+          ' 0 ' + (a > Math.PI ? 1 : 0) + ' 1 ' + x2.toFixed(2) + ' ' + y2.toFixed(2) + '" fill="none" stroke="' +
+          COULEURS_PART[i % COULEURS_PART.length] + '" stroke-width="' + E + '"><title>' +
+          echapper(p.nom) + ' : ' + franc(Math.round(p.valeur)) + '</title></path>';
+      }).join('');
+  return '<div class="donut">' +
+    '<div class="donut-rond">' +
+      '<svg viewBox="0 0 100 100" aria-hidden="true">' + arcs + '</svg>' +
+      '<div class="donut-centre"><b>' + franc(total) + '</b><span>Ventes totales</span></div>' +
+    '</div>' +
+    '<ul class="donut-legende">' + parts.map(function (p, i) {
+      return '<li><span class="cl-puce" style="background:' + COULEURS_PART[i % COULEURS_PART.length] + '"></span>' +
+        '<span class="cl-nom">' + echapper(p.nom) + '</span>' +
+        '<b class="cl-part" translate="no">' + Math.round(p.valeur / somme * 100) + ' %</b></li>';
+    }).join('') + '</ul></div>';
+}
+
+// Une carte de graphique de l'écran des 7 jours.
+function carteGraphe(titre, icone, dedans, legende) {
+  return '<section class="carte-graphe">' +
+    '<div class="cg-haut"><span class="cg-ico">' + icone + '</span>' +
+    '<h2 class="cg-titre">' + titre + '</h2>' + (legende || '') + '</div>' + dedans + '</section>';
 }
 
 function afficherSemaine() {
   const jours = derniersJours(7);
-  const somme = function (cle) { return jours.reduce(function (s, j) { return s + j.totaux[cle]; }, 0); };
-  const gain = somme("benefice"), maison = somme("maison"), vendu = somme("vendu"), aCredit = somme("aCredit");
-  const caisse = somme("caisse");
+  const somme = function (liste, cle) { return liste.reduce(function (s, j) { return s + j.totaux[cle]; }, 0); };
+  const gain = somme(jours, "benefice"), maison = somme(jours, "maison");
+  const vendu = somme(jours, "vendu"), aCredit = somme(jours, "aCredit");
+  const caisse = somme(jours, "caisse");
   const reste = gain - maison;
-  const signe = function (n) { return (n < 0 ? "\u2212\u00a0" : "") + franc(Math.abs(n)); };
+  const signe = function (n) { return (n < 0 ? '− ' : '') + franc(Math.abs(n)); };
   const rien = jours.every(function (j) { return !j.totaux.encaisse && !j.totaux.sorti && !j.totaux.maison && !j.totaux.vendu; });
 
   if (rien) {
     $("vue-7jours").innerHTML = videHtml("canari-tranquille",
-      "Rien de not\u00e9 ces 7 derniers jours.<br>Ton bilan de la semaine appara\u00eetra ici.");
+      "Rien de noté ces 7 derniers jours.<br>Ton bilan de la semaine apparaîtra ici.");
     return;
   }
 
-  const marge = somme("margeBrute");
+  const marge = somme(jours, "margeBrute");
+  // La semaine d'avant, pour la tendance. Pas de tendance si elle est vide :
+  // « + 611 % » sur un nouveau commerçant ne veut rien dire.
+  const avant = derniersJours(14).slice(0, 7);
+  const tend = function (maintenant, cle) {
+    const vieux = somme(avant, cle);
+    if (!vieux || Math.abs(vieux) < 1000) return null;
+    return Math.round((maintenant - vieux) / Math.abs(vieux) * 100);
+  };
+
   const d1 = jours[0].date, d2 = jours[jours.length - 1].date;
-  const periode = d1.toLocaleDateString(LOCALE, { day: "numeric", month: "long" }) + " \u2013 " +
+  const periode = "Du " + d1.toLocaleDateString(LOCALE, { day: "numeric", month: "long" }) + " au " +
     d2.toLocaleDateString(LOCALE, { day: "numeric", month: "long", year: "numeric" });
   const partCredit = vendu ? Math.round(aCredit / vendu * 100) : 0;
 
   const I = {
-    ventes: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h2l2 10h10l2-7H7"/><circle cx="10" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/></svg>',
-    marge: '<svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="7" rx="7" ry="3"/><path d="M5 7v5c0 1.7 3.1 3 7 3s7-1.3 7-3V7"/><path d="M5 12v5c0 1.7 3.1 3 7 3s7-1.3 7-3v-5"/></svg>',
-    benefice: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17l5-5 3 3 7-7"/><path d="M15 8h4v4"/></svg>',
-    credit: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="3"/><path d="M3 10h18"/></svg>',
-    flux: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h13l-3-3M20 15H7l3 3"/></svg>'
+    panier: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h2l2 10h10l2-7H7"/><circle cx="10" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/></svg>',
+    pieces: '<svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="7" rx="7" ry="3"/><path d="M5 7v5c0 1.7 3.1 3 7 3s7-1.3 7-3V7"/><path d="M5 12v5c0 1.7 3.1 3 7 3s7-1.3 7-3v-5"/></svg>',
+    courbe: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17l5-5 3 3 7-7"/><path d="M15 8h4v4"/></svg>',
+    carte: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="3"/><path d="M3 10h18"/></svg>',
+    flux: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h13l-3-3M20 15H7l3 3"/></svg>',
+    barres: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>',
+    horloge: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>',
+    balance: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M6 8h12"/><path d="M4 16a3 3 0 0 0 6 0l-3-6z"/><path d="M14 16a3 3 0 0 0 6 0l-3-6z"/></svg>',
+    etoile: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l2.4 5 5.6.8-4 3.9 1 5.5-5-2.6-5 2.6 1-5.5-4-3.9 5.6-.8z"/></svg>'
   };
+
+  /* --- Ce que chaque produit a vendu sur les 7 jours --- */
+  const parProduit = {};
+  let sansDetail = 0;
+  jours.forEach(function (j) {
+    mouvementsDuJour(j.cle).forEach(function (m) {
+      if (m.type !== "vente" && m.type !== "credit") return;
+      if (!m.lignes) { sansDetail += m.montant; return; }
+      m.lignes.forEach(function (l) {
+        const p = donnees.produits[l.produitId];
+        if (!p) return;
+        const e = parProduit[l.produitId] || (parProduit[l.produitId] = { nom: p.nom, unite: uniteDe(p), vendu: 0, qte: 0 });
+        e.vendu += l.prix * l.qte;
+        e.qte += l.qte;
+      });
+    });
+  });
+  const produits = Object.keys(parProduit).map(function (k) { return parProduit[k]; });
+  const parCA = produits.slice().sort(function (a, b) { return b.vendu - a.vendu; });
+  const parQte = produits.slice().sort(function (a, b) { return b.qte - a.qte; });
+  const parts = parCA.slice(0, 4).map(function (p) { return { nom: p.nom, valeur: p.vendu }; });
+  const autres = parCA.slice(4).reduce(function (s, p) { return s + p.vendu; }, 0);
+  if (autres > 0) parts.push({ nom: "Autres produits", valeur: autres });
+  if (sansDetail > 0) parts.push({ nom: "Ventes au montant", valeur: sansDetail });
+
+  const cartes = [];
+  cartes.push(carteGraphe("Bénéfice net de chaque jour", I.barres, colonnesJoursSvg(jours)));
+  if (parts.length) cartes.push(carteGraphe("Répartition des ventes (7 jours)", I.pieces, donutSvg(parts, vendu)));
+  cartes.push(carteGraphe("Évolution des ventes", I.horloge,
+    colonnesSeriesSvg(jours, [{ nom: "Ventes", teinte: "entre", valeur: function (j) { return j.totaux.vendu; } }])));
+  cartes.push(carteGraphe("Dépenses et recettes", I.balance,
+    colonnesSeriesSvg(jours, [
+      { nom: "Dépenses", teinte: "sort", valeur: function (j) { return j.totaux.sorti; } },
+      { nom: "Recettes", teinte: "entre", valeur: function (j) { return j.totaux.encaisse; } }
+    ]),
+    '<span class="cg-legende"><span class="puce sort"></span>Dépenses <span class="puce entre"></span>Recettes</span>'));
+  if (parQte.length) {
+    const max = parQte[0].qte || 1;
+    cartes.push(carteGraphe("Top 5 produits vendus", I.etoile,
+      '<ul class="barres-produits">' + parQte.slice(0, 5).map(function (p) {
+        return '<li><span class="bp-nom">' + echapper(p.nom) + '</span>' +
+          '<span class="bp-piste"><span class="bp-barre" style="width:' + Math.max(6, Math.round(p.qte / max * 100)) + '%"></span></span>' +
+          '<b class="bp-valeur">' + nombre(p.qte) + ' ' + echapper(p.unite) + '</b></li>';
+      }).join('') + '</ul>'));
+  }
 
   $("vue-7jours").innerHTML =
     '<div class="carte-gain carte-semaine">' +
       '<div class="sfin-haut">' +
-        '<h2 class="sfin-titre"><span class="sfin-ico">' + I.benefice + '</span>Synth\u00e8se des 7 derniers jours</h2>' +
+        '<h2 class="sfin-titre"><span class="sfin-ico sfin-ico-titre">' + I.barres + '</span>Synthèse des 7 derniers jours</h2>' +
         '<span class="sfin-periode" translate="no">' + periode + '</span>' +
       '</div>' +
       '<div class="synthese-fin">' +
-        caseSynthese({ icone: I.ventes, nom: "Ventes des 7 derniers jours", valeur: franc(vendu), teinte: "braise",
-          extra: etincelleSvg(jours.map(function (j) { return j.totaux.vendu; }), "braise") }) +
-        caseSynthese({ icone: I.marge, nom: "Marge brute", valeur: signe(marge), teinte: "or",
-          extra: etincelleSvg(jours.map(function (j) { return j.totaux.margeBrute; }), "or") }) +
-        caseSynthese({ icone: I.benefice, nom: "B\u00e9n\u00e9fice net", valeur: signe(gain),
-          teinte: gain < 0 ? "sort" : "entre", rouge: gain < 0,
-          extra: etincelleSvg(jours.map(function (j) { return j.totaux.benefice; }), gain < 0 ? "sort" : "entre") }) +
-        caseSynthese({ icone: I.credit, nom: "Ventes \u00e0 cr\u00e9dit", valeur: franc(aCredit), teinte: "credit", second: true,
-          extra: '<span class="sfin-part" translate="no">' + partCredit + ' %</span>' }) +
-        caseSynthese({ icone: I.flux, nom: "Entr\u00e9 moins sorti sur 7 jours", valeur: signe(caisse),
-          teinte: caisse < 0 ? "sort" : "entre", rouge: caisse < 0, second: true }) +
+        caseSynthese({ icone: I.panier, nom: "Ventes (7 jours)", valeur: franc(vendu), teinte: "braise",
+          tendance: tend(vendu, "vendu"),
+          dessin: etincelleSvg(jours.map(function (j) { return j.totaux.vendu; }), "braise") }) +
+        caseSynthese({ icone: I.pieces, nom: "Marge brute", valeur: signe(marge), teinte: "or",
+          tendance: tend(marge, "margeBrute"),
+          dessin: etincelleSvg(jours.map(function (j) { return j.totaux.margeBrute; }), "or") }) +
+        caseSynthese({ icone: I.courbe, nom: "Bénéfice net", valeur: signe(gain),
+          teinte: gain < 0 ? "sort" : "entre", rouge: gain < 0, tendance: tend(gain, "benefice"),
+          dessin: etincelleSvg(jours.map(function (j) { return j.totaux.benefice; }), gain < 0 ? "sort" : "entre") }) +
+        caseSynthese({ icone: I.carte, nom: "Ventes à crédit", valeur: franc(aCredit), teinte: "credit", second: true,
+          dessin: jaugeSvg(partCredit, "credit") +
+            '<span class="sfin-mention"><b translate="no">' + partCredit + ' %</b>du total</span>' }) +
+        caseSynthese({ icone: I.flux, nom: "Entrées moins sorties (7 jours)", valeur: signe(caisse),
+          teinte: caisse < 0 ? "sort" : "entre", rouge: caisse < 0, second: true,
+          tendance: tend(caisse, "caisse"),
+          dessin: jaugeSvg(Math.abs(caisse) / Math.max(1, Math.abs(vendu)) * 100, caisse < 0 ? "sort" : "entre") }) +
       '</div>' +
-      (maison ? '<p class="vendu' + (reste < 0 ? ' negatif' : '') + '">Pris pour la maison ' + franc(maison) + ' \u00b7 reste ' + signe(reste) + '</p>' : '') +
+      (maison ? '<p class="sfin-pied' + (reste < 0 ? ' negatif' : '') + '">Pris pour la maison ' + franc(maison) + ' · reste ' + signe(reste) + '</p>' : '') +
     '</div>' +
-    '<h2 class="titre-liste">B\u00e9n\u00e9fice net de chaque jour</h2>' +
-    colonnesJoursSvg(jours) +
-    '<p class="aide legende-semaine"><span class="puce entre"></span>jour gagnant <span class="puce sort"></span>jour perdant</p>';
+    '<div class="cartes-semaine">' + cartes.join('') + '</div>';
 }
 
 // Lignes de l'historique d'un client ou d'un fournisseur, des plus récentes aux plus anciennes.

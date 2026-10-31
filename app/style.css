@@ -4587,9 +4587,9 @@ body::after {
    large et la ligne reprend sa forme d'origine. */
 @media (min-width: 900px) and (max-width: 1499px) {
   .camembert-legende li { grid-template-columns: 10px 1fr auto; row-gap: 1px; }
-  .cl-nom { grid-column: 2 / -1; }
-  .cl-valeur { grid-column: 2; }
-  .cl-part { grid-column: 3; }
+  .camembert-legende .cl-nom { grid-column: 2 / -1; }
+  .camembert-legende .cl-valeur { grid-column: 2; }
+  .camembert-legende .cl-part { grid-column: 3; }
 }
 
 /* Sur les écrans les plus étroits, le chiffre d'une tuile de « L'essentiel »
@@ -4603,21 +4603,25 @@ body::after {
   .mosaique-petite { grid-template-columns: 1fr 1fr; }
 }
 
+
 /* =========================================================================
-   LA SYNTHÈSE DES 7 JOURS (maquette du propriétaire, 27/10/2026)
-   « Les cinq indicateurs dans une grille compacte et équilibrée : trois en
-   première ligne, deux en seconde ; des sous-cartes de dimensions
-   harmonisées ; réduire les zones vides. »
-   Rien de la charte ne change : mêmes couleurs de sens, même blanc
-   translucide des cartes sombres, mêmes arrondis, mêmes polices.
+   LA SYNTHÈSE DES 7 JOURS ET SES GRAPHIQUES
+   (maquette du propriétaire, 27/10/2026 : « sois fidèle aux indicateurs et
+   graphiques comme dans cette image ».)
+   Cinq sous-cartes du même dessin — médaillon plein, nom, tendance, montant,
+   mini-courbe — puis cinq cartes de graphiques. Rien de la charte ne change :
+   ce sont les couleurs de sens (olive = ce qui entre, rouge = ce qui sort,
+   ocre = le crédit) et les teintes de la signature (braise, or).
    ========================================================================= */
+.carte-semaine { display: block; }
+
 .sfin-haut {
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 8px 12px;
-  margin-bottom: 12px;
+  margin-bottom: 13px;
 }
 .sfin-titre {
   display: flex;
@@ -4629,145 +4633,252 @@ body::after {
   line-height: 1.2;
   color: #fff;
 }
+.sfin-ico-titre { color: var(--braise-vive); background: rgba(255, 255, 255, .08); }
 .sfin-periode {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   font-family: var(--chiffres);
   font-variant-numeric: tabular-nums lining-nums;
   font-size: 12.5px;
-  color: var(--texte-doux);
+  color: #fff;
   background: rgba(255, 255, 255, .10);
   border: 1px solid rgba(255, 255, 255, .18);
   border-radius: 999px;
-  padding: 5px 11px;
-  color: #fff;
+  padding: 6px 13px;
+}
+.sfin-periode::before {
+  content: "";
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  background: currentColor;
+  -webkit-mask: var(--ico-calendrier) center / contain no-repeat;
+  mask: var(--ico-calendrier) center / contain no-repeat;
+}
+:root {
+  --ico-calendrier: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round'%3E%3Crect x='3' y='5' width='18' height='16' rx='3'/%3E%3Cpath d='M3 10h18M8 3v4M16 3v4'/%3E%3C/svg%3E");
 }
 
-/* La grille : trois sous-cartes principales, puis deux secondaires.
-   Sur un petit écran, chacune prend sa ligne — on ne rétrécit jamais un
-   montant pour forcer trois colonnes sur 320 px. */
-/* La carte des 7 jours porte la classe « carte-gain » : sans cette ligne,
-   elle héritait de la grille à TROIS ZONES de l'écran du jour, et ses
-   sous-cartes tombaient à 69 px de large. C'est le même piège que les
-   classes partagées entre écrans. */
-.carte-semaine { display: block; }
-
+/* La grille : trois sous-cartes puis deux. Sur un petit écran, chacune prend
+   sa ligne — on ne rétrécit jamais un montant pour forcer trois colonnes. */
 .synthese-fin {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 11px;
 }
 
-/* Une sous-carte : le MÊME dessin pour les cinq (demande du propriétaire). */
+/* Une sous-carte : le MÊME dessin pour les cinq. */
 .sfin {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 11px 13px;
-  background: rgba(255, 255, 255, .05);
-  border: 1px solid rgba(255, 255, 255, .11);
-  border-left: 3px solid rgba(255, 255, 255, .22);
-  border-radius: 14px;
+  gap: 12px;
+  padding: 13px 15px;
+  border: 1px solid rgba(255, 255, 255, .13);
+  border-radius: 16px;
   min-width: 0;
-  /* Un montant ne se coupe jamais : quand le nom, le chiffre et la
-     mini-courbe ne tiennent pas sur une ligne, c'est la mini-courbe qui
-     passe en dessous — elle est décorative, le chiffre ne l'est pas. */
   flex-wrap: wrap;
-  row-gap: 4px;
+  row-gap: 6px;
 }
 .sfin-ico {
   flex: 0 0 auto;
   display: inline-flex;
-  padding: 7px;
-  border-radius: 11px;
-  background: rgba(255, 255, 255, .08);
+  padding: 10px;
+  border-radius: 13px;
+  color: #fff;
 }
 .sfin-ico svg {
-  width: 19px;
-  height: 19px;
+  width: 21px;
+  height: 21px;
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.8;
+  stroke-width: 1.9;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-.sfin-corps { flex: 1 1 150px; min-width: 0; }
-.sfin-nom {
-  display: block;
-  font-size: 12.5px;
-  line-height: 1.25;
-  color: var(--texte-doux);
+.sfin-corps { flex: 1 1 160px; min-width: 0; }
+.sfin-ligne {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
 }
-.sfin-valeur {
-  display: block;
+.sfin-nom {
+  font-size: 13.5px;
+  line-height: 1.25;
+  color: rgba(255, 255, 255, .78);
+}
+.sfin-tendance {
   font-family: var(--chiffres);
   font-variant-numeric: tabular-nums lining-nums;
-  font-size: clamp(19px, 5vw, 26px);
+  font-size: 12.5px;
   font-weight: 700;
-  letter-spacing: -.4px;
-  line-height: 1.15;
+  white-space: nowrap;
+}
+.sfin-tendance.hausse { color: var(--entre-clair); }
+.sfin-tendance.baisse { color: var(--sort-clair); }
+.sfin-bas {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 3px;
+  flex-wrap: wrap;
+  row-gap: 5px;
+}
+.sfin-valeur {
+  font-family: var(--chiffres);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-size: clamp(21px, 5vw, 29px);
+  font-weight: 700;
+  letter-spacing: -.5px;
+  line-height: 1.1;
   white-space: nowrap;
   color: #fff;
+  flex: 1 1 auto;
 }
-/* Les deux indicateurs secondaires sont plus discrets, jamais illisibles. */
-.sfin-second .sfin-valeur { font-size: clamp(17px, 4.4vw, 21px); }
+.sfin-second .sfin-valeur { font-size: clamp(19px, 4.4vw, 24px); }
+.carte-gain .sfin-valeur.m-negatif { color: #fff; }
 
-/* Les couleurs de sens, inchangées : c'est le filet et l'icône qui les
-   portent, jamais le fond — la braise ne devient pas un bouton d'argent. */
-.sfin-braise { border-left-color: var(--braise-vive); }
-.sfin-braise .sfin-ico { color: var(--braise-vive); }
-.sfin-or { border-left-color: var(--or); }
-.sfin-or .sfin-ico { color: var(--or); }
-.sfin-entre { border-left-color: var(--entre-clair); }
-.sfin-entre .sfin-ico { color: var(--entre-clair); }
-.sfin-sort { border-left-color: var(--sort-clair); }
-.sfin-sort .sfin-ico { color: var(--sort-clair); }
-.sfin-credit { border-left-color: var(--credit-clair, var(--or)); }
-.sfin-credit .sfin-ico { color: var(--credit-clair, var(--or)); }
-.carte-gain .sfin-valeur.m-negatif { color: var(--sort-clair); }
+/* Les teintes : un fond très sombre à peine coloré, un médaillon plein.
+   Les couleurs de sens ne changent pas de signification. */
+.sfin-braise { background: linear-gradient(135deg, rgba(220, 63, 23, .30), rgba(255, 255, 255, .03)); }
+.sfin-braise .sfin-ico { background: var(--braise); }
+.sfin-or { background: linear-gradient(135deg, rgba(194, 128, 47, .30), rgba(255, 255, 255, .03)); }
+.sfin-or .sfin-ico { background: var(--or); }
+.sfin-entre { background: linear-gradient(135deg, rgba(94, 112, 51, .32), rgba(255, 255, 255, .03)); }
+.sfin-entre .sfin-ico { background: var(--entre); }
+.sfin-sort { background: linear-gradient(135deg, rgba(184, 65, 43, .32), rgba(255, 255, 255, .03)); }
+.sfin-sort .sfin-ico { background: var(--sort); }
+.sfin-credit { background: linear-gradient(135deg, rgba(150, 112, 31, .30), rgba(255, 255, 255, .03)); }
+.sfin-credit .sfin-ico { background: var(--credit); }
 
 /* La mini-courbe : elle montre la forme de la semaine, pas des chiffres. */
-.sfin-etincelle { flex: 1 1 44px; max-width: 56px; height: 26px; }
-.sfin-etincelle rect { opacity: .85; }
+.sfin-etincelle { flex: 0 1 62px; width: 62px; height: 28px; }
 .et-braise { fill: var(--braise-vive); }
 .et-or { fill: var(--or); }
 .et-entre { fill: var(--entre-clair); }
 .et-sort { fill: var(--sort-clair); }
-.sfin-part {
+
+/* La jauge des deux indicateurs secondaires, et sa mention chiffrée. */
+.sfin-jauge {
+  flex: 1 1 70px;
+  height: 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .14);
+  overflow: hidden;
+  margin-bottom: 5px;
+}
+.sfin-jauge-part { display: block; height: 100%; border-radius: 999px; }
+.sfin-jauge-credit { background: var(--credit-clair, var(--or)); }
+.sfin-jauge-entre { background: var(--entre-clair); }
+.sfin-jauge-sort { background: var(--sort-clair); }
+.sfin-mention {
   flex: 0 0 auto;
+  text-align: right;
+  font-size: 11.5px;
+  line-height: 1.25;
+  color: rgba(255, 255, 255, .72);
+}
+.sfin-mention b {
+  display: block;
   font-family: var(--chiffres);
   font-variant-numeric: tabular-nums lining-nums;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--texte-doux);
+  font-size: 15px;
+  color: #fff;
 }
 
-/* ----- Le bénéfice de chaque jour, en COLONNES -----
-   (demande du propriétaire : « les jours sur l'axe horizontal, les montants
-   sur l'axe vertical, une ligne de référence à zéro, des infobulles ».)
-   Les barres horizontales prenaient 7 lignes de 44 px ; les colonnes tiennent
-   dans 150 px. Le vert et le rouge gardent leur sens. */
-.colonnes-jours {
+/* ----- Les cartes de graphiques ----- */
+.cartes-semaine {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  margin-top: 14px;
+}
+.carte-graphe {
   background: #fff;
   border: 1px solid var(--bord);
-  border-radius: 16px;
+  border-radius: 18px;
   box-shadow: var(--ombre);
-  padding: 12px 10px 10px;
-  margin-top: 10px;
+  padding: 14px 14px 12px;
+  min-width: 0;
 }
-.colonnes-dessin { display: block; width: 100%; height: 132px; }
+.cg-haut {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.cg-ico {
+  display: inline-flex;
+  padding: 7px;
+  border-radius: 10px;
+  background: var(--ivoire-2);
+  color: var(--braise);
+}
+.cg-ico svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.cg-titre {
+  margin: 0;
+  font-family: var(--titre);
+  font-size: 16px;
+  line-height: 1.2;
+  color: var(--gris-900);
+  flex: 1 1 auto;
+}
+.cg-legende {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--texte-doux);
+}
+.cg-legende .puce { margin-left: 4px; }
+
+/* L'échelle de gauche et le dessin : ils partagent la même hauteur, donc les
+   repères chiffrés tombent en face des bonnes colonnes. */
+.graphe-cadre { display: flex; gap: 8px; min-width: 0; }
+.axe-y {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 0 0 auto;
+  height: 150px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: right;
+  font-family: var(--chiffres);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-size: 11px;
+  color: var(--texte-doux);
+  line-height: 1;
+}
+.graphe-corps { flex: 1 1 auto; min-width: 0; }
+.graphe-dessin { display: block; width: 100%; height: 150px; }
 .col-zero { stroke: var(--gris-400); stroke-width: 1; stroke-dasharray: 3 3; vector-effect: non-scaling-stroke; }
 .col-entre { fill: var(--entre); }
 .col-sort { fill: var(--sort); }
-.colonnes-valeurs {
+.graphe-jours {
   list-style: none;
-  margin: 6px 0 0;
+  margin: 7px 0 0;
   padding: 0;
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: 1fr;
+  grid-auto-columns: minmax(0, 1fr);
   gap: 2px;
 }
-.colonnes-valeurs li { text-align: center; min-width: 0; }
-.colonnes-valeurs b {
+.graphe-jours li { text-align: center; min-width: 0; }
+.graphe-jours b {
   display: block;
   font-family: var(--chiffres);
   font-variant-numeric: tabular-nums lining-nums;
@@ -4776,21 +4887,76 @@ body::after {
   color: var(--entre-fonce);
   line-height: 1.2;
 }
-.colonnes-valeurs b.m-negatif { color: var(--sort-fonce); }
-.colonnes-valeurs span {
+.graphe-jours b.m-negatif { color: var(--sort-fonce); }
+.graphe-jours span {
   display: block;
   font-size: 11.5px;
   color: var(--texte-doux);
-  line-height: 1.2;
+  line-height: 1.25;
 }
-.colonnes-valeurs small { display: block; font-size: 10.5px; opacity: .8; }
+.graphe-jours small { display: block; font-size: 10.5px; opacity: .85; }
+.graphe-jours-nus { margin-top: 5px; }
 
-/* Écran large : la grille se fige à 3 + 2, comme sur la maquette, et le
-   graphique s'étire sans grandir en hauteur. */
+/* ----- Le camembert percé, avec le total au centre ----- */
+.donut { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.donut-rond { position: relative; flex: 0 0 auto; width: 158px; height: 158px; }
+.donut-rond svg { width: 100%; height: 100%; }
+.donut-centre {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+}
+.donut-centre b {
+  font-family: var(--chiffres);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--gris-900);
+  white-space: nowrap;
+}
+.donut-centre span { font-size: 10.5px; color: var(--texte-doux); }
+.donut-legende {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1 1 170px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.donut-legende li {
+  display: grid;
+  grid-template-columns: 11px 1fr auto;
+  gap: 9px;
+  align-items: baseline;
+}
+.donut-legende .cl-puce { width: 11px; height: 11px; border-radius: 4px; align-self: center; }
+.donut-legende .cl-nom { font-size: 14px; color: var(--brun); line-height: 1.25; }
+.donut-legende .cl-part { font-size: 14px; font-weight: 700; color: var(--gris-900); min-width: 0; }
+
+/* Écran large : 3 + 2 sous-cartes, puis les graphiques 2 par 2 et 3 par 3,
+   exactement comme sur la maquette. */
 @media (min-width: 900px) {
-  .synthese-fin { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 11px; }
+  .synthese-fin { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   .synthese-fin > .sfin { grid-column: span 2; }
   .synthese-fin > .sfin-second { grid-column: span 3; }
-  .colonnes-dessin { height: 150px; }
-  .colonnes-valeurs b { font-size: 13px; }
+  .cartes-semaine { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .cartes-semaine > .carte-graphe { grid-column: span 2; }
+  .cartes-semaine > .carte-graphe:nth-child(1) { grid-column: span 3; }
+  .cartes-semaine > .carte-graphe:nth-child(2) { grid-column: span 3; }
+  .axe-y, .graphe-dessin { height: 164px; }
 }
+
+/* La mention discrète du bas de la synthèse (l'argent de la maison). */
+.sfin-pied {
+  margin: 11px 0 0;
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, .78);
+}
+.carte-gain .sfin-pied.negatif { color: var(--sort-clair); }
